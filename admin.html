@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Club Admin Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.4);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        .tabs {
+            display: flex;
+            background: #f5f5f5;
+            border-bottom: 2px solid #ddd;
+            flex-wrap: wrap;
+        }
+        .tab {
+            flex: 1;
+            min-width: 150px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            background: #f5f5f5;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+            border-bottom: 4px solid transparent;
+        }
+        .tab:hover {
+            background: #e8e8e8;
+        }
+        .tab.active {
+            background: white;
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        .content {
+            padding: 40px;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .form-group {
+            margin-bottom: 25px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: inherit;
+            transition: border 0.3s;
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 14px 40px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+        .btn-full {
+            width: 100%;
+            padding: 16px;
+        }
+        .day-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .day-btn {
+            padding: 12px 30px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .day-btn:hover {
+            background: #f0f2ff;
+        }
+        .day-btn.active {
+            background: #667eea;
+            color: white;
+        }
+        .question-card {
+            background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%);
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border-left: 5px solid #667eea;
+        }
+        .question-card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        .success-msg {
+            background: #4caf50;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+        .error-msg {
+            background: #f44336;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        th, td {
+            padding: 15px;
+            text-align: left;
+        }
+        th {
+            font-weight: 600;
+        }
+        tbody tr {
+            border-bottom: 1px solid #eee;
+            transition: background 0.2s;
+        }
+        tbody tr:hover {
+            background: #f8f9ff;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .badge-success {
+            background: #4caf50;
+            color: white;
+        }
+        .badge-error {
+            background: #f44336;
+            color: white;
+        }
+        .badge-warning {
+            background: #ff9800;
+            color: white;
+        }
+        .filter-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        .filter-bar select {
+            flex: 1;
+            min-width: 200px;
+        }
+        .view-btn {
+            background: #667eea;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .view-btn:hover {
+            background: #764ba2;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .modal-content {
+            background: white;
+            max-width: 800px;
+            margin: 50px auto;
+            border-radius: 16px;
+            padding: 40px;
+        }
+        .modal-header {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+        .modal-header h2 {
+            color: #667eea;
+        }
+        .close-modal {
+            float: right;
+            font-size: 28px;
+            cursor: pointer;
+            color: #999;
+        }
+        .close-modal:hover {
+            color: #333;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .detail-label {
+            font-weight: 600;
+            color: #666;
+        }
+        .detail-value {
+            color: #333;
+        }
+        .log-entry {
+            background: #f5f5f5;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        @media (max-width: 768px) {
+            .content {
+                padding: 20px;
+            }
+            table {
+                font-size: 14px;
+            }
+            th, td {
+                padding: 10px 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Math Club Admin Panel</h1>
+            <p>Manage daily questions, schedules, and view student submissions</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('questions')">Set Questions</button>
+            <button class="tab" onclick="switchTab('schedule')">Schedule</button>
+            <button class="tab" onclick="switchTab('submissions')">Submissions</button>
+            <button class="tab" onclick="switchTab('settings')">Settings</button>
+        </div>
+
+        <div class="content">
+            <div id="messageContainer"></div>
+
+            <div id="questionsTab" class="tab-content active">
+                <h2 style="margin-bottom: 25px; color: #333;">Set Questions for Each Day</h2>
+                
+                <div class="day-selector">
+                    <button class="day-btn active" onclick="selectDay(1)">Day 1</button>
+                    <button class="day-btn" onclick="selectDay(2)">Day 2</button>
+                    <button class="day-btn" onclick="selectDay(3)">Day 3</button>
+                    <button class="day-btn" onclick="selectDay(4)">Day 4</button>
+                    <button class="day-btn" onclick="selectDay(5)">Day 5</button>
+                </div>
+
+                <form id="questionsForm" onsubmit="saveQuestions(event)">
+                    <div class="question-card">
+                        <h3>Question 1 (Auto-graded)</h3>
+                        <div class="form-group">
+                            <label>Question Text:</label>
+                            <textarea id="q1_text" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Answer (integers only):</label>
+                            <input type="text" id="q1_answer" pattern="[0-9\s\-]+" required placeholder="e.g., 42">
+                        </div>
+                    </div>
+
+                    <div class="question-card">
+                        <h3>Question 2 (Auto-graded)</h3>
+                        <div class="form-group">
+                            <label>Question Text:</label>
+                            <textarea id="q2_text" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Answer (integers only):</label>
+                            <input type="text" id="q2_answer" pattern="[0-9\s\-]+" required placeholder="e.g., 42">
+                        </div>
+                    </div>
+
+                    <div class="question-card">
+                        <h3>Question 3 (Manually graded)</h3>
+                        <div class="form-group">
+                            <label>Question Text:</label>
+                            <textarea id="q3_text" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Reference Answer:</label>
+                            <input type="text" id="q3_answer" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-full">Save Questions</button>
+                </form>
+            </div>
+
+            <div id="scheduleTab" class="tab-content">
+                <h2 style="margin-bottom: 25px; color: #333;">Set Test Schedule</h2>
+                <p style="margin-bottom: 30px; color: #666;">Set when each day's test becomes available</p>
+                
+                <form id="scheduleForm" onsubmit="saveSchedule(event)">
+                    <div class="question-card">
+                        <h3>Day 1</h3>
+                        <div class="form-group">
+                            <label>Opens at:</label>
+                            <input type="datetime-local" id="day1_open" required>
+                        </div>
+                    </div>
+                    <div class="question-card">
+                        <h3>Day 2</h3>
+                        <div class="form-group">
+                            <label>Opens at:</label>
+                            <input type="datetime-local" id="day2_open" required>
+                        </div>
+                    </div>
+                    <div class="question-card">
+                        <h3>Day 3</h3>
+                        <div class="form-group">
+                            <label>Opens at:</label>
+                            <input type="datetime-local" id="day3_open" required>
+                        </div>
+                    </div>
+                    <div class="question-card">
+                        <h3>Day 4</h3>
+                        <div class="form-group">
+                            <label>Opens at:</label>
+                            <input type="datetime-local" id="day4_open" required>
+                        </div>
+                    </div>
+                    <div class="question-card">
+                        <h3>Day 5</h3>
+                        <div class="form-group">
+                            <label>Opens at:</label>
+                            <input type="datetime-local" id="day5_open" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-full">Save Schedule</button>
+                </form>
+            </div>
+
+            <div id="submissionsTab" class="tab-content">
+                <h2 style="margin-bottom: 25px; color: #333;">Student Submissions</h2>
+                
+                <div class="filter-bar">
+                    <select id="filterDay" onchange="filterSubmissions()">
+                        <option value="">All Days</option>
+                        <option value="1">Day 1</option>
+                        <option value="2">Day 2</option>
+                        <option value="3">Day 3</option>
+                        <option value="4">Day 4</option>
+                        <option value="5">Day 5</option>
+                    </select>
+                    <select id="filterStudent" onchange="filterSubmissions()">
+                        <option value="">All Students</option>
+                    </select>
+                    <button class="btn" onclick="refreshSubmissions()">Refresh</button>
+                </div>
+
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Day</th>
+                                <th>Q1 Time</th>
+                                <th>Q2 Time</th>
+                                <th>Q3 Time</th>
+                                <th>Total</th>
+                                <th>Q1</th>
+                                <th>Q2</th>
+                                <th>Exits</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="submissionsBody">
+                            <tr>
+                                <td colspan="10" style="text-align: center; padding: 40px; color: #999;">
+                                    No submissions yet
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="settingsTab" class="tab-content">
+                <h2 style="margin-bottom: 25px; color: #333;">System Settings</h2>
+                
+                <form id="settingsForm" onsubmit="saveSettings(event)">
+                    <div class="question-card">
+                        <h3>Email Configuration</h3>
+                        <div class="form-group">
+                            <label>Admin Email:</label>
+                            <input type="email" id="adminEmail" required>
+                        </div>
+                    </div>
+                    <div class="question-card">
+                        <h3>Test Settings</h3>
+                        <div class="form-group">
+                            <label>Test Duration (minutes):</label>
+                            <input type="number" id="testDuration" min="1" value="120" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Upload Time (minutes):</label>
+                            <input type="number" id="uploadTime" min="1" value="30" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-full">Save Settings</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="submissionModal" class="modal" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <span class="close-modal" onclick="closeModal()">&times;</span>
+                <h2>Submission Details</h2>
+            </div>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
+        
+        let currentDay = 1;
+        let allSubmissions = [];
+
+        window.addEventListener('load', async () => {
+            await loadQuestions(1);
+            await loadSchedule();
+            await loadSettings();
+        });
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName + 'Tab').classList.add('active');
+
+            if (tabName === 'submissions') {
+                loadSubmissions();
+            }
+        }
+
+        async function selectDay(day) {
+            currentDay = day;
+            document.querySelectorAll('.day-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            await loadQuestions(day);
+        }
+
+        async function loadQuestions(day) {
+            try {
+                const res = await fetch(SCRIPT_URL + `?action=getQuestions&day=${day}`);
+                const data = await res.json();
+                
+                if (!data.error) {
+                    document.getElementById('q1_text').value = data.q1_text || '';
+                    document.getElementById('q1_answer').value = data.q1_answer || '';
+                    document.getElementById('q2_text').value = data.q2_text || '';
+                    document.getElementById('q2_answer').value = data.q2_answer || '';
+                    document.getElementById('q3_text').value = data.q3_text || '';
+                    document.getElementById('q3_answer').value = data.q3_answer || '';
+                } else {
+                    document.getElementById('q1_text').value = '';
+                    document.getElementById('q1_answer').value = '';
+                    document.getElementById('q2_text').value = '';
+                    document.getElementById('q2_answer').value = '';
+                    document.getElementById('q3_text').value = '';
+                    document.getElementById('q3_answer').value = '';
+                }
+            } catch (error) {
+                showMessage('Failed to load questions', 'error');
+            }
+        }
+
+        async function saveQuestions(e) {
+            e.preventDefault();
+            
+            try {
+                const data = {
+                    action: 'saveQuestions',
+                    day: currentDay,
+                    q1_text: document.getElementById('q1_text').value,
+                    q1_answer: document.getElementById('q1_answer').value.replace(/\s/g, ''),
+                    q2_text: document.getElementById('q2_text').value,
+                    q2_answer: document.getElementById('q2_answer').value.replace(/\s/g, ''),
+                    q3_text: document.getElementById('q3_text').value,
+                    q3_answer: document.getElementById('q3_answer').value
+                };
+
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(data)
+                });
+                
+                showMessage(`Questions for Day ${currentDay} saved!`, 'success');
+            } catch (error) {
+                showMessage('Failed to save questions', 'error');
+            }
+        }
+
+        async function loadSchedule() {
+            try {
+                const res = await fetch(SCRIPT_URL + '?action=getSchedule');
+                const data = await res.json();
+                
+                for (let i = 1; i <= 5; i++) {
+                    if (data[`day${i}`]) {
+                        const date = new Date(data[`day${i}`]);
+                        const localDateTime = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+                            .toISOString().slice(0, 16);
+                        document.getElementById(`day${i}_open`).value = localDateTime;
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading schedule');
+            }
+        }
+
+        async function saveSchedule(e) {
+            e.preventDefault();
+            
+            try {
+                const data = {action: 'saveSchedule'};
+                for (let i = 1; i <= 5; i++) {
+                    const val = document.getElementById(`day${i}_open`).value;
+                    if (val) data[`day${i}`] = new Date(val).toISOString();
+                }
+
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(data)
+                });
+                
+                showMessage('Schedule saved!', 'success');
+            } catch (error) {
+                showMessage('Failed to save schedule', 'error');
+            }
+        }
+
+        async function loadSettings() {
+            try {
+                const res = await fetch(SCRIPT_URL + '?action=getSettings');
+                const data = await res.json();
+                
+                document.getElementById('adminEmail').value = data['Admin Email'] || '';
+                document.getElementById('testDuration').value = data['Test Duration'] || 120;
+                document.getElementById('uploadTime').value = data['Upload Time'] || 30;
+            } catch (error) {
+                console.error('Error loading settings');
+            }
+        }
+
+        async function saveSettings(e) {
+            e.preventDefault();
+            
+            try {
+                const data = {
+                    action: 'saveSettings',
+                    'Admin Email': document.getElementById('adminEmail').value,
+                    'Test Duration': parseInt(document.getElementById('testDuration').value),
+                    'Upload Time': parseInt(document.getElementById('uploadTime').value)
+                };
+
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(data)
+                });
+                
+                showMessage('Settings saved!', 'success');
+            } catch (error) {
+                showMessage('Failed to save settings', 'error');
+            }
+        }
+
+        async function loadSubmissions() {
+            try {
+                const res = await fetch(SCRIPT_URL + '?action=getSubmissions');
+                allSubmissions = await res.json();
+                
+                const students = new Set(allSubmissions.map(s => s.studentEmail));
+                const studentFilter = document.getElementById('filterStudent');
+                studentFilter.innerHTML = '<option value="">All Students</option>';
+                students.forEach(email => {
+                    const option = document.createElement('option');
+                    option.value = email;
+                    option.textContent = email;
+                    studentFilter.appendChild(option);
+                });
+
+                filterSubmissions();
+            } catch (error) {
+                showMessage('Failed to load submissions', 'error');
+            }
+        }
+
+        function filterSubmissions() {
+            const dayFilter = document.getElementById('filterDay').value;
+            const studentFilter = document.getElementById('filterStudent').value;
+
+            let filtered = allSubmissions;
+
+            if (dayFilter) filtered = filtered.filter(s => s.day == dayFilter);
+            if (studentFilter) filtered = filtered.filter(s => s.studentEmail === studentFilter);
+
+            displaySubmissions(filtered);
+        }
+
+        function displaySubmissions(submissions) {
+            const tbody = document.getElementById('submissionsBody');
+            
+            if (submissions.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 40px; color: #999;">No submissions</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = submissions.map((sub, idx) => `
+                <tr>
+                    <td>${sub.studentName}</td>
+                    <td>Day ${sub.day}</td>
+                    <td>${formatTime(sub.q1_time)}</td>
+                    <td>${formatTime(sub.q2_time)}</td>
+                    <td>${formatTime(sub.q3_time)}</td>
+                    <td><strong>${formatTime(sub.totalTime)}</strong></td>
+                    <td><span class="badge ${sub.q1_correct ? 'badge-success' : 'badge-error'}">${sub.q1_correct ? '✓' : '✗'}</span></td>
+                    <td><span class="badge ${sub.q2_correct ? 'badge-success' : 'badge-error'}">${sub.q2_correct ? '✓' : '✗'}</span></td>
+                    <td><span class="badge ${sub.exitCount > 0 ? 'badge-warning' : 'badge-success'}">${sub.exitCount}</span></td>
+                    <td><button class="view-btn" onclick="viewSubmission(${idx})">View</button></td>
+                </tr>
+            `).join('');
+        }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}m ${secs}s`;
+        }
+
+        function viewSubmission(idx) {
+            const sub = allSubmissions[idx];
+            const modalBody = document.getElementById('modalBody');
+            
+            modalBody.innerHTML = `
+                <div class="detail-row">
+                    <span class="detail-label">Student:</span>
+                    <span class="detail-value">${sub.studentName}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Email:</span>
+                    <span class="detail-value">${sub.studentEmail}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Day:</span>
+                    <span class="detail-value">Day ${sub.day}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Submitted:</span>
+                    <span class="detail-value">${new Date(sub.timestamp).toLocaleString()}</span>
+                </div>
+                <hr style="margin: 20px 0;">
+                <h3 style="color: #667eea; margin-bottom: 15px;">Question 1</h3>
+                <div class="detail-row">
+                    <span class="detail-label">Time:</span>
+                    <span class="detail-value">${formatTime(sub.q1_time)}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Answer:</span>
+                    <span class="detail-value">${sub.q1_answer}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Result:</span>
+                    <span class="badge ${sub.q1_correct ? 'badge-success' : 'badge-error'}">${sub.q1_correct ? 'Correct' : 'Incorrect'}</span>
+                </div>
+                <hr style="margin: 20px 0;">
+                <h3 style="color: #667eea; margin-bottom: 15px;">Question 2</h3>
+                <div class="detail-row">
+                    <span class="detail-label">Time:</span>
+                    <span class="detail-value">${formatTime(sub.q2_time)}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Answer:</span>
+                    <span class="detail-value">${sub.q2_answer}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Result:</span>
+                    <span class="badge ${sub.q2_correct ? 'badge-success' : 'badge-error'}">${sub.q2_correct ? 'Correct' : 'Incorrect'}</span>
+                </div>
+                <hr style="margin: 20px 0;">
+                <h3 style="color: #667eea; margin-bottom: 15px;">Question 3</h3>
+                <div class="detail-row">
+                    <span class="detail-label">Time:</span>
+                    <span class="detail-value">${formatTime(sub.q3_time)}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Answer:</span>
+                    <span class="detail-value" style="white-space: pre-wrap;">${sub.q3_answer}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Work:</span>
+                    <span class="detail-value">${sub.workFileURL ? 
+                        `<a href="${sub.workFileURL}" target="_blank" class="btn" style="display: inline-block; padding: 8px 16px; margin-top: 10px;">Download</a>` : 
+                        '<span class="badge badge-warning">No File</span>'}</span>
+                </div>
+                <hr style="margin: 20px 0;">
+                <h3 style="color: #f44336; margin-bottom: 15px;">Security Logs</h3>
+                <div class="detail-row">
+                    <span class="detail-label">Total Exits:</span>
+                    <span class="badge ${sub.exitCount > 0 ? 'badge-warning' : 'badge-success'}">${sub.exitCount}</span>
+                </div>
+                ${sub.exitLogs && sub.exitLogs.length > 0 ? `
+                    <div style="margin-top: 15px;">
+                        <strong>Details:</strong>
+                        ${sub.exitLogs.map(log => `
+                            <div class="log-entry">
+                                <strong>${new Date(log.time).toLocaleTimeString()}</strong>: ${log.reason}
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : '<p style="color: #4caf50; margin-top: 10px;">No violations</p>'}
+            `;
+
+            document.getElementById('submissionModal').style.display = 'block';
+        }
+
+        function closeModal(event) {
+            if (!event || event.target.id === 'submissionModal') {
+                document.getElementById('submissionModal').style.display = 'none';
+            }
+        }
+
+        function refreshSubmissions() {
+            loadSubmissions();
+        }
+
+        function showMessage(message, type) {
+            const container = document.getElementById('messageContainer');
+            const className = type === 'success' ? 'success-msg' : 'error-msg';
+            container.innerHTML = `<div class="${className}">${message}</div>`;
+            setTimeout(() => container.innerHTML = '', 5000);
+        }
+    </script>
+</body>
+</html>
