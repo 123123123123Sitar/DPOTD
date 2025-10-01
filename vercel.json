@@ -1,20 +1,7 @@
 {
-  "routes": [
-    {
-      "src": "/student",
-      "dest": "/student.html"
-    },
-    {
-      "src": "/admin",
-      "dest": "/admin.html"
-    },
-    {
-      "src": "/student.html",
-      "dest": "/student.html"
-    },
-    {
-      "src": "/admin.html",
-      "dest": "/admin.html"
-    }
+  "rewrites": [
+    { "source": "/", "destination": "/student.html" },
+    { "source": "/student", "destination": "/student.html" },
+    { "source": "/admin", "destination": "/admin.html" }
   ]
 }
