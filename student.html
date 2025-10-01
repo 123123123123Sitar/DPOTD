@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Math Club Test</title>
+    <title>Math Club Daily Challenge</title>
     <style>
         * {
             margin: 0;
@@ -39,6 +39,8 @@
             border-radius: 24px;
             box-shadow: 0 25px 80px rgba(0,0,0,0.4);
             padding: 50px;
+            max-height: calc(100vh - 80px);
+            overflow-y: auto;
         }
         .timer {
             position: fixed;
@@ -177,42 +179,20 @@
             line-height: 1.7;
             color: #555;
         }
-        .file-drop {
-            border: 3px dashed #667eea;
-            padding: 50px;
-            text-align: center;
-            border-radius: 16px;
-            cursor: pointer;
-            transition: all 0.3s;
-            background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%);
-        }
-        .file-drop:hover {
-            background: linear-gradient(135deg, #e8ebff 0%, #dde1ff 100%);
-            border-color: #764ba2;
-        }
-        .file-drop.dragover {
-            background: linear-gradient(135deg, #d8dbff 0%, #cdd1ff 100%);
-            border-color: #764ba2;
-            transform: scale(1.02);
-        }
-        .upload-icon {
-            font-size: 60px;
-            margin-bottom: 20px;
-        }
-        .file-info {
+        .info-box {
+            background: #e3f2fd;
+            border: 2px solid #2196f3;
+            padding: 20px;
+            border-radius: 12px;
             margin-top: 20px;
-            padding: 15px;
-            background: white;
-            border-radius: 10px;
-            display: none;
-            border: 2px solid #4caf50;
         }
-        .info-text {
-            color: #666;
-            font-size: 14px;
-            margin-top: 12px;
-            text-align: center;
-            font-style: italic;
+        .info-box h3 {
+            color: #1976d2;
+            margin-bottom: 10px;
+        }
+        .info-box p {
+            color: #424242;
+            line-height: 1.6;
         }
     </style>
 </head>
@@ -273,48 +253,26 @@
         </div>
         
         <div class="question-box">
-            <div class="question-number">Question 3 (Manually graded - work upload required)</div>
+            <div class="question-number">Question 3 (Manually graded)</div>
             <div class="question-text" id="q3Text"></div>
             <div class="form-group">
                 <label>Your Answer:</label>
                 <textarea id="q3Answer" required placeholder="Write your answer here..."></textarea>
             </div>
-            <p class="info-text">You will upload your work for this question after completing the test.</p>
+            <div class="info-box">
+                <h3>📧 Work Submission Required</h3>
+                <p>After completing this test, you must email your work for Question 3 to:</p>
+                <p style="font-size: 18px; font-weight: bold; color: #1976d2; margin-top: 10px;">dtechmathclub@gmail.com</p>
+                <p style="margin-top: 10px;">Include your name, Day #, and attach your work as PDF/image.</p>
+            </div>
         </div>
         
         <button class="btn" onclick="submitTest()">Submit Test</button>
-    </div>
-    
-    <div class="container hidden" id="uploadScreen">
-        <h1>Upload Your Work</h1>
-        <p style="text-align: center; margin-bottom: 35px; color: #666; font-size: 16px;">
-            You have <span id="uploadTimer" style="color: #667eea; font-weight: bold; font-size: 20px;">30:00</span> to upload your work for Question 3.
-        </p>
-        
-        <div class="file-drop" id="fileDrop">
-            <div class="upload-icon">📎</div>
-            <h3 style="margin-bottom: 15px;">Drag & Drop Your Work Here</h3>
-            <p style="color: #666;">or click to browse</p>
-            <p class="info-text" style="margin-top: 15px;">
-                Accepted: PDF, PNG, JPG, JPEG (Max 10MB)
-            </p>
-            <input type="file" id="fileInput" accept=".pdf,.png,.jpg,.jpeg" style="display: none;">
-        </div>
-        
-        <div class="file-info" id="fileInfo">
-            <strong>Selected file:</strong> <span id="fileName"></span>
-        </div>
-        
-        <button class="btn" id="uploadBtn" style="margin-top: 25px;" disabled onclick="uploadAndFinalize()">Upload & Finish</button>
-        <button class="btn" onclick="skipUpload()" style="margin-top: 15px; background: #999;">Skip Upload (Not Recommended)</button>
     </div>
 
     <script>
         // REPLACE THIS WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
         const SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
-        
-        const CLOUDINARY_UPLOAD_PRESET = 'YOUR_PRESET'; // Replace with your Cloudinary preset
-        const CLOUDINARY_CLOUD_NAME = 'YOUR_CLOUD_NAME'; // Replace with your cloud name
 
         const state = {
             studentName: '',
@@ -324,21 +282,19 @@
             q1StartTime: null,
             q2StartTime: null,
             q3StartTime: null,
-            q1Time: 0,
-            q2Time: 0,
-            q3Time: 0,
+            currentQuestion: 1,
             exitCount: 0,
             exitLogs: [],
             timerInterval: null,
-            uploadTimerInterval: null,
             testDuration: 120 * 60,
-            uploadDuration: 30 * 60,
-            selectedFile: null,
             questionsData: null,
-            settings: null
+            settings: null,
+            warningShown: false,
+            isSubmitting: false,
+            monitoringStarted: false
         };
 
-        // Security
+        // Security - Prevent screenshots
         document.addEventListener('keyup', (e) => {
             if (e.key === 'PrintScreen') {
                 navigator.clipboard.writeText('');
@@ -346,6 +302,7 @@
             }
         });
         
+        // Prevent dev tools and shortcuts
         document.addEventListener('keydown', (e) => {
             if (e.keyCode === 123 || 
                 (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) ||
@@ -358,6 +315,7 @@
             }
         });
         
+        // Prevent right-click
         document.addEventListener('contextmenu', e => {
             e.preventDefault();
             logExit('Right-click attempt');
@@ -366,11 +324,12 @@
         window.addEventListener('load', async () => {
             try {
                 const settingsRes = await fetch(SCRIPT_URL + '?action=getSettings');
+                if (!settingsRes.ok) throw new Error('Failed to fetch settings');
                 state.settings = await settingsRes.json();
-                state.testDuration = (state.settings.testDuration || 120) * 60;
-                state.uploadDuration = (state.settings.uploadTime || 30) * 60;
+                state.testDuration = (state.settings['Test Duration'] || 120) * 60;
 
                 const scheduleRes = await fetch(SCRIPT_URL + '?action=getSchedule');
+                if (!scheduleRes.ok) throw new Error('Failed to fetch schedule');
                 const schedule = await scheduleRes.json();
                 
                 const select = document.getElementById('daySelect');
@@ -408,8 +367,16 @@
                 return;
             }
 
+            // Validate email format
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(state.studentEmail)) {
+                showError('Please enter a valid email address');
+                return;
+            }
+
             try {
                 const checkRes = await fetch(SCRIPT_URL + `?action=checkSubmission&email=${encodeURIComponent(state.studentEmail)}&day=${state.day}`);
+                if (!checkRes.ok) throw new Error('Failed to check submission status');
                 const checkData = await checkRes.json();
                 
                 if (checkData.exists) {
@@ -418,9 +385,10 @@
                 }
 
                 const questionsRes = await fetch(SCRIPT_URL + `?action=getQuestions&day=${state.day}`);
+                if (!questionsRes.ok) throw new Error('Failed to fetch questions');
                 state.questionsData = await questionsRes.json();
                 
-                if (state.questionsData.error) {
+                if (state.questionsData.error || !state.questionsData.q1_text || !state.questionsData.q1_answer) {
                     showError('Questions not available for this day yet.');
                     return;
                 }
@@ -441,7 +409,8 @@
                     startTimer();
                     monitorFullscreen();
                     trackQuestionFocus();
-                }).catch(() => {
+                }).catch((err) => {
+                    console.error('Fullscreen error:', err);
                     showError('You must allow fullscreen mode to take the test.');
                 });
             } catch (error) {
@@ -452,19 +421,21 @@
 
         function trackQuestionFocus() {
             document.getElementById('q1Answer').addEventListener('focus', () => {
-                if (!state.q1StartTime) state.q1StartTime = Date.now();
+                if (state.currentQuestion === 1 && !state.q1StartTime) {
+                    state.q1StartTime = Date.now();
+                }
             });
             
             document.getElementById('q2Answer').addEventListener('focus', () => {
-                if (!state.q2StartTime) {
-                    state.q1Time = Math.floor((Date.now() - state.q1StartTime) / 1000);
+                if (state.currentQuestion === 1) {
+                    state.currentQuestion = 2;
                     state.q2StartTime = Date.now();
                 }
             });
             
             document.getElementById('q3Answer').addEventListener('focus', () => {
-                if (!state.q3StartTime) {
-                    state.q2Time = Math.floor((Date.now() - state.q2StartTime) / 1000);
+                if (state.currentQuestion === 2) {
+                    state.currentQuestion = 3;
                     state.q3StartTime = Date.now();
                 }
             });
@@ -497,35 +468,37 @@
         }
 
         function monitorFullscreen() {
+            if (state.monitoringStarted) return;
+            state.monitoringStarted = true;
+            
             document.addEventListener('fullscreenchange', handleFullscreenChange);
             document.addEventListener('visibilitychange', handleVisibilityChange);
             window.addEventListener('blur', handleWindowBlur);
         }
 
         function handleFullscreenChange() {
-            if (!document.fullscreenElement && !document.getElementById('uploadScreen').classList.contains('hidden')) {
-                return;
-            }
-            
-            if (!document.fullscreenElement && !document.getElementById('testScreen').classList.contains('hidden')) {
+            if (!document.fullscreenElement && !document.getElementById('testScreen').classList.contains('hidden') && !state.isSubmitting) {
                 logExit('Exited fullscreen mode');
-                document.getElementById('exitWarning').style.display = 'block';
-                setTimeout(() => {
-                    document.documentElement.requestFullscreen().catch(() => {
-                        endTest('You exited fullscreen mode. Test ended.');
-                    });
-                }, 100);
+                if (!state.warningShown) {
+                    state.warningShown = true;
+                    document.getElementById('exitWarning').style.display = 'block';
+                    setTimeout(() => {
+                        document.documentElement.requestFullscreen().catch(() => {
+                            endTest('You exited fullscreen mode. Test ended.');
+                        });
+                    }, 100);
+                }
             }
         }
 
         function handleVisibilityChange() {
-            if (document.hidden && !document.getElementById('testScreen').classList.contains('hidden')) {
+            if (document.hidden && !document.getElementById('testScreen').classList.contains('hidden') && !state.isSubmitting) {
                 logExit('Switched tabs or minimized window');
             }
         }
 
         function handleWindowBlur() {
-            if (!document.getElementById('testScreen').classList.contains('hidden')) {
+            if (!document.getElementById('testScreen').classList.contains('hidden') && !state.isSubmitting) {
                 logExit('Window lost focus');
             }
         }
@@ -540,132 +513,61 @@
         }
 
         function dismissWarning() {
+            state.warningShown = false;
             document.getElementById('exitWarning').style.display = 'none';
         }
 
-        function submitTest() {
-            const now = Date.now();
-            if (!state.q2StartTime) {
-                state.q1Time = Math.floor((now - state.q1StartTime) / 1000);
-            } else if (!state.q3StartTime) {
-                state.q2Time = Math.floor((now - state.q2StartTime) / 1000);
-            } else {
-                state.q3Time = Math.floor((now - state.q3StartTime) / 1000);
+        async function submitTest() {
+            if (state.isSubmitting) return;
+            
+            const q1Val = document.getElementById('q1Answer').value.trim();
+            const q2Val = document.getElementById('q2Answer').value.trim();
+            const q3Val = document.getElementById('q3Answer').value.trim();
+            
+            if (!q1Val || !q2Val || !q3Val) {
+                alert('Please answer all questions before submitting.');
+                return;
             }
             
-            clearInterval(state.timerInterval);
-            document.getElementById('testScreen').classList.add('hidden');
-            document.getElementById('uploadScreen').classList.remove('hidden');
-            startUploadTimer();
+            // Validate integer inputs
+            const intRegex = /^-?\d+$/;
+            if (!intRegex.test(q1Val.replace(/\s/g, ''))) {
+                alert('Question 1 must be an integer.');
+                return;
+            }
+            if (!intRegex.test(q2Val.replace(/\s/g, ''))) {
+                alert('Question 2 must be an integer.');
+                return;
+            }
+            
+            state.isSubmitting = true;
+            await finalizeSubmission();
         }
 
         function autoSubmit() {
             if (!document.getElementById('q1Answer').value) document.getElementById('q1Answer').value = '0';
             if (!document.getElementById('q2Answer').value) document.getElementById('q2Answer').value = '0';
             if (!document.getElementById('q3Answer').value) document.getElementById('q3Answer').value = 'No answer provided';
-            submitTest();
-        }
-
-        function startUploadTimer() {
-            let timeLeft = state.uploadDuration;
-            const timerEl = document.getElementById('uploadTimer');
-            
-            state.uploadTimerInterval = setInterval(() => {
-                timeLeft--;
-                const m = Math.floor(timeLeft / 60);
-                const s = timeLeft % 60;
-                timerEl.textContent = `${pad(m)}:${pad(s)}`;
-                
-                if (timeLeft <= 0) {
-                    clearInterval(state.uploadTimerInterval);
-                    finalizeSubmission();
-                }
-            }, 1000);
-        }
-
-        const fileDrop = document.getElementById('fileDrop');
-        const fileInput = document.getElementById('fileInput');
-        
-        fileDrop.addEventListener('click', () => fileInput.click());
-        fileDrop.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            fileDrop.classList.add('dragover');
-        });
-        fileDrop.addEventListener('dragleave', () => fileDrop.classList.remove('dragover'));
-        fileDrop.addEventListener('drop', (e) => {
-            e.preventDefault();
-            fileDrop.classList.remove('dragover');
-            handleFile(e.dataTransfer.files[0]);
-        });
-        fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
-        
-        function handleFile(file) {
-            if (!file) return;
-            const validTypes = ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg'];
-            const maxSize = 10 * 1024 * 1024;
-            
-            if (!validTypes.includes(file.type)) {
-                alert('Please upload a PDF, PNG, or JPG file.');
-                return;
-            }
-            if (file.size > maxSize) {
-                alert('File size must be less than 10MB.');
-                return;
-            }
-            
-            state.selectedFile = file;
-            document.getElementById('fileName').textContent = file.name;
-            document.getElementById('fileInfo').style.display = 'block';
-            document.getElementById('uploadBtn').disabled = false;
-        }
-
-        function skipUpload() {
-            if (confirm('Are you sure you want to skip uploading your work? This may affect your grade for Question 3.')) {
-                finalizeSubmission();
-            }
-        }
-
-        async function uploadAndFinalize() {
-            if (!state.selectedFile) {
-                alert('Please select a file first.');
-                return;
-            }
-            
-            document.getElementById('uploadBtn').disabled = true;
-            document.getElementById('uploadBtn').textContent = 'Uploading...';
-            
-            try {
-                const formData = new FormData();
-                formData.append('file', state.selectedFile);
-                formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-                
-                const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/upload`, {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                const data = await response.json();
-                state.workFileURL = data.secure_url;
-                
-                await finalizeSubmission();
-            } catch (error) {
-                console.error('Upload error:', error);
-                alert('Failed to upload file. Please try again.');
-                document.getElementById('uploadBtn').disabled = false;
-                document.getElementById('uploadBtn').textContent = 'Upload & Finish';
-            }
+            state.isSubmitting = true;
+            finalizeSubmission();
         }
 
         async function finalizeSubmission() {
-            clearInterval(state.uploadTimerInterval);
+            clearInterval(state.timerInterval);
             
+            const now = Date.now();
             const q1Answer = document.getElementById('q1Answer').value.replace(/\s/g, '');
             const q2Answer = document.getElementById('q2Answer').value.replace(/\s/g, '');
             const q3Answer = document.getElementById('q3Answer').value;
             
-            const q1Correct = q1Answer === state.questionsData.q1_answer.replace(/\s/g, '');
-            const q2Correct = q2Answer === state.questionsData.q2_answer.replace(/\s/g, '');
-            const totalTime = Math.floor((Date.now() - state.startTime) / 1000);
+            // Calculate individual question times
+            const q1Time = state.q2StartTime ? Math.floor((state.q2StartTime - state.q1StartTime) / 1000) : Math.floor((now - state.q1StartTime) / 1000);
+            const q2Time = state.q3StartTime && state.q2StartTime ? Math.floor((state.q3StartTime - state.q2StartTime) / 1000) : (state.q2StartTime ? Math.floor((now - state.q2StartTime) / 1000) : 0);
+            const q3Time = state.q3StartTime ? Math.floor((now - state.q3StartTime) / 1000) : 0;
+            
+            const q1Correct = q1Answer === (state.questionsData.q1_answer || '').replace(/\s/g, '');
+            const q2Correct = q2Answer === (state.questionsData.q2_answer || '').replace(/\s/g, '');
+            const totalTime = Math.floor((now - state.startTime) / 1000);
             
             const submissionData = {
                 studentName: state.studentName,
@@ -676,34 +578,38 @@
                 q3_answer: q3Answer,
                 q1_correct: q1Correct,
                 q2_correct: q2Correct,
-                q1_time: state.q1Time,
-                q2_time: state.q2Time,
-                q3_time: state.q3Time,
+                q1_time: q1Time,
+                q2_time: q2Time,
+                q3_time: q3Time,
                 totalTime: totalTime,
                 exitCount: state.exitCount,
-                exitLogs: state.exitLogs,
-                workFileURL: state.workFileURL || ''
+                exitLogs: JSON.stringify(state.exitLogs)
             };
             
             try {
-                await fetch(SCRIPT_URL, {
+                const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({action: 'submitTest', ...submissionData})
                 });
                 
+                if (!response.ok) throw new Error('Submission failed');
+                
                 if (document.fullscreenElement) await document.exitFullscreen();
                 
-                alert(`Test submitted successfully!\n\nQ1: ${q1Correct ? 'Correct ✓' : 'Incorrect ✗'}\nQ2: ${q2Correct ? 'Correct ✓' : 'Incorrect ✗'}\nQ3: Will be graded manually\n\nTotal time: ${Math.floor(totalTime / 60)} minutes ${totalTime % 60} seconds\n\nYour submission has been recorded.`);
+                alert(`Test submitted successfully!\n\nQ1: ${q1Correct ? 'Correct ✓' : 'Incorrect ✗'}\nQ2: ${q2Correct ? 'Correct ✓' : 'Incorrect ✗'}\nQ3: Will be graded manually\n\nTotal time: ${Math.floor(totalTime / 60)} minutes ${totalTime % 60} seconds\n\n⚠️ IMPORTANT: Please email your work for Question 3 to:\ndtechmathclub@gmail.com\n\nInclude: Your name, Day ${state.day}, and your work as PDF/image attachment.`);
                 
                 window.location.reload();
             } catch (error) {
                 console.error('Submission error:', error);
+                state.isSubmitting = false;
                 alert('Failed to submit test. Please contact the administrator.');
             }
         }
 
         function endTest(message) {
+            clearInterval(state.timerInterval);
+            state.isSubmitting = true;
             if (document.fullscreenElement) document.exitFullscreen();
             alert(message);
             window.location.reload();
