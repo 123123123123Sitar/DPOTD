@@ -3,576 +3,353 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Math Club Daily Challenge</title>
+    <title>Math Club - Student Portal</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            user-select: none;
         }
+        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            overflow: hidden;
+            padding: 20px;
         }
-        .watermark {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) rotate(-45deg);
-            font-size: 80px;
-            opacity: 0.03;
-            pointer-events: none;
-            z-index: 9999;
-            color: white;
-            font-weight: bold;
-            white-space: nowrap;
-        }
+        
         .container {
-            max-width: 900px;
-            margin: 40px auto;
+            max-width: 800px;
+            margin: 0 auto;
             background: white;
-            border-radius: 24px;
-            box-shadow: 0 25px 80px rgba(0,0,0,0.4);
-            padding: 50px;
-            max-height: calc(100vh - 80px);
-            overflow-y: auto;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
+        
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            display: block;
+        }
+        
+        .question-section {
+            display: none;
+            margin-top: 30px;
+        }
+        
+        .question-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .question-box h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
         .timer {
             position: fixed;
             top: 20px;
             right: 20px;
             background: white;
-            padding: 20px 35px;
-            border-radius: 16px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
-            font-size: 28px;
-            font-weight: bold;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-size: 18px;
+            font-weight: 600;
             color: #667eea;
             z-index: 1000;
         }
-        .timer.warning { background: #ff9800; color: white; }
-        .timer.critical { background: #f44336; color: white; animation: pulse 0.5s infinite; }
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.08); }
-        }
-        h1 {
-            color: #667eea;
-            margin-bottom: 35px;
-            text-align: center;
-            font-size: 2.5em;
-        }
-        .form-group {
-            margin-bottom: 30px;
-        }
-        label {
+
+        #studentForm {
             display: block;
-            margin-bottom: 10px;
-            font-weight: 600;
-            color: #333;
-            font-size: 15px;
-        }
-        input, textarea, select {
-            width: 100%;
-            padding: 14px;
-            border: 2px solid #ddd;
-            border-radius: 10px;
-            font-size: 16px;
-            font-family: inherit;
-            transition: border 0.3s;
-        }
-        input:focus, textarea:focus, select:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        textarea {
-            min-height: 120px;
-            resize: vertical;
-        }
-        .btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 18px 50px;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 18px;
-            font-weight: 600;
-            width: 100%;
-            transition: all 0.3s;
-        }
-        .btn:hover:not(:disabled) {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 30px rgba(102, 126, 234, 0.5);
-        }
-        .btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: none;
-        }
-        .hidden { display: none !important; }
-        .question-box {
-            background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%);
-            padding: 35px;
-            border-radius: 16px;
-            margin-bottom: 30px;
-            border-left: 6px solid #667eea;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.1);
-        }
-        .question-number {
-            color: #667eea;
-            font-size: 22px;
-            font-weight: bold;
-            margin-bottom: 18px;
-        }
-        .question-text {
-            font-size: 18px;
-            line-height: 1.7;
-            margin-bottom: 25px;
-            color: #2d3748;
-            white-space: pre-wrap;
-        }
-        .notice {
-            background: #4caf50;
-            color: white;
-            padding: 24px;
-            border-radius: 12px;
-            margin-bottom: 25px;
-            text-align: center;
-            font-weight: 600;
-            font-size: 15px;
-        }
-        .error-message {
-            background: #f44336;
-            color: white;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        .warning-modal {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 45px;
-            border-radius: 20px;
-            box-shadow: 0 15px 60px rgba(0,0,0,0.4);
-            z-index: 10000;
-            display: none;
-            text-align: center;
-            max-width: 550px;
-        }
-        .warning-modal h2 {
-            color: #f44336;
-            margin-bottom: 25px;
-            font-size: 26px;
-        }
-        .warning-modal p {
-            margin-bottom: 25px;
-            line-height: 1.7;
-            color: #555;
-        }
-        .info-box {
-            background: #e3f2fd;
-            border: 2px solid #2196f3;
-            padding: 20px;
-            border-radius: 12px;
-            margin-top: 20px;
-        }
-        .info-box h3 {
-            color: #1976d2;
-            margin-bottom: 10px;
-        }
-        .info-box p {
-            color: #424242;
-            line-height: 1.6;
         }
     </style>
 </head>
 <body>
-    <div class="watermark" id="watermark"></div>
-    <div class="timer hidden" id="timer">02:00:00</div>
-    
-    <div class="warning-modal" id="exitWarning">
-        <h2>⚠️ Warning!</h2>
-        <p>You attempted to exit fullscreen or switch tabs. This has been logged.</p>
-        <p id="exitCount">Total violations: 0</p>
-        <p>Please stay in fullscreen mode for the duration of the test.</p>
-        <button class="btn" onclick="dismissWarning()">Return to Test</button>
+    <div class="container">
+        <h1>🧮 Math Club Daily Problem</h1>
+        <p class="subtitle">Student Portal</p>
+        
+        <div id="studentForm">
+            <div class="form-group">
+                <label>Your Name:</label>
+                <input type="text" id="studentName" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Your Email:</label>
+                <input type="email" id="studentEmail" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Select Day:</label>
+                <select id="daySelect">
+                    <option value="">Choose a day...</option>
+                    <option value="1">Day 1</option>
+                    <option value="2">Day 2</option>
+                    <option value="3">Day 3</option>
+                    <option value="4">Day 4</option>
+                    <option value="5">Day 5</option>
+                </select>
+            </div>
+            
+            <button class="btn" onclick="startTest()">Start Test</button>
+            <div id="startStatus" class="status"></div>
+        </div>
+        
+        <div id="questionSection" class="question-section">
+            <div class="timer" id="timer">Time: 0:00</div>
+            
+            <div class="question-box">
+                <h3>Question 1</h3>
+                <p id="q1Text"></p>
+                <input type="text" id="q1Answer" placeholder="Your answer">
+            </div>
+            
+            <div class="question-box">
+                <h3>Question 2</h3>
+                <p id="q2Text"></p>
+                <input type="text" id="q2Answer" placeholder="Your answer">
+            </div>
+            
+            <div class="question-box">
+                <h3>Question 3 (Proof/Explanation)</h3>
+                <p id="q3Text"></p>
+                <textarea id="q3Answer" rows="6" placeholder="Your detailed explanation"></textarea>
+            </div>
+            
+            <button class="btn" onclick="submitTest()">Submit Test</button>
+            <div id="submitStatus" class="status"></div>
+        </div>
     </div>
     
-    <div class="container" id="loginScreen">
-        <h1>Math Club Daily Challenge</h1>
-        <div id="errorContainer"></div>
-        <div class="form-group">
-            <label>Your Name:</label>
-            <input type="text" id="studentName" required>
-        </div>
-        <div class="form-group">
-            <label>Your Email:</label>
-            <input type="email" id="studentEmail" required>
-        </div>
-        <div class="form-group">
-            <label>Select Day:</label>
-            <select id="daySelect" required>
-                <option value="">-- Select a day --</option>
-            </select>
-        </div>
-        <div class="notice">
-            This test will run in fullscreen mode. You cannot exit without ending the test. All exit attempts will be logged.
-        </div>
-        <button class="btn" onclick="startTest()">Start Test</button>
-    </div>
-    
-    <div class="container hidden" id="testScreen">
-        <h1 id="testTitle">Day 1 Challenge</h1>
-        
-        <div class="question-box">
-            <div class="question-number">Question 1 (Auto-graded)</div>
-            <div class="question-text" id="q1Text"></div>
-            <div class="form-group">
-                <label>Your Answer (integers only):</label>
-                <input type="text" id="q1Answer" pattern="[0-9\s\-]+" required placeholder="e.g., 42">
-            </div>
-        </div>
-        
-        <div class="question-box">
-            <div class="question-number">Question 2 (Auto-graded)</div>
-            <div class="question-text" id="q2Text"></div>
-            <div class="form-group">
-                <label>Your Answer (integers only):</label>
-                <input type="text" id="q2Answer" pattern="[0-9\s\-]+" required placeholder="e.g., 42">
-            </div>
-        </div>
-        
-        <div class="question-box">
-            <div class="question-number">Question 3 (Manually graded)</div>
-            <div class="question-text" id="q3Text"></div>
-            <div class="form-group">
-                <label>Your Answer:</label>
-                <textarea id="q3Answer" required placeholder="Write your answer here..."></textarea>
-            </div>
-            <div class="info-box">
-                <h3>📧 Work Submission Required</h3>
-                <p>After completing this test, you must email your work for Question 3 to:</p>
-                <p style="font-size: 18px; font-weight: bold; color: #1976d2; margin-top: 10px;">dtechmathclub@gmail.com</p>
-                <p style="margin-top: 10px;">Include your name, Day #, and attach your work as PDF/image.</p>
-            </div>
-        </div>
-        
-        <button class="btn" onclick="submitTest()">Submit Test</button>
-    </div>
-
     <script>
-        // REPLACE THIS WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzxkGRgLvAMg4UhU-vWO21b7TbW2Ms-wJhCpA5rB0U0sE-ZNQ-eEBUaRfOV8sA0ag47/exec';
-
-        const state = {
-            studentName: '',
-            studentEmail: '',
-            day: 0,
-            startTime: null,
-            q1StartTime: null,
-            q2StartTime: null,
-            q3StartTime: null,
-            currentQuestion: 1,
-            exitCount: 0,
-            exitLogs: [],
-            timerInterval: null,
-            testDuration: 120 * 60,
-            questionsData: null,
-            settings: null,
-            warningShown: false,
-            isSubmitting: false,
-            monitoringStarted: false
-        };
-
-        // Security - Prevent screenshots
-        document.addEventListener('keyup', (e) => {
-            if (e.key === 'PrintScreen') {
-                navigator.clipboard.writeText('');
-                logExit('Screenshot attempt detected');
-            }
-        });
+        // REPLACE THIS WITH YOUR ACTUAL GOOGLE APPS SCRIPT WEB APP URL
+        const SCRIPT_URL = 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec';
         
-        // Prevent dev tools and shortcuts
-        document.addEventListener('keydown', (e) => {
-            if (e.keyCode === 123 || 
-                (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) ||
-                (e.ctrlKey && e.keyCode === 85) ||
-                (e.ctrlKey && e.keyCode === 83) ||
-                (e.ctrlKey && e.keyCode === 80)) {
-                e.preventDefault();
-                logExit('Dev tools attempt');
-                return false;
-            }
-        });
-        
-        // Prevent right-click
-        document.addEventListener('contextmenu', e => {
-            e.preventDefault();
-            logExit('Right-click attempt');
-        });
+        let startTime;
+        let timerInterval;
+        let questionsData;
+        let q1StartTime, q2StartTime, q3StartTime;
+        let exitCount = 0;
+        let exitLogs = [];
 
-        window.addEventListener('load', async () => {
-            try {
-                const settingsRes = await fetch(SCRIPT_URL + '?action=getSettings');
-                if (!settingsRes.ok) throw new Error('Failed to fetch settings');
-                state.settings = await settingsRes.json();
-                state.testDuration = (state.settings['Test Duration'] || 120) * 60;
-
-                const scheduleRes = await fetch(SCRIPT_URL + '?action=getSchedule');
-                if (!scheduleRes.ok) throw new Error('Failed to fetch schedule');
-                const schedule = await scheduleRes.json();
-                
-                const select = document.getElementById('daySelect');
-                const now = new Date();
-                
-                for (let i = 1; i <= 5; i++) {
-                    if (schedule[`day${i}`]) {
-                        const openTime = new Date(schedule[`day${i}`]);
-                        if (now >= openTime) {
-                            const option = document.createElement('option');
-                            option.value = i;
-                            option.textContent = `Day ${i}`;
-                            select.appendChild(option);
-                        }
-                    }
-                }
-            } catch (error) {
-                console.error('Error loading:', error);
-                showError('Failed to load available tests. Please refresh the page.');
+        // Track tab visibility
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                exitCount++;
+                exitLogs.push({
+                    time: new Date().toISOString(),
+                    type: 'tab_hidden'
+                });
             }
         });
 
-        function showError(message) {
-            const container = document.getElementById('errorContainer');
-            container.innerHTML = `<div class="error-message">${message}</div>`;
+        // Track window blur
+        window.addEventListener('blur', function() {
+            exitCount++;
+            exitLogs.push({
+                time: new Date().toISOString(),
+                type: 'window_blur'
+            });
+        });
+
+        function showStatus(elementId, message, type) {
+            const el = document.getElementById(elementId);
+            el.textContent = message;
+            el.className = 'status ' + type;
+            el.style.display = 'block';
+        }
+
+        function hideStatus(elementId) {
+            document.getElementById(elementId).style.display = 'none';
         }
 
         async function startTest() {
-            state.studentName = document.getElementById('studentName').value.trim();
-            state.studentEmail = document.getElementById('studentEmail').value.trim();
-            state.day = parseInt(document.getElementById('daySelect').value);
-            
-            if (!state.studentName || !state.studentEmail || !state.day) {
-                showError('Please fill in all fields');
+            const name = document.getElementById('studentName').value.trim();
+            const email = document.getElementById('studentEmail').value.trim();
+            const day = document.getElementById('daySelect').value;
+
+            if (!name || !email || !day) {
+                showStatus('startStatus', 'Please fill in all fields', 'error');
                 return;
             }
 
-            // Validate email format
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(state.studentEmail)) {
-                showError('Please enter a valid email address');
+            if (!SCRIPT_URL || SCRIPT_URL.includes('YOUR_DEPLOYMENT_ID')) {
+                showStatus('startStatus', 'Error: Script URL not configured. Please update SCRIPT_URL in the code.', 'error');
                 return;
             }
+
+            showStatus('startStatus', 'Loading questions...', 'info');
 
             try {
-                const checkRes = await fetch(SCRIPT_URL + `?action=checkSubmission&email=${encodeURIComponent(state.studentEmail)}&day=${state.day}`);
-                if (!checkRes.ok) throw new Error('Failed to check submission status');
-                const checkData = await checkRes.json();
+                // Check if already submitted
+                const checkResponse = await fetch(`${SCRIPT_URL}?action=checkSubmission&email=${encodeURIComponent(email)}&day=${day}`);
+                const checkData = await checkResponse.json();
                 
                 if (checkData.exists) {
-                    showError('You have already submitted a test for this day.');
+                    showStatus('startStatus', 'You have already submitted this test!', 'error');
                     return;
                 }
 
-                const questionsRes = await fetch(SCRIPT_URL + `?action=getQuestions&day=${state.day}`);
-                if (!questionsRes.ok) throw new Error('Failed to fetch questions');
-                state.questionsData = await questionsRes.json();
-                
-                if (state.questionsData.error || !state.questionsData.q1_text || !state.questionsData.q1_answer) {
-                    showError('Questions not available for this day yet.');
+                // Get questions
+                const response = await fetch(`${SCRIPT_URL}?action=getQuestions&day=${day}`);
+                questionsData = await response.json();
+
+                if (questionsData.error) {
+                    showStatus('startStatus', 'Error: ' + questionsData.error, 'error');
                     return;
                 }
-                
-                document.getElementById('watermark').textContent = state.studentName + ' ' + new Date().toLocaleString();
-                document.getElementById('testTitle').textContent = `Day ${state.day} Challenge`;
-                document.getElementById('q1Text').textContent = state.questionsData.q1_text;
-                document.getElementById('q2Text').textContent = state.questionsData.q2_text;
-                document.getElementById('q3Text').textContent = state.questionsData.q3_text;
-                
-                document.documentElement.requestFullscreen().then(() => {
-                    document.getElementById('loginScreen').classList.add('hidden');
-                    document.getElementById('testScreen').classList.remove('hidden');
-                    document.getElementById('timer').classList.remove('hidden');
-                    
-                    state.startTime = Date.now();
-                    state.q1StartTime = Date.now();
-                    startTimer();
-                    monitorFullscreen();
-                    trackQuestionFocus();
-                }).catch((err) => {
-                    console.error('Fullscreen error:', err);
-                    showError('You must allow fullscreen mode to take the test.');
+
+                // Display questions
+                document.getElementById('q1Text').textContent = questionsData.q1_text;
+                document.getElementById('q2Text').textContent = questionsData.q2_text;
+                document.getElementById('q3Text').textContent = questionsData.q3_text;
+
+                // Hide form, show questions
+                document.getElementById('studentForm').style.display = 'none';
+                document.getElementById('questionSection').style.display = 'block';
+
+                // Start timer
+                startTime = Date.now();
+                q1StartTime = Date.now();
+                timerInterval = setInterval(updateTimer, 1000);
+
+                // Track question transitions
+                document.getElementById('q1Answer').addEventListener('blur', () => {
+                    if (!q2StartTime) q2StartTime = Date.now();
                 });
+                document.getElementById('q2Answer').addEventListener('blur', () => {
+                    if (!q3StartTime) q3StartTime = Date.now();
+                });
+
             } catch (error) {
-                console.error('Error starting test:', error);
-                showError('Failed to load test. Please try again.');
+                showStatus('startStatus', 'Error connecting to server: ' + error.message, 'error');
+                console.error('Error:', error);
             }
         }
 
-        function trackQuestionFocus() {
-            document.getElementById('q1Answer').addEventListener('focus', () => {
-                if (state.currentQuestion === 1 && !state.q1StartTime) {
-                    state.q1StartTime = Date.now();
-                }
-            });
-            
-            document.getElementById('q2Answer').addEventListener('focus', () => {
-                if (state.currentQuestion === 1) {
-                    state.currentQuestion = 2;
-                    state.q2StartTime = Date.now();
-                }
-            });
-            
-            document.getElementById('q3Answer').addEventListener('focus', () => {
-                if (state.currentQuestion === 2) {
-                    state.currentQuestion = 3;
-                    state.q3StartTime = Date.now();
-                }
-            });
-        }
-
-        function startTimer() {
-            let timeLeft = state.testDuration;
-            const timerEl = document.getElementById('timer');
-            
-            state.timerInterval = setInterval(() => {
-                timeLeft--;
-                const h = Math.floor(timeLeft / 3600);
-                const m = Math.floor((timeLeft % 3600) / 60);
-                const s = timeLeft % 60;
-                timerEl.textContent = `${pad(h)}:${pad(m)}:${pad(s)}`;
-                
-                timerEl.classList.remove('warning', 'critical');
-                if (timeLeft <= 300) timerEl.classList.add('critical');
-                else if (timeLeft <= 600) timerEl.classList.add('warning');
-                
-                if (timeLeft <= 0) {
-                    clearInterval(state.timerInterval);
-                    autoSubmit();
-                }
-            }, 1000);
-        }
-
-        function pad(n) {
-            return n.toString().padStart(2, '0');
-        }
-
-        function monitorFullscreen() {
-            if (state.monitoringStarted) return;
-            state.monitoringStarted = true;
-            
-            document.addEventListener('fullscreenchange', handleFullscreenChange);
-            document.addEventListener('visibilitychange', handleVisibilityChange);
-            window.addEventListener('blur', handleWindowBlur);
-        }
-
-        function handleFullscreenChange() {
-            if (!document.fullscreenElement && !document.getElementById('testScreen').classList.contains('hidden') && !state.isSubmitting) {
-                logExit('Exited fullscreen mode');
-                if (!state.warningShown) {
-                    state.warningShown = true;
-                    document.getElementById('exitWarning').style.display = 'block';
-                    setTimeout(() => {
-                        document.documentElement.requestFullscreen().catch(() => {
-                            endTest('You exited fullscreen mode. Test ended.');
-                        });
-                    }, 100);
-                }
-            }
-        }
-
-        function handleVisibilityChange() {
-            if (document.hidden && !document.getElementById('testScreen').classList.contains('hidden') && !state.isSubmitting) {
-                logExit('Switched tabs or minimized window');
-            }
-        }
-
-        function handleWindowBlur() {
-            if (!document.getElementById('testScreen').classList.contains('hidden') && !state.isSubmitting) {
-                logExit('Window lost focus');
-            }
-        }
-
-        function logExit(reason) {
-            state.exitCount++;
-            state.exitLogs.push({
-                time: new Date().toISOString(),
-                reason: reason
-            });
-            document.getElementById('exitCount').textContent = `Total violations: ${state.exitCount}`;
-        }
-
-        function dismissWarning() {
-            state.warningShown = false;
-            document.getElementById('exitWarning').style.display = 'none';
+        function updateTimer() {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            document.getElementById('timer').textContent = `Time: ${minutes}:${seconds.toString().padStart(2, '0')}`;
         }
 
         async function submitTest() {
-            if (state.isSubmitting) return;
-            
-            const q1Val = document.getElementById('q1Answer').value.trim();
-            const q2Val = document.getElementById('q2Answer').value.trim();
-            const q3Val = document.getElementById('q3Answer').value.trim();
-            
-            if (!q1Val || !q2Val || !q3Val) {
-                alert('Please answer all questions before submitting.');
-                return;
-            }
-            
-            // Validate integer inputs
-            const intRegex = /^-?\d+$/;
-            if (!intRegex.test(q1Val.replace(/\s/g, ''))) {
-                alert('Question 1 must be an integer.');
-                return;
-            }
-            if (!intRegex.test(q2Val.replace(/\s/g, ''))) {
-                alert('Question 2 must be an integer.');
-                return;
-            }
-            
-            state.isSubmitting = true;
-            await finalizeSubmission();
-        }
+            const name = document.getElementById('studentName').value.trim();
+            const email = document.getElementById('studentEmail').value.trim();
+            const day = document.getElementById('daySelect').value;
+            const q1Answer = document.getElementById('q1Answer').value.trim();
+            const q2Answer = document.getElementById('q2Answer').value.trim();
+            const q3Answer = document.getElementById('q3Answer').value.trim();
 
-        function autoSubmit() {
-            if (!document.getElementById('q1Answer').value) document.getElementById('q1Answer').value = '0';
-            if (!document.getElementById('q2Answer').value) document.getElementById('q2Answer').value = '0';
-            if (!document.getElementById('q3Answer').value) document.getElementById('q3Answer').value = 'No answer provided';
-            state.isSubmitting = true;
-            finalizeSubmission();
-        }
+            if (!q1Answer || !q2Answer || !q3Answer) {
+                showStatus('submitStatus', 'Please answer all questions', 'error');
+                return;
+            }
 
-        async function finalizeSubmission() {
-            clearInterval(state.timerInterval);
-            
-            const now = Date.now();
-            const q1Answer = document.getElementById('q1Answer').value.replace(/\s/g, '');
-            const q2Answer = document.getElementById('q2Answer').value.replace(/\s/g, '');
-            const q3Answer = document.getElementById('q3Answer').value;
-            
-            // Calculate individual question times
-            const q1Time = state.q2StartTime ? Math.floor((state.q2StartTime - state.q1StartTime) / 1000) : Math.floor((now - state.q1StartTime) / 1000);
-            const q2Time = state.q3StartTime && state.q2StartTime ? Math.floor((state.q3StartTime - state.q2StartTime) / 1000) : (state.q2StartTime ? Math.floor((now - state.q2StartTime) / 1000) : 0);
-            const q3Time = state.q3StartTime ? Math.floor((now - state.q3StartTime) / 1000) : 0;
-            
-            const q1Correct = q1Answer === (state.questionsData.q1_answer || '').replace(/\s/g, '');
-            const q2Correct = q2Answer === (state.questionsData.q2_answer || '').replace(/\s/g, '');
-            const totalTime = Math.floor((now - state.startTime) / 1000);
-            
-            const submissionData = {
-                studentName: state.studentName,
-                studentEmail: state.studentEmail,
-                day: state.day,
+            clearInterval(timerInterval);
+            const endTime = Date.now();
+            const totalTime = Math.floor((endTime - startTime) / 1000);
+            const q1Time = q2StartTime ? Math.floor((q2StartTime - q1StartTime) / 1000) : totalTime;
+            const q2Time = q3StartTime ? Math.floor((q3StartTime - q2StartTime) / 1000) : 0;
+            const q3Time = Math.floor((endTime - (q3StartTime || q2StartTime || q1StartTime)) / 1000);
+
+            // Check answers (case-insensitive trim)
+            const q1Correct = q1Answer.toLowerCase().trim() === questionsData.q1_answer.toLowerCase().trim();
+            const q2Correct = q2Answer.toLowerCase().trim() === questionsData.q2_answer.toLowerCase().trim();
+
+            const submission = {
+                studentName: name,
+                studentEmail: email,
+                day: day,
                 q1_answer: q1Answer,
                 q2_answer: q2Answer,
                 q3_answer: q3Answer,
@@ -582,37 +359,34 @@
                 q2_time: q2Time,
                 q3_time: q3Time,
                 totalTime: totalTime,
-                exitCount: state.exitCount,
-                exitLogs: JSON.stringify(state.exitLogs)
+                exitCount: exitCount,
+                exitLogs: exitLogs,
+                workFileURL: ''
             };
-            
+
+            showStatus('submitStatus', 'Submitting...', 'info');
+
             try {
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({action: 'submitTest', ...submissionData})
+                    body: JSON.stringify(submission),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
                 });
-                
-                if (!response.ok) throw new Error('Submission failed');
-                
-                if (document.fullscreenElement) await document.exitFullscreen();
-                
-                alert(`Test submitted successfully!\n\nQ1: ${q1Correct ? 'Correct ✓' : 'Incorrect ✗'}\nQ2: ${q2Correct ? 'Correct ✓' : 'Incorrect ✗'}\nQ3: Will be graded manually\n\nTotal time: ${Math.floor(totalTime / 60)} minutes ${totalTime % 60} seconds\n\n⚠️ IMPORTANT: Please email your work for Question 3 to:\ndtechmathclub@gmail.com\n\nInclude: Your name, Day ${state.day}, and your work as PDF/image attachment.`);
-                
-                window.location.reload();
-            } catch (error) {
-                console.error('Submission error:', error);
-                state.isSubmitting = false;
-                alert('Failed to submit test. Please contact the administrator.');
-            }
-        }
 
-        function endTest(message) {
-            clearInterval(state.timerInterval);
-            state.isSubmitting = true;
-            if (document.fullscreenElement) document.exitFullscreen();
-            alert(message);
-            window.location.reload();
+                const result = await response.json();
+
+                if (result.success) {
+                    showStatus('submitStatus', '✅ Test submitted successfully!', 'success');
+                    document.querySelector('#questionSection .btn').disabled = true;
+                } else {
+                    showStatus('submitStatus', 'Error: ' + (result.error || 'Unknown error'), 'error');
+                }
+            } catch (error) {
+                showStatus('submitStatus', 'Error submitting: ' + error.message, 'error');
+                console.error('Error:', error);
+            }
         }
     </script>
 </body>
