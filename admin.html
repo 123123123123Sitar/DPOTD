@@ -372,6 +372,9 @@
                             <label>Reference Answer:</label>
                             <input type="text" id="q3_answer" required>
                         </div>
+                        <p style="color: #666; font-size: 14px; margin-top: 10px;">
+                            Note: Students will email their work for this question to the admin email.
+                        </p>
                     </div>
 
                     <button type="submit" class="btn btn-full">Save Questions</button>
@@ -476,6 +479,9 @@
                         <div class="form-group">
                             <label>Admin Email:</label>
                             <input type="email" id="adminEmail" required>
+                            <p style="color: #666; font-size: 14px; margin-top: 8px;">
+                                Students will email their Question 3 work to this address
+                            </p>
                         </div>
                     </div>
                     <div class="question-card">
@@ -483,10 +489,6 @@
                         <div class="form-group">
                             <label>Test Duration (minutes):</label>
                             <input type="number" id="testDuration" min="1" value="120" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Upload Time (minutes):</label>
-                            <input type="number" id="uploadTime" min="1" value="30" required>
                         </div>
                     </div>
                     <button type="submit" class="btn btn-full">Save Settings</button>
@@ -633,7 +635,6 @@
                 
                 document.getElementById('adminEmail').value = data['Admin Email'] || '';
                 document.getElementById('testDuration').value = data['Test Duration'] || 120;
-                document.getElementById('uploadTime').value = data['Upload Time'] || 30;
             } catch (error) {
                 console.error('Error loading settings');
             }
@@ -646,8 +647,7 @@
                 const data = {
                     action: 'saveSettings',
                     'Admin Email': document.getElementById('adminEmail').value,
-                    'Test Duration': parseInt(document.getElementById('testDuration').value),
-                    'Upload Time': parseInt(document.getElementById('uploadTime').value)
+                    'Test Duration': parseInt(document.getElementById('testDuration').value)
                 };
 
                 await fetch(SCRIPT_URL, {
@@ -783,12 +783,9 @@
                     <span class="detail-label">Answer:</span>
                     <span class="detail-value" style="white-space: pre-wrap;">${sub.q3_answer}</span>
                 </div>
-                <div class="detail-row">
-                    <span class="detail-label">Work:</span>
-                    <span class="detail-value">${sub.workFileURL ? 
-                        `<a href="${sub.workFileURL}" target="_blank" class="btn" style="display: inline-block; padding: 8px 16px; margin-top: 10px;">Download</a>` : 
-                        '<span class="badge badge-warning">No File</span>'}</span>
-                </div>
+                <p style="color: #666; font-size: 14px; margin-top: 15px; font-style: italic;">
+                    Note: Student should email their detailed work separately
+                </p>
                 <hr style="margin: 20px 0;">
                 <h3 style="color: #f44336; margin-bottom: 15px;">Security Logs</h3>
                 <div class="detail-row">
