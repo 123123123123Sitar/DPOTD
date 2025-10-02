@@ -1,562 +1,669 @@
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzRPyEM0A2oP_zU9GTq_tPintK4rU1e16IvGLgCV-P1G4-dsghsw7B_kkgAuPII56X0/exec';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D.PotD Student Portal</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Loading Modal -->
+    <div class="loading-modal" id="loadingModal">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p id="loadingText">Loading...</p>
+        </div>
+    </div>
 
-// Global state variables
-let startTime;
-let timerInterval;
-let questionsData;
-let q1StartTime, q2StartTime, q3StartTime;
-let exitCount = 0;
-let exitLogs = [];
-let testActive = false;
-let currentDay = null;
+    <!-- Warning Overlay -->
+    <div class="warning-overlay" id="warningOverlay">
+        <p><strong>⚠️ WARNING: YOU HAVE LEFT THE TEST PAGE!</strong></p>
+        <p style="font-size: 18px; margin: 20px 0;">Return to the test immediately!</p>
+        <p class="warning-count">Violations recorded: <span id="violationCount">0</span></p>
+        <button class="btn" onclick="returnToFullscreen()" style="max-width: 400px; padding: 20px 40px; font-size: 18px; margin-top: 20px; background: #fff; color: #dc3545; border: 3px solid #fff;">
+            🔒 Return to Test & Enter Fullscreen
+        </button>
+        <p style="font-size: 14px; margin-top: 20px; opacity: 0.9;">Click the button above to continue your test</p>
+    </div>
 
-const TEST_DURATION = 120 * 60 * 1000; // 2 hours in milliseconds
-
-// ============================================
-// UTILITY FUNCTIONS
-// ============================================
-
-function showStatus(elementId, message, type) {
-    const el = document.getElementById(elementId);
-    el.textContent = message;
-    el.className = 'status ' + type;
-    el.style.display = 'block';
-}
-
-function showLoading(message) {
-    const modal = document.getElementById('loadingModal');
-    const text = document.getElementById('loadingText');
-    text.textContent = message;
-    modal.classList.add('show');
-}
-
-function hideLoading() {
-    const modal = document.getElementById('loadingModal');
-    modal.classList.remove('show');
-}
-
-function validateEmail(email) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-}
-
-// Clean answer to only accept numbers
-function cleanAnswer(answer) {
-    return answer.replace(/[^0-9-]/g, '').replace(/(?!^)-/g, '');
-}
-
-// ============================================
-// VIOLATION MONITORING
-// ============================================
-
-function recordViolation(type) {
-    if (!testActive) return;
-
-    exitCount++;
-    exitLogs.push({
-        time: new Date().toISOString(),
-        type: type
-    });
-
-    document.getElementById('violationCount').textContent = exitCount;
-
-    const overlay = document.getElementById('warningOverlay');
-    const warningText = overlay.querySelector('p:first-child');
-
-    if (type === 'exited_fullscreen') {
-        warningText.innerHTML = '<strong>⚠️ WARNING: YOU EXITED FULLSCREEN MODE!</strong>';
-    } else if (type === 'tab_hidden') {
-        warningText.innerHTML = '<strong>⚠️ WARNING: YOU SWITCHED TABS!</strong>';
-    } else {
-        warningText.innerHTML = '<strong>⚠️ WARNING: YOU LEFT THE TEST PAGE!</strong>';
-    }
-
-    overlay.classList.add('show');
-}
-
-function hideWarning() {
-    const overlay = document.getElementById('warningOverlay');
-    if (overlay) {
-        overlay.classList.remove('show');
-    }
-}
-
-function returnToFullscreen() {
-    document.documentElement.requestFullscreen()
-        .then(() => {
-            console.log('Returned to fullscreen');
-            hideWarning();
-        })
-        .catch((err) => {
-            alert('Please allow fullscreen mode to continue the test.');
-            console.error('Fullscreen error:', err);
-        });
-}
-
-function handleFullscreenChange() {
-    if (!document.fullscreenElement && testActive) {
-        recordViolation('exited_fullscreen');
-        const overlay = document.getElementById('warningOverlay');
-        overlay.classList.add('show');
-
-        setTimeout(() => {
-            document.documentElement.requestFullscreen()
-                .then(() => {
-                    console.log('Re-entered fullscreen');
-                    hideWarning();
-                })
-                .catch((err) => {
-                    console.error('Failed to re-enter fullscreen:', err);
-                });
-        }, 100);
-    } else if (document.fullscreenElement && testActive) {
-        hideWarning();
-    }
-}
-
-function handleVisibilityChange() {
-    if (document.hidden && testActive) {
-        recordViolation('tab_hidden');
-        const overlay = document.getElementById('warningOverlay');
-        overlay.classList.add('show');
-    } else if (!document.hidden && testActive) {
-        hideWarning();
-    }
-}
-
-function handleWindowBlur() {
-    if (testActive) {
-        recordViolation('window_blur');
-        const overlay = document.getElementById('warningOverlay');
-        overlay.classList.add('show');
-    }
-}
-
-function handleWindowFocus() {
-    if (testActive) {
-        hideWarning();
-    }
-}
-
-function monitorFullscreen() {
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('blur', handleWindowBlur);
-    window.addEventListener('focus', handleWindowFocus);
-}
-
-// ============================================
-// KEYBOARD & INTERACTION BLOCKING
-// ============================================
-
-document.addEventListener('keydown', function(e) {
-    if (testActive) {
-        if ((e.ctrlKey && e.keyCode === 9) ||
-            (e.ctrlKey && e.shiftKey && e.keyCode === 9) ||
-            (e.altKey && e.keyCode === 9) ||
-            (e.metaKey && e.keyCode === 9) ||
-            (e.metaKey && e.keyCode === 192) ||
-            (e.ctrlKey && (e.keyCode >= 49 && e.keyCode <= 57)) ||
-            (e.metaKey && (e.keyCode >= 49 && e.keyCode <= 57)) ||
-            e.keyCode === 123 ||
-            (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) ||
-            (e.ctrlKey && e.keyCode === 85) ||
-            (e.ctrlKey && e.keyCode === 83) ||
-            (e.ctrlKey && e.keyCode === 80) ||
-            (e.metaKey && e.altKey && (e.keyCode === 73 || e.keyCode === 74)) ||
-            (e.altKey && e.keyCode === 37) ||
-            (e.altKey && e.keyCode === 39) ||
-            (e.ctrlKey && e.keyCode === 87) ||
-            (e.metaKey && e.keyCode === 87) ||
-            e.keyCode === 27) {
+    <!-- Main Container -->
+    <div class="container">
+        <h1>D.PotD Problems of the Day</h1>
+        <p class="subtitle">Student Portal</p>
+        
+        <!-- Student Form -->
+        <div id="studentForm">
+            <div class="form-group">
+                <label>Full Name:</label>
+                <input type="text" id="studentName" required>
+            </div>
             
-            e.preventDefault();
-            e.stopPropagation();
-            recordViolation('keyboard_shortcut_blocked');
-            return false;
+            <div class="form-group">
+                <label>Email:</label>
+                <input type="email" id="studentEmail" required>
+                <span id="emailError" class="error-message"></span>
+            </div>
+            
+            <button class="btn" onclick="startTest()">Start Test</button>
+            <div id="startStatus" class="status"></div>
+        </div>
+        
+        <!-- Question Section -->
+        <div id="questionSection" class="question-section">
+            <div class="timer" id="timer">Time Remaining: 2:00:00</div>
+            
+            <div style="text-align: center; margin-bottom: 30px;">
+                <div class="day-indicator" id="dayIndicator">Day -</div>
+                <div style="margin-top: 15px; font-size: 14px; color: #666;">
+                    <span style="margin-right: 15px;">⏰ 2 hours total</span>
+                    <span style="margin-right: 15px;">📝 3 questions</span>
+                    <span>🔒 Do not leave this page</span>
+                </div>
+            </div>
+            
+            <div class="question-box">
+                <h3>Question 1</h3>
+                <p id="q1Text"></p>
+                <input type="text" id="q1Answer" placeholder="Your answer (numbers only)">
+            </div>
+            
+            <div class="question-box">
+                <h3>Question 2</h3>
+                <p id="q2Text"></p>
+                <input type="text" id="q2Answer" placeholder="Your answer (numbers only)">
+            </div>
+            
+            <div class="question-box">
+                <h3>Question 3 (Proof/Explanation)</h3>
+                <p id="q3Text"></p>
+                <textarea id="q3Answer" rows="8" placeholder="Your detailed explanation"></textarea>
+            </div>
+            
+            <button class="btn" id="submitBtn" onclick="submitTest()">Submit Test</button>
+            <div id="submitStatus" class="status"></div>
+        </div>
+    </div>
+    
+    <script>
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzRPyEM0A2oP_zU9GTq_tPintK4rU1e16IvGLgCV-P1G4-dsghsw7B_kkgAuPII56X0/exec';
+        let startTime;
+        let timerInterval;
+        let questionsData;
+        let q1StartTime, q2StartTime, q3StartTime;
+        let exitCount = 0;
+        let exitLogs = [];
+        let testActive = false;
+        let currentDay = null;
+        const TEST_DURATION = 120 * 60 * 1000; // 2 hours in milliseconds
+
+        function showStatus(elementId, message, type) {
+            const el = document.getElementById(elementId);
+            el.textContent = message;
+            el.className = 'status ' + type;
+            el.style.display = 'block';
         }
-    }
-});
 
-document.addEventListener('keyup', function(e) {
-    if (testActive && e.key === 'PrintScreen') {
-        navigator.clipboard.writeText('');
-        recordViolation('screenshot_attempt');
-    }
-});
+        function showLoading(message) {
+            const modal = document.getElementById('loadingModal');
+            const text = document.getElementById('loadingText');
+            text.textContent = message;
+            modal.classList.add('show');
+        }
 
-document.addEventListener('contextmenu', function(e) {
-    if (testActive) {
-        e.preventDefault();
-        recordViolation('right_click');
-    }
-});
+        function hideLoading() {
+            const modal = document.getElementById('loadingModal');
+            modal.classList.remove('show');
+        }
 
-window.addEventListener('beforeunload', function(e) {
-    if (testActive) {
-        e.preventDefault();
-        e.returnValue = '';
-        recordViolation('attempted_close');
-        return '';
-    }
-});
+        function validateEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
 
-// ============================================
-// TEST SCHEDULE & DAY MANAGEMENT
-// ============================================
+        function recordViolation(type) {
+            if (!testActive) return;
+            
+            exitCount++;
+            exitLogs.push({
+                time: new Date().toISOString(),
+                type: type
+            });
+            
+            document.getElementById('violationCount').textContent = exitCount;
+            
+            // Show warning overlay
+            const overlay = document.getElementById('warningOverlay');
+            const warningText = overlay.querySelector('p:first-child');
+            
+            // Update warning text based on violation type
+            if (type === 'exited_fullscreen') {
+                warningText.innerHTML = '<strong>⚠️ WARNING: YOU EXITED FULLSCREEN MODE!</strong>';
+            } else if (type === 'tab_hidden') {
+                warningText.innerHTML = '<strong>⚠️ WARNING: YOU SWITCHED TABS!</strong>';
+            } else {
+                warningText.innerHTML = '<strong>⚠️ WARNING: YOU LEFT THE TEST PAGE!</strong>';
+            }
+            
+            overlay.classList.add('show');
+        }
 
-async function getCurrentDay() {
-    try {
-        const response = await fetch(`${SCRIPT_URL}?action=getSchedule`);
-        const schedule = await response.json();
-        const now = new Date();
-        let activeDay = null;
+        function hideWarning() {
+            const overlay = document.getElementById('warningOverlay');
+            if (overlay) {
+                overlay.classList.remove('show');
+            }
+        }
 
-        for (let i = 1; i <= 5; i++) {
-            const dayStart = schedule[`day${i}`] ? new Date(schedule[`day${i}`]) : null;
-            const nextDay = schedule[`day${i + 1}`] ? new Date(schedule[`day${i + 1}`]) : null;
+        // Function to return to fullscreen from warning overlay
+        function returnToFullscreen() {
+            document.documentElement.requestFullscreen().then(() => {
+                console.log('Returned to fullscreen');
+                hideWarning();
+            }).catch((err) => {
+                alert('Please allow fullscreen mode to continue the test.');
+                console.error('Fullscreen error:', err);
+            });
+        }
 
-            if (dayStart && now >= dayStart) {
-                if (!nextDay || now < nextDay) {
-                    activeDay = i;
-                    break;
+        // Monitor fullscreen changes
+        function handleFullscreenChange() {
+            if (!document.fullscreenElement && testActive) {
+                recordViolation('exited_fullscreen');
+                const overlay = document.getElementById('warningOverlay');
+                overlay.classList.add('show');
+                
+                // Attempt to re-enter fullscreen after a brief delay
+                setTimeout(() => {
+                    document.documentElement.requestFullscreen().then(() => {
+                        console.log('Re-entered fullscreen');
+                        hideWarning();
+                    }).catch(() => {
+                        alert('You exited fullscreen mode. The test has been compromised.');
+                        testActive = false;
+                    });
+                }, 100);
+            } else if (document.fullscreenElement && testActive) {
+                hideWarning();
+            }
+        }
+
+        // Monitor visibility changes (tab switching, minimizing)
+        function handleVisibilityChange() {
+            if (document.hidden && testActive) {
+                recordViolation('tab_hidden');
+                const overlay = document.getElementById('warningOverlay');
+                overlay.classList.add('show');
+            } else if (!document.hidden && testActive) {
+                hideWarning();
+            }
+        }
+
+        // Monitor window blur (switching to another application)
+        function handleWindowBlur() {
+            if (testActive) {
+                recordViolation('window_blur');
+                const overlay = document.getElementById('warningOverlay');
+                overlay.classList.add('show');
+            }
+        }
+
+        // Return to window
+        function handleWindowFocus() {
+            if (testActive) {
+                hideWarning();
+            }
+        }
+
+        // Set up all monitoring
+        function monitorFullscreen() {
+            document.addEventListener('fullscreenchange', handleFullscreenChange);
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+            window.addEventListener('blur', handleWindowBlur);
+            window.addEventListener('focus', handleWindowFocus);
+        }
+
+        // Prevent ALL tab switching and common shortcuts during test
+        document.addEventListener('keydown', function(e) {
+            if (testActive) {
+                if ((e.ctrlKey && e.keyCode === 9) || 
+                    (e.ctrlKey && e.shiftKey && e.keyCode === 9) ||
+                    (e.altKey && e.keyCode === 9) ||
+                    (e.metaKey && e.keyCode === 9) ||
+                    (e.metaKey && e.keyCode === 192) ||
+                    (e.ctrlKey && (e.keyCode >= 49 && e.keyCode <= 57)) ||
+                    (e.metaKey && (e.keyCode >= 49 && e.keyCode <= 57)) ||
+                    e.keyCode === 123 ||
+                    (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) ||
+                    (e.ctrlKey && e.keyCode === 85) ||
+                    (e.ctrlKey && e.keyCode === 83) ||
+                    (e.ctrlKey && e.keyCode === 80) ||
+                    (e.metaKey && e.altKey && (e.keyCode === 73 || e.keyCode === 74)) ||
+                    (e.altKey && e.keyCode === 37) ||
+                    (e.altKey && e.keyCode === 39) ||
+                    (e.ctrlKey && e.keyCode === 87) ||
+                    (e.metaKey && e.keyCode === 87) ||
+                    e.keyCode === 27) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    recordViolation('keyboard_shortcut_blocked');
+                    return false;
                 }
             }
-        }
+        });
 
-        return activeDay;
-    } catch (error) {
-        console.error('Error getting current day:', error);
-        return null;
-    }
-}
-
-// ============================================
-// TIMER MANAGEMENT
-// ============================================
-
-function updateTimer() {
-    if (!startTime) return;
-
-    const elapsed = Date.now() - startTime;
-    const remaining = Math.max(0, TEST_DURATION - elapsed);
-
-    const hours = Math.floor(remaining / (60 * 60 * 1000));
-    const minutes = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
-    const seconds = Math.floor((remaining % (60 * 1000)) / 1000);
-
-    const timerEl = document.getElementById('timer');
-    timerEl.textContent = `Time Remaining: ${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    timerEl.style.display = 'block';
-    timerEl.style.color = '#000000';
-
-    if (remaining < 10 * 60 * 1000) {
-        timerEl.style.color = '#ff6b6b';
-    }
-
-    if (remaining <= 0) {
-        clearInterval(timerInterval);
-        submitTest(true);
-    }
-}
-
-// ============================================
-// TEST START
-// ============================================
-
-window.startTest = startTest;
-window.submitTest = submitTest;
-window.returnToFullscreen = returnToFullscreen;
-
-async function startTest() {
-    const name = document.getElementById('studentName').value.trim();
-    const email = document.getElementById('studentEmail').value.trim();
-    const emailError = document.getElementById('emailError');
-
-    emailError.textContent = '';
-
-    if (!name || !email) {
-        showStatus('startStatus', 'Please fill in all fields', 'error');
-        return;
-    }
-
-    if (!validateEmail(email)) {
-        emailError.textContent = 'Please enter a valid email address (e.g., student@example.com)';
-        showStatus('startStatus', 'Invalid email format', 'error');
-        return;
-    }
-
-    showLoading('Determining current day...');
-
-    currentDay = await getCurrentDay();
-    if (!currentDay) {
-        hideLoading();
-        showStatus('startStatus', 'No test is currently available. Please check the schedule.', 'error');
-        return;
-    }
-
-    showLoading(`Loading Day ${currentDay} questions...`);
-
-    try {
-        const checkResponse = await fetch(`${SCRIPT_URL}?action=checkSubmission&email=${encodeURIComponent(email)}&day=${currentDay}`);
-        const checkData = await checkResponse.json();
-
-        if (checkData.exists) {
-            hideLoading();
-            showStatus('startStatus', 'You have already submitted this test!', 'error');
-            return;
-        }
-
-        showLoading('Loading questions...');
-        const response = await fetch(`${SCRIPT_URL}?action=getQuestions&day=${currentDay}`);
-        questionsData = await response.json();
-
-        if (questionsData.error) {
-            hideLoading();
-            showStatus('startStatus', 'Error: ' + questionsData.error, 'error');
-            return;
-        }
-
-        document.getElementById('q1Text').textContent = questionsData.q1_text;
-        document.getElementById('q2Text').textContent = questionsData.q2_text;
-        document.getElementById('q3Text').textContent = questionsData.q3_text;
-        document.getElementById('dayIndicator').textContent = `Day ${currentDay}`;
-
-        hideLoading();
-
-        const confirmBtn = document.createElement('button');
-        confirmBtn.className = 'btn';
-        confirmBtn.style.marginTop = '20px';
-        confirmBtn.textContent = 'Enter Fullscreen & Begin Test';
-        
-        confirmBtn.onclick = async function() {
-            try {
-                await document.documentElement.requestFullscreen();
-                console.log('Entered fullscreen successfully');
-                
-                confirmBtn.remove();
-
-                document.getElementById('studentForm').style.display = 'none';
-                document.getElementById('questionSection').style.display = 'block';
-
-                document.body.classList.add('locked');
-                testActive = true;
-                monitorFullscreen();
-
-                startTime = Date.now();
-                q1StartTime = Date.now();
-                timerInterval = setInterval(updateTimer, 1000);
-                updateTimer();
-            } catch (err) {
-                console.error('Fullscreen error:', err);
-                alert('Fullscreen mode is required to take the test. Please allow fullscreen and try again.');
+        // Detect screenshot attempts
+        document.addEventListener('keyup', function(e) {
+            if (testActive && e.key === 'PrintScreen') {
+                navigator.clipboard.writeText('');
+                recordViolation('screenshot_attempt');
             }
-        };
+        });
 
-        const statusEl = document.getElementById('startStatus');
-        statusEl.textContent = 'Questions loaded! Click below to enter fullscreen mode and begin.';
-        statusEl.className = 'status success';
-        statusEl.style.display = 'block';
-        statusEl.parentElement.appendChild(confirmBtn);
-
-        const q1AnswerEl = document.getElementById('q1Answer');
-        const q2AnswerEl = document.getElementById('q2Answer');
-        
-        if (q1AnswerEl) {
-            q1AnswerEl.addEventListener('focus', () => {
-                if (!q2StartTime) q2StartTime = Date.now();
-            });
-        }
-
-        if (q2AnswerEl) {
-            q2AnswerEl.addEventListener('focus', () => {
-                if (!q3StartTime) q3StartTime = Date.now();
-            });
-        }
-
-        setTimeout(() => {
+        // Prevent right-click during test
+        document.addEventListener('contextmenu', function(e) {
             if (testActive) {
-                alert('Time is up! Your test will be submitted automatically.');
+                e.preventDefault();
+                recordViolation('right_click');
+            }
+        });
+
+        // Get current day based on schedule
+        async function getCurrentDay() {
+            try {
+                const response = await fetch(`${SCRIPT_URL}?action=getSchedule`);
+                const schedule = await response.json();
+                const now = new Date();
+                let activeDay = null;
+                
+                for (let i = 1; i <= 5; i++) {
+                    const dayStart = schedule[`day${i}`] ? new Date(schedule[`day${i}`]) : null;
+                    const nextDay = schedule[`day${i + 1}`] ? new Date(schedule[`day${i + 1}`]) : null;
+                    
+                    if (dayStart && now >= dayStart) {
+                        if (!nextDay || now < nextDay) {
+                            activeDay = i;
+                            break;
+                        }
+                    }
+                }
+                
+                return activeDay;
+            } catch (error) {
+                console.error('Error getting current day:', error);
+                return null;
+            }
+        }
+
+        async function startTest() {
+            const name = document.getElementById('studentName').value.trim();
+            const email = document.getElementById('studentEmail').value.trim();
+            const emailError = document.getElementById('emailError');
+            
+            emailError.textContent = '';
+            
+            if (!name || !email) {
+                showStatus('startStatus', 'Please fill in all fields', 'error');
+                return;
+            }
+            
+            if (!validateEmail(email)) {
+                emailError.textContent = 'Please enter a valid email address (e.g., student@example.com)';
+                showStatus('startStatus', 'Invalid email format', 'error');
+                return;
+            }
+            
+            showLoading('Determining current day...');
+            
+            currentDay = await getCurrentDay();
+            
+            if (!currentDay) {
+                hideLoading();
+                showStatus('startStatus', 'No test is currently available. Please check the schedule.', 'error');
+                return;
+            }
+            
+            showLoading(`Loading Day ${currentDay} questions...`);
+            
+            try {
+                const checkResponse = await fetch(`${SCRIPT_URL}?action=checkSubmission&email=${encodeURIComponent(email)}&day=${currentDay}`);
+                const checkData = await checkResponse.json();
+                
+                if (checkData.exists) {
+                    hideLoading();
+                    showStatus('startStatus', 'You have already submitted this test!', 'error');
+                    return;
+                }
+                
+                showLoading('Loading questions...');
+                const response = await fetch(`${SCRIPT_URL}?action=getQuestions&day=${currentDay}`);
+                questionsData = await response.json();
+                
+                if (questionsData.error) {
+                    hideLoading();
+                    showStatus('startStatus', 'Error: ' + questionsData.error, 'error');
+                    return;
+                }
+                
+                document.getElementById('q1Text').textContent = questionsData.q1_text;
+                document.getElementById('q2Text').textContent = questionsData.q2_text;
+                document.getElementById('q3Text').textContent = questionsData.q3_text;
+                document.getElementById('dayIndicator').textContent = `Day ${currentDay}`;
+                
+                hideLoading();
+                
+                const confirmBtn = document.createElement('button');
+                confirmBtn.className = 'btn';
+                confirmBtn.style.marginTop = '20px';
+                confirmBtn.textContent = 'Enter Fullscreen & Begin Test';
+                confirmBtn.onclick = async function() {
+                    try {
+                        await document.documentElement.requestFullscreen();
+                        console.log('Entered fullscreen successfully');
+                        
+                        confirmBtn.remove();
+                        
+                        document.getElementById('studentForm').style.display = 'none';
+                        document.getElementById('questionSection').style.display = 'block';
+                        
+                        document.body.classList.add('locked');
+                        testActive = true;
+                        monitorFullscreen();
+                        
+                        startTime = Date.now();
+                        q1StartTime = Date.now();
+                        timerInterval = setInterval(updateTimer, 1000);
+                        updateTimer();
+                    } catch (err) {
+                        console.error('Fullscreen error:', err);
+                        alert('Fullscreen mode is required to take the test. Please allow fullscreen and try again.');
+                    }
+                };
+                
+                const statusEl = document.getElementById('startStatus');
+                statusEl.textContent = 'Questions loaded! Click below to enter fullscreen mode and begin.';
+                statusEl.className = 'status success';
+                statusEl.style.display = 'block';
+                statusEl.parentElement.appendChild(confirmBtn);
+                
+                document.getElementById('q1Answer').addEventListener('focus', () => {
+                    if (!q2StartTime) q2StartTime = Date.now();
+                });
+                
+                document.getElementById('q2Answer').addEventListener('focus', () => {
+                    if (!q3StartTime) q3StartTime = Date.now();
+                });
+                
+                setTimeout(() => {
+                    if (testActive) {
+                        alert('Time is up! Your test will be submitted automatically.');
+                        submitTest(true);
+                    }
+                }, TEST_DURATION);
+                
+            } catch (error) {
+                hideLoading();
+                showStatus('startStatus', 'Error connecting to server: ' + error.message, 'error');
+                console.error('Error:', error);
+            }
+        }
+
+        function updateTimer() {
+            if (!startTime) return;
+            
+            const elapsed = Date.now() - startTime;
+            const remaining = Math.max(0, TEST_DURATION - elapsed);
+            
+            const hours = Math.floor(remaining / (60 * 60 * 1000));
+            const minutes = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
+            const seconds = Math.floor((remaining % (60 * 1000)) / 1000);
+            
+            const timerEl = document.getElementById('timer');
+            timerEl.textContent = `Time Remaining: ${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            timerEl.style.display = 'block';
+            timerEl.style.color = '#EA5A2F';
+            
+            if (remaining < 10 * 60 * 1000) {
+                timerEl.style.color = '#ff6b6b';
+            }
+            
+            if (remaining <= 0) {
+                clearInterval(timerInterval);
                 submitTest(true);
             }
-        }, TEST_DURATION);
+        }
 
-    } catch (error) {
-        hideLoading();
-        showStatus('startStatus', 'Error connecting to server: ' + error.message, 'error');
-        console.error('Error:', error);
-    }
-}
+        function cleanAnswer(answer) {
+            return answer.replace(/[^0-9-]/g, '').replace(/(?!^)-/g, '');
+        }
 
-// ============================================
-// TEST SUBMISSION
-// ============================================
+        async function submitTest(isForced = false) {
+            if (!testActive && !isForced) {
+                console.log('Test not active, submission blocked');
+                return;
+            }
+            
+            const name = document.getElementById('studentName').value.trim();
+            const email = document.getElementById('studentEmail').value.trim();
+            const q1Answer = cleanAnswer(document.getElementById('q1Answer').value.trim());
+            const q2Answer = cleanAnswer(document.getElementById('q2Answer').value.trim());
+            const q3Answer = document.getElementById('q3Answer').value.trim();
+            
+            if (!isForced && (!q1Answer || !q2Answer || !q3Answer)) {
+                showStatus('submitStatus', 'Please answer all questions', 'error');
+                return;
+            }
+            
+            testActive = false;
+            clearInterval(timerInterval);
+            
+            const endTime = Date.now();
+            const totalTime = Math.floor((endTime - startTime) / 1000);
+            const q1Time = q2StartTime ? Math.floor((q2StartTime - q1StartTime) / 1000) : totalTime;
+            const q2Time = q3StartTime ? Math.floor((q3StartTime - q2StartTime) / 1000) : 0;
+            const q3Time = Math.floor((endTime - (q3StartTime || q2StartTime || q1StartTime)) / 1000);
+            
+            const q1Correct = q1Answer === cleanAnswer(questionsData.q1_answer);
+            const q2Correct = q2Answer === cleanAnswer(questionsData.q2_answer);
+            
+            const submission = {
+                studentName: name,
+                studentEmail: email,
+                day: currentDay,
+                q1_answer: q1Answer,
+                q2_answer: q2Answer,
+                q3_answer: q3Answer,
+                q1_correct: q1Correct,
+                q2_correct: q2Correct,
+                q1_time: q1Time,
+                q2_time: q2Time,
+                q3_time: q3Time,
+                totalTime: totalTime,
+                exitCount: exitCount,
+                exitLogs: JSON.stringify(exitLogs),
+                workFileURL: ''
+            };
+            
+            showLoading(isForced ? 'Auto-submitting test...' : 'Submitting your answers...');
+            document.getElementById('submitBtn').disabled = true;
+            
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain',
+                    },
+                    body: JSON.stringify(submission)
+                });
+                
+                const responseText = await response.text();
+                const result = JSON.parse(responseText);
+                
+                hideLoading();
+                
+                if (result.success) {
+                    testActive = false;
+                    document.body.classList.remove('locked');
+                    hideWarning();
+                    
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    }
+                    
+                    document.getElementById('questionSection').style.display = 'none';
+                    
+                    const resultsHTML = `
+                    <div style="text-align: center; padding: 40px 20px;">
+                        <h1 style="color: #28a745; margin-bottom: 20px;">✅ Test Submitted Successfully!</h1>
+                        <p style="font-size: 18px; color: #666; margin-bottom: 30px;">
+                            Thanks for submitting! Your score will be emailed to you soon.
+                        </p>
+                        
+                        <div style="background: #fff3e0; padding: 25px; border-radius: 8px; border-left: 4px solid #EA5A2F; max-width: 600px; margin: 0 auto 30px;">
+                            <h3 style="color: #EA5A2F; margin-bottom: 15px;">📧 Important: Email Your Solutions</h3>
+                            <p style="color: #333; font-size: 16px; margin-bottom: 10px;">
+                                Please email your detailed work and solutions to:
+                            </p>
+                            <a href="mailto:solutions@dtechmathclub.org" style="font-size: 20px; font-weight: bold; color: #EA5A2F; text-decoration: none; display: block; margin: 15px 0;">
+                                solutions@dtechmathclub.org
+                            </a>
+                            <p style="color: #666; font-size: 14px; margin-top: 15px;">
+                                Include your name and Day ${currentDay} in the email subject line.
+                            </p>
+                        </div>
+                        
+                        <div style="background: #f8f9fa; padding: 30px; border-radius: 8px; border-left: 4px solid #EA5A2F; max-width: 500px; margin: 0 auto;">
+                            <h2 style="margin-bottom: 20px; color: #000;">Your Results</h2>
+                            <div style="text-align: left; margin-bottom: 15px;">
+                                <strong style="color: #495057;">Question 1:</strong>
+                                <span class="${q1Correct ? 'correct' : 'incorrect'}" style="font-size: 18px; margin-left: 10px;">
+                                    ${q1Correct ? '✓ Correct' : '✗ Incorrect'}
+                                </span>
+                                <div style="color: #666; font-size: 14px; margin-top: 5px;">
+                                    Your answer: ${q1Answer}
+                                </div>
+                            </div>
+                            <div style="text-align: left; margin-bottom: 15px;">
+                                <strong style="color: #495057;">Question 2:</strong>
+                                <span class="${q2Correct ? 'correct' : 'incorrect'}" style="font-size: 18px; margin-left: 10px;">
+                                    ${q2Correct ? '✓ Correct' : '✗ Incorrect'}
+                                </span>
+                                <div style="color: #666; font-size: 14px; margin-top: 5px;">
+                                    Your answer: ${q2Answer}
+                                </div>
+                            </div>
+                            <div style="text-align: left;">
+                                <strong style="color: #495057;">Question 3:</strong>
+                                <span style="color: #666; font-size: 14px; margin-left: 10px;">
+                                    Will be graded manually
+                                </span>
+                            </div>
+                            <div style="margin-top: 25px; padding-top: 20px; border-top: 2px solid #E3E3E3;">
+                                <strong style="color: #495057;">Total Time:</strong>
+                                <span style="color: #000; font-size: 18px; margin-left: 10px;">
+                                    ${Math.floor(totalTime / 60)} minutes ${totalTime % 60} seconds
+                                </span>
+                            </div>
+                            ${exitCount > 0 ? `
+                            <div style="margin-top: 15px; padding: 15px; background: #fff3cd; border-radius: 6px;">
+                                <strong style="color: #856404;">⚠️ Violations: ${exitCount}</strong>
+                                <div style="color: #856404; font-size: 14px; margin-top: 5px;">
+                                    These have been recorded and may affect your score.
+                                </div>
+                            </div>
+                            ` : ''}
+                        </div>
+                        <button class="btn" onclick="window.location.reload()" style="max-width: 300px; margin: 30px auto 0;">
+                            Back to Home
+                        </button>
+                    </div>
+                    `;
+                    
+                    document.querySelector('.container').innerHTML = resultsHTML;
+                } else {
+                    showStatus('submitStatus', 'Error: ' + (result.error || 'Unknown error'), 'error');
+                    testActive = true;
+                    document.getElementById('submitBtn').disabled = false;
+                }
+            } catch (error) {
+                hideLoading();
+                showStatus('submitStatus', 'Error submitting: ' + error.message, 'error');
+                console.error('Error:', error);
+                testActive = true;
+                document.getElementById('submitBtn').disabled = false;
+            }
+        }
 
-async function submitTest(isForced = false) {
-    if (!testActive && !isForced) {
-        console.log('Test not active, submission blocked');
-        return;
-    }
-
-    const name = document.getElementById('studentName').value.trim();
-    const email = document.getElementById('studentEmail').value.trim();
-    const q1Answer = cleanAnswer(document.getElementById('q1Answer').value.trim());
-    const q2Answer = cleanAnswer(document.getElementById('q2Answer').value.trim());
-    const q3Answer = document.getElementById('q3Answer').value.trim();
-
-    if (!isForced && (!q1Answer || !q2Answer || !q3Answer)) {
-        showStatus('submitStatus', 'Please answer all questions', 'error');
-        return;
-    }
-
-    testActive = false;
-    clearInterval(timerInterval);
-
-    const endTime = Date.now();
-    const totalTime = Math.floor((endTime - startTime) / 1000);
-    const q1Time = q2StartTime ? Math.floor((q2StartTime - q1StartTime) / 1000) : totalTime;
-    const q2Time = q3StartTime ? Math.floor((q3StartTime - q2StartTime) / 1000) : 0;
-    const q3Time = Math.floor((endTime - (q3StartTime || q2StartTime || q1StartTime)) / 1000);
-
-    const q1Correct = q1Answer === cleanAnswer(questionsData.q1_answer);
-    const q2Correct = q2Answer === cleanAnswer(questionsData.q2_answer);
-
-    const submission = {
-        studentName: name,
-        studentEmail: email,
-        day: currentDay,
-        q1_answer: q1Answer,
-        q2_answer: q2Answer,
-        q3_answer: q3Answer,
-        q1_correct: q1Correct,
-        q2_correct: q2Correct,
-        q1_time: q1Time,
-        q2_time: q2Time,
-        q3_time: q3Time,
-        totalTime: totalTime,
-        exitCount: exitCount,
-        exitLogs: JSON.stringify(exitLogs),
-        workFileURL: ''
-    };
-
-    showLoading(isForced ? 'Auto-submitting test...' : 'Submitting your answers...');
-    document.getElementById('submitBtn').disabled = true;
-
-    try {
-        const response = await fetch(SCRIPT_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'text/plain',
-            },
-            body: JSON.stringify(submission)
+        window.addEventListener('beforeunload', function(e) {
+            if (testActive) {
+                e.preventDefault();
+                e.returnValue = '';
+                recordViolation('attempted_close');
+                return '';
+            }
         });
 
-        const responseText = await response.text();
-        const result = JSON.parse(responseText);
-
-        hideLoading();
-
-        if (result.success) {
-            testActive = false;
-            document.body.classList.remove('locked');
-            hideWarning();
-
-            if (document.exitFullscreen) {
-                document.exitFullscreen();
-            }
-
-            document.getElementById('questionSection').style.display = 'none';
-
-            const resultsHTML = `
-                <div style="text-align: center; padding: 40px 20px;">
-                    <h1 style="color: #28a745; margin-bottom: 20px;">✅ Test Submitted Successfully!</h1>
-                    <p style="font-size: 18px; color: #666; margin-bottom: 30px;">
-                        Thanks for submitting! Your score will be emailed to you soon.
-                    </p>
-                    <div style="background: #f8f9fa; padding: 30px; border-radius: 8px; border-left: 4px solid #EA5A2F; max-width: 500px; margin: 0 auto;">
-                        <h2 style="margin-bottom: 20px; color: #000;">Your Results</h2>
-                        
-                        <div style="text-align: left; margin-bottom: 15px;">
-                            <strong style="color: #495057;">Question 1:</strong>
-                            <span class="${q1Correct ? 'correct' : 'incorrect'}" style="font-size: 18px; margin-left: 10px;">
-                                ${q1Correct ? '✓ Correct' : '✗ Incorrect'}
-                            </span>
-                            <div style="color: #666; font-size: 14px; margin-top: 5px;">
-                                Your answer: ${q1Answer}
-                            </div>
-                        </div>
-                        
-                        <div style="text-align: left; margin-bottom: 15px;">
-                            <strong style="color: #495057;">Question 2:</strong>
-                            <span class="${q2Correct ? 'correct' : 'incorrect'}" style="font-size: 18px; margin-left: 10px;">
-                                ${q2Correct ? '✓ Correct' : '✗ Incorrect'}
-                            </span>
-                            <div style="color: #666; font-size: 14px; margin-top: 5px;">
-                                Your answer: ${q2Answer}
-                            </div>
-                        </div>
-                        
-                        <div style="text-align: left;">
-                            <strong style="color: #495057;">Question 3:</strong>
-                            <span style="color: #666; font-size: 14px; margin-left: 10px;">
-                                Will be graded manually
-                            </span>
-                        </div>
-                        
-                        <div style="margin-top: 25px; padding-top: 20px; border-top: 2px solid #E3E3E3;">
-                            <strong style="color: #495057;">Total Time:</strong>
-                            <span style="color: #000; font-size: 18px; margin-left: 10px;">
-                                ${Math.floor(totalTime / 60)} minutes ${totalTime % 60} seconds
-                            </span>
-                        </div>
-                        
-                        ${exitCount > 0 ? `
-                        <div style="margin-top: 15px; padding: 15px; background: #fff3cd; border-radius: 6px;">
-                            <strong style="color: #856404;">⚠️ Violations: ${exitCount}</strong>
-                            <div style="color: #856404; font-size: 14px; margin-top: 5px;">
-                                These have been recorded and may affect your score.
-                            </div>
-                        </div>
-                        ` : ''}
-                    </div>
-                    
-                    <button class="btn" onclick="window.location.reload()" style="max-width: 300px; margin: 30px auto 0;">
-                        Back to Home
-                    </button>
-                </div>
-            `;
-
-            document.querySelector('.container').innerHTML = resultsHTML;
-        } else {
-            showStatus('submitStatus', 'Error: ' + (result.error || 'Unknown error'), 'error');
-            testActive = true;
-            document.getElementById('submitBtn').disabled = false;
-        }
-    } catch (error) {
-        hideLoading();
-        showStatus('submitStatus', 'Error submitting: ' + error.message, 'error');
-        console.error('Error:', error);
-        testActive = true;
-        document.getElementById('submitBtn').disabled = false;
-    }
-}
-
-// ============================================
-// INPUT VALIDATION
-// ============================================
-
-document.addEventListener('DOMContentLoaded', function() {
-    const numberInputs = ['q1Answer', 'q2Answer'];
-    
-    numberInputs.forEach(id => {
-        const input = document.getElementById(id);
-        if (input) {
-            input.addEventListener('input', function(e) {
-                const cleaned = cleanAnswer(e.target.value);
-                if (e.target.value !== cleaned) {
-                    e.target.value = cleaned;
+        document.addEventListener('DOMContentLoaded', function() {
+            const numberInputs = ['q1Answer', 'q2Answer'];
+            numberInputs.forEach(id => {
+                const input = document.getElementById(id);
+                if (input) {
+                    input.addEventListener('input', function(e) {
+                        const cleaned = cleanAnswer(e.target.value);
+                        if (e.target.value !== cleaned) {
+                            e.target.value = cleaned;
+                        }
+                    });
                 }
             });
+        });
+    </script>
+    
+    <style>
+        .loading-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
         }
-    });
-});
+        
+        .loading-modal.show {
+            display: flex;
+        }
+        
+        .loading-content {
+            background: white;
+            padding: 40px 60px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #EA5A2F;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        #loadingText {
+            font-size: 18px;
+            color: #333;
+            font-weight: 600;
+        }
+    </style>
+</body>
+</html>
