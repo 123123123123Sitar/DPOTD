@@ -58,7 +58,9 @@ function hideWarning() {
 function enterFullscreen() {
     const elem = document.documentElement;
     if (elem.requestFullscreen) {
-        elem.requestFullscreen();
+        elem.requestFullscreen().catch(err => {
+            console.log('Fullscreen error:', err);
+        });
     } else if (elem.webkitRequestFullscreen) {
         elem.webkitRequestFullscreen();
     } else if (elem.msRequestFullscreen) {
@@ -287,6 +289,7 @@ function updateTimer() {
     const timerEl = document.getElementById('timer');
     timerEl.textContent = `Time Remaining: ${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     timerEl.style.display = 'block';
+    timerEl.style.color = '#000000'; // Black text
     
     // Change color when time is running out
     if (remaining < 10 * 60 * 1000) { // Less than 10 minutes
@@ -306,6 +309,11 @@ function cleanAnswer(answer) {
 }
 
 async function submitTest(isForced = false) {
+    if (!testActive && !isForced) {
+        console.log('Test not active, submission blocked');
+        return;
+    }
+
     const name = document.getElementById('studentName').value.trim();
     const email = document.getElementById('studentEmail').value.trim();
     const q1Answer = cleanAnswer(document.getElementById('q1Answer').value.trim());
@@ -354,7 +362,7 @@ async function submitTest(isForced = false) {
         const response = await fetch(SCRIPT_URL, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'text/plain',
             },
             body: JSON.stringify(submission)
         });
@@ -379,6 +387,10 @@ async function submitTest(isForced = false) {
             } else if (document.msExitFullscreen) {
                 document.msExitFullscreen();
             }
+            
+            // Hide question section after successful submit
+            document.getElementById('questionSection').style.display = 'none';
+            document.getElementById('studentForm').style.display = 'block';
         } else {
             showStatus('submitStatus', 'Error: ' + (result.error || 'Unknown error'), 'error');
             testActive = true; // Re-enable test if submission failed
