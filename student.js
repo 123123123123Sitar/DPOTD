@@ -1,6 +1,5 @@
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzRPyEM0A2oP_zU9GTq_tPintK4rU1e16IvGLgCV-P1G4-dsghsw7B_kkgAuPII56X0/exec';
 
-
 let startTime;
 let timerInterval;
 let questionsData;
@@ -245,33 +244,48 @@ async function startTest() {
 
         hideLoading();
 
-        // CRITICAL: Request fullscreen BEFORE changing screens
-        // This ensures fullscreen is triggered by the user's click action
-        try {
-            await document.documentElement.requestFullscreen();
-            console.log('Entered fullscreen successfully');
-            
-            // Now that we're in fullscreen, show the test
-            document.getElementById('studentForm').style.display = 'none';
-            document.getElementById('questionSection').style.display = 'block';
-            
-            // Lock the page and start monitoring
-            document.body.classList.add('locked');
-            testActive = true;
-            monitorFullscreen();
-            
-            // Start timer
-            startTime = Date.now();
-            q1StartTime = Date.now();
-            timerInterval = setInterval(updateTimer, 1000);
-            
-            // Update timer immediately
-            updateTimer();
-            
-        } catch (err) {
-            console.error('Fullscreen error:', err);
-            showStatus('startStatus', 'You must allow fullscreen mode to take the test. Please try again and click "Allow" when prompted.', 'error');
-        }
+        // Show fullscreen confirmation button
+        const confirmBtn = document.createElement('button');
+        confirmBtn.className = 'btn';
+        confirmBtn.style.marginTop = '20px';
+        confirmBtn.textContent = 'Enter Fullscreen & Begin Test';
+        confirmBtn.onclick = async function() {
+            try {
+                await document.documentElement.requestFullscreen();
+                console.log('Entered fullscreen successfully');
+                
+                // Remove the button
+                confirmBtn.remove();
+                
+                // Now that we're in fullscreen, show the test
+                document.getElementById('studentForm').style.display = 'none';
+                document.getElementById('questionSection').style.display = 'block';
+                
+                // Lock the page and start monitoring
+                document.body.classList.add('locked');
+                testActive = true;
+                monitorFullscreen();
+                
+                // Start timer
+                startTime = Date.now();
+                q1StartTime = Date.now();
+                timerInterval = setInterval(updateTimer, 1000);
+                
+                // Update timer immediately
+                updateTimer();
+                
+            } catch (err) {
+                console.error('Fullscreen error:', err);
+                alert('Fullscreen mode is required to take the test. Please allow fullscreen and try again.');
+            }
+        };
+        
+        // Add button to the form
+        const statusEl = document.getElementById('startStatus');
+        statusEl.textContent = 'Questions loaded! Click below to enter fullscreen mode and begin.';
+        statusEl.className = 'status success';
+        statusEl.style.display = 'block';
+        statusEl.parentElement.appendChild(confirmBtn);
 
         // Track question transitions
         document.getElementById('q1Answer').addEventListener('focus', () => {
