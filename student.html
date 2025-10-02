@@ -18,9 +18,12 @@
             padding: 20px;
         }
         
-        body.fullscreen-mode {
+        body.locked {
             padding: 0;
             overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
         }
         
         .container {
@@ -32,12 +35,13 @@
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
         
-        body.fullscreen-mode .container {
+        body.locked .container {
             max-width: 100%;
             height: 100vh;
             border-radius: 0;
             overflow-y: auto;
-            padding: 60px 40px 40px;
+            padding: 80px 40px 40px;
+            margin: 0;
         }
         
         h1 {
@@ -156,45 +160,67 @@
             font-size: 18px;
             font-weight: 600;
             color: #667eea;
-            z-index: 1000;
+            z-index: 10000;
         }
 
-        #studentForm {
-            display: block;
-        }
-
-        .fullscreen-warning {
+        .warning-overlay {
             display: none;
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
-            background: #ff6b6b;
+            bottom: 0;
+            background: rgba(220, 53, 69, 0.95);
+            z-index: 99999;
             color: white;
-            padding: 15px;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            font-size: 24px;
+            font-weight: 600;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .warning-overlay.show {
+            display: flex;
+        }
+
+        .warning-overlay p {
+            margin: 10px 0;
+        }
+
+        .warning-count {
+            font-size: 48px;
+            color: #ffc107;
+            margin: 20px 0;
+        }
+
+        body.locked::after {
+            content: 'TEST IN PROGRESS - DO NOT LEAVE THIS PAGE';
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #667eea;
+            color: white;
+            padding: 10px;
             text-align: center;
             font-weight: 600;
             z-index: 9999;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-
-        .fullscreen-warning.show {
-            display: block;
         }
     </style>
 </head>
 <body>
-    <div class="fullscreen-warning" id="fullscreenWarning">
-        ⚠️ WARNING: You have exited fullscreen mode! Return to fullscreen immediately or your test may be flagged.
+    <div class="warning-overlay" id="warningOverlay">
+        <p>⚠️ WARNING: YOU HAVE LEFT THE TEST PAGE!</p>
+        <div class="warning-count" id="warningCount">3</div>
+        <p>Return to the test immediately or it will be submitted automatically!</p>
+        <p style="font-size: 16px; margin-top: 20px;">Violations recorded: <span id="violationCount">0</span></p>
     </div>
 
     <div class="container">
-        <h1>🧮 Math Club Daily Problem</h1>
+        <h1>Math Club Daily Problem</h1>
         <p class="subtitle">Student Portal</p>
         
         <div id="studentForm">
@@ -251,7 +277,6 @@
     </div>
     
     <script>
-        // REPLACE THIS WITH YOUR ACTUAL GOOGLE APPS SCRIPT WEB APP URL
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzxkGRgLvAMg4UhU-vWO21b7TbW2Ms-wJhCpA5rB0U0sE-ZNQ-eEBUaRfOV8sA0ag47/exec';
         
         let startTime;
@@ -260,92 +285,9 @@
         let q1StartTime, q2StartTime, q3StartTime;
         let exitCount = 0;
         let exitLogs = [];
-        let fullscreenExits = 0;
-
-        // Fullscreen monitoring
-        function enterFullscreen() {
-            const elem = document.documentElement;
-            if (elem.requestFullscreen) {
-                elem.requestFullscreen();
-            } else if (elem.webkitRequestFullscreen) {
-                elem.webkitRequestFullscreen();
-            } else if (elem.msRequestFullscreen) {
-                elem.msRequestFullscreen();
-            }
-        }
-
-        function checkFullscreen() {
-            return !!(document.fullscreenElement || document.webkitFullscreenElement || 
-                     document.msFullscreenElement || document.mozFullScreenElement);
-        }
-
-        document.addEventListener('fullscreenchange', handleFullscreenChange);
-        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-        document.addEventListener('mozfullscreenchange', handleFullscreenChange);
-        document.addEventListener('MSFullscreenChange', handleFullscreenChange);
-
-        function handleFullscreenChange() {
-            if (!checkFullscreen() && document.getElementById('questionSection').style.display === 'block') {
-                fullscreenExits++;
-                exitCount++;
-                exitLogs.push({
-                    time: new Date().toISOString(),
-                    type: 'fullscreen_exit'
-                });
-                document.getElementById('fullscreenWarning').classList.add('show');
-                
-                // Auto re-enter fullscreen after 3 seconds
-                setTimeout(() => {
-                    if (!checkFullscreen()) {
-                        enterFullscreen();
-                    }
-                }, 3000);
-            } else {
-                document.getElementById('fullscreenWarning').classList.remove('show');
-                document.body.classList.add('fullscreen-mode');
-            }
-        }
-
-        // Track tab visibility
-        document.addEventListener('visibilitychange', function() {
-            if (document.hidden && document.getElementById('questionSection').style.display === 'block') {
-                exitCount++;
-                exitLogs.push({
-                    time: new Date().toISOString(),
-                    type: 'tab_hidden'
-                });
-            }
-        });
-
-        // Track window blur
-        window.addEventListener('blur', function() {
-            if (document.getElementById('questionSection').style.display === 'block') {
-                exitCount++;
-                exitLogs.push({
-                    time: new Date().toISOString(),
-                    type: 'window_blur'
-                });
-            }
-        });
-
-        // Prevent right-click during test
-        document.addEventListener('contextmenu', function(e) {
-            if (document.getElementById('questionSection').style.display === 'block') {
-                e.preventDefault();
-            }
-        });
-
-        // Prevent common shortcuts
-        document.addEventListener('keydown', function(e) {
-            if (document.getElementById('questionSection').style.display === 'block') {
-                // Prevent F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
-                if (e.keyCode === 123 || 
-                    (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) ||
-                    (e.ctrlKey && e.keyCode === 85)) {
-                    e.preventDefault();
-                }
-            }
-        });
+        let testActive = false;
+        let warningTimeout = null;
+        let autoSubmitTimeout = null;
 
         function showStatus(elementId, message, type) {
             const el = document.getElementById(elementId);
@@ -354,9 +296,92 @@
             el.style.display = 'block';
         }
 
-        function hideStatus(elementId) {
-            document.getElementById(elementId).style.display = 'none';
+        function recordViolation(type) {
+            if (!testActive) return;
+            
+            exitCount++;
+            exitLogs.push({
+                time: new Date().toISOString(),
+                type: type
+            });
+            
+            document.getElementById('violationCount').textContent = exitCount;
+            
+            // Show warning overlay
+            const overlay = document.getElementById('warningOverlay');
+            overlay.classList.add('show');
+            
+            // Clear previous timeouts
+            if (warningTimeout) clearTimeout(warningTimeout);
+            if (autoSubmitTimeout) clearTimeout(autoSubmitTimeout);
+            
+            // Countdown
+            let countdown = 3;
+            document.getElementById('warningCount').textContent = countdown;
+            
+            warningTimeout = setInterval(() => {
+                countdown--;
+                document.getElementById('warningCount').textContent = countdown;
+                if (countdown <= 0) {
+                    clearInterval(warningTimeout);
+                }
+            }, 1000);
+            
+            // Auto-submit after 10 seconds if they don't return
+            autoSubmitTimeout = setTimeout(() => {
+                submitTest(true); // Force submit
+            }, 10000);
         }
+
+        function hideWarning() {
+            document.getElementById('warningOverlay').classList.remove('show');
+            if (warningTimeout) clearTimeout(warningTimeout);
+            if (autoSubmitTimeout) clearTimeout(autoSubmitTimeout);
+        }
+
+        // Monitor visibility changes
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden && testActive) {
+                recordViolation('tab_hidden');
+            } else if (!document.hidden && testActive) {
+                hideWarning();
+            }
+        });
+
+        // Monitor window blur
+        window.addEventListener('blur', function() {
+            if (testActive) {
+                recordViolation('window_blur');
+            }
+        });
+
+        // Return to window
+        window.addEventListener('focus', function() {
+            if (testActive) {
+                hideWarning();
+            }
+        });
+
+        // Prevent common shortcuts during test
+        document.addEventListener('keydown', function(e) {
+            if (testActive) {
+                if (e.keyCode === 123 || // F12
+                    (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || // Ctrl+Shift+I/J
+                    (e.ctrlKey && e.keyCode === 85) || // Ctrl+U
+                    (e.metaKey && e.altKey && (e.keyCode === 73 || e.keyCode === 74))) { // Cmd+Option+I/J
+                    e.preventDefault();
+                    recordViolation('attempted_devtools');
+                }
+            }
+        });
+
+        // Prevent right-click during test
+        document.addEventListener('contextmenu', function(e) {
+            if (testActive) {
+                e.preventDefault();
+                recordViolation('right_click');
+            }
+        });
 
         async function startTest() {
             const name = document.getElementById('studentName').value.trim();
@@ -368,19 +393,11 @@
                 return;
             }
 
-            if (!SCRIPT_URL || SCRIPT_URL.includes('YOUR_DEPLOYMENT_ID')) {
-                showStatus('startStatus', 'Error: Script URL not configured. Please update SCRIPT_URL in the code.', 'error');
-                return;
-            }
-
             showStatus('startStatus', 'Loading questions...', 'info');
 
             try {
                 // Check if already submitted
-                const checkResponse = await fetch(`${SCRIPT_URL}?action=checkSubmission&email=${encodeURIComponent(email)}&day=${day}`, {
-                    method: 'GET',
-                    redirect: 'follow'
-                });
+                const checkResponse = await fetch(`${SCRIPT_URL}?action=checkSubmission&email=${encodeURIComponent(email)}&day=${day}`);
                 const checkData = await checkResponse.json();
                 
                 if (checkData.exists) {
@@ -389,10 +406,7 @@
                 }
 
                 // Get questions
-                const response = await fetch(`${SCRIPT_URL}?action=getQuestions&day=${day}`, {
-                    method: 'GET',
-                    redirect: 'follow'
-                });
+                const response = await fetch(`${SCRIPT_URL}?action=getQuestions&day=${day}`);
                 questionsData = await response.json();
 
                 if (questionsData.error) {
@@ -408,9 +422,10 @@
                 // Hide form, show questions
                 document.getElementById('studentForm').style.display = 'none';
                 document.getElementById('questionSection').style.display = 'block';
-
-                // Enter fullscreen
-                enterFullscreen();
+                
+                // Lock the page
+                document.body.classList.add('locked');
+                testActive = true;
 
                 // Start timer
                 startTime = Date.now();
@@ -418,10 +433,10 @@
                 timerInterval = setInterval(updateTimer, 1000);
 
                 // Track question transitions
-                document.getElementById('q1Answer').addEventListener('blur', () => {
+                document.getElementById('q1Answer').addEventListener('focus', () => {
                     if (!q2StartTime) q2StartTime = Date.now();
                 });
-                document.getElementById('q2Answer').addEventListener('blur', () => {
+                document.getElementById('q2Answer').addEventListener('focus', () => {
                     if (!q3StartTime) q3StartTime = Date.now();
                 });
 
@@ -432,13 +447,14 @@
         }
 
         function updateTimer() {
+            if (!startTime) return;
             const elapsed = Math.floor((Date.now() - startTime) / 1000);
             const minutes = Math.floor(elapsed / 60);
             const seconds = elapsed % 60;
             document.getElementById('timer').textContent = `Time: ${minutes}:${seconds.toString().padStart(2, '0')}`;
         }
 
-        async function submitTest() {
+        async function submitTest(isForced = false) {
             const name = document.getElementById('studentName').value.trim();
             const email = document.getElementById('studentEmail').value.trim();
             const day = document.getElementById('daySelect').value;
@@ -446,11 +462,12 @@
             const q2Answer = document.getElementById('q2Answer').value.trim();
             const q3Answer = document.getElementById('q3Answer').value.trim();
 
-            if (!q1Answer || !q2Answer || !q3Answer) {
+            if (!isForced && (!q1Answer || !q2Answer || !q3Answer)) {
                 showStatus('submitStatus', 'Please answer all questions', 'error');
                 return;
             }
 
+            testActive = false;
             clearInterval(timerInterval);
             const endTime = Date.now();
             const totalTime = Math.floor((endTime - startTime) / 1000);
@@ -458,12 +475,11 @@
             const q2Time = q3StartTime ? Math.floor((q3StartTime - q2StartTime) / 1000) : 0;
             const q3Time = Math.floor((endTime - (q3StartTime || q2StartTime || q1StartTime)) / 1000);
 
-            // Check answers (case-insensitive trim)
+            // Check answers
             const q1Correct = q1Answer.toLowerCase().trim() === questionsData.q1_answer.toLowerCase().trim();
             const q2Correct = q2Answer.toLowerCase().trim() === questionsData.q2_answer.toLowerCase().trim();
 
             const submission = {
-                action: 'submitTest',
                 studentName: name,
                 studentEmail: email,
                 day: day,
@@ -477,42 +493,48 @@
                 q3_time: q3Time,
                 totalTime: totalTime,
                 exitCount: exitCount,
-                exitLogs: JSON.stringify(exitLogs),
+                exitLogs: exitLogs,
                 workFileURL: ''
             };
 
-            showStatus('submitStatus', 'Submitting...', 'info');
+            showStatus('submitStatus', isForced ? 'Auto-submitting due to violations...' : 'Submitting...', 'info');
             document.querySelector('#questionSection .btn').disabled = true;
 
             try {
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    mode: 'no-cors',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'text/plain'
                     },
                     body: JSON.stringify(submission)
                 });
 
-                // With no-cors, we can't read the response, so assume success
-                showStatus('submitStatus', '✅ Test submitted successfully! You can now exit fullscreen.', 'success');
-                
-                // Exit fullscreen after submission
-                setTimeout(() => {
-                    if (document.exitFullscreen) {
-                        document.exitFullscreen();
-                    } else if (document.webkitExitFullscreen) {
-                        document.webkitExitFullscreen();
-                    } else if (document.msExitFullscreen) {
-                        document.msExitFullscreen();
-                    }
-                }, 2000);
+                const result = await response.json();
 
+                if (result.success) {
+                    showStatus('submitStatus', isForced ? 
+                        '⚠️ Test auto-submitted due to violations!' : 
+                        '✅ Test submitted successfully!', 
+                        isForced ? 'error' : 'success');
+                    document.body.classList.remove('locked');
+                    hideWarning();
+                } else {
+                    showStatus('submitStatus', 'Error: ' + (result.error || 'Unknown error'), 'error');
+                }
             } catch (error) {
-                showStatus('submitStatus', 'Submission may have succeeded (CORS limitation). Check with admin.', 'info');
+                showStatus('submitStatus', 'Error submitting: ' + error.message, 'error');
                 console.error('Error:', error);
             }
         }
+
+        // Warn before leaving page
+        window.addEventListener('beforeunload', function(e) {
+            if (testActive) {
+                e.preventDefault();
+                e.returnValue = '';
+                return '';
+            }
+        });
     </script>
 </body>
 </html>
