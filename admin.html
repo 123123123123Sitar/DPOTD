@@ -3,218 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Math Club - Admin Portal</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-        }
-        
-        h1 {
-            color: #f5576c;
-            margin-bottom: 10px;
-            text-align: center;
-        }
-        
-        .subtitle {
-            text-align: center;
-            color: #666;
-            margin-bottom: 30px;
-        }
-        
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #e0e0e0;
-        }
-        
-        .tab {
-            padding: 12px 24px;
-            background: none;
-            border: none;
-            font-size: 16px;
-            font-weight: 600;
-            color: #666;
-            cursor: pointer;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s;
-        }
-        
-        .tab:hover {
-            color: #f5576c;
-        }
-        
-        .tab.active {
-            color: #f5576c;
-            border-bottom-color: #f5576c;
-        }
-        
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: 600;
-        }
-        
-        input, select, textarea {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-        }
-        
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: #f5576c;
-        }
-        
-        .btn {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
-            padding: 15px 30px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-        }
-        
-        .btn-secondary {
-            background: #6c757d;
-        }
-        
-        .status {
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 20px;
-            display: none;
-        }
-        
-        .status.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-            display: block;
-        }
-        
-        .status.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-            display: block;
-        }
-        
-        .status.info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-            display: block;
-        }
-        
-        .submission-card {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            border-left: 4px solid #f5576c;
-        }
-        
-        .submission-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        
-        .submission-details {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 10px;
-            margin-top: 10px;
-        }
-        
-        .detail-item {
-            font-size: 14px;
-        }
-        
-        .detail-label {
-            font-weight: 600;
-            color: #666;
-        }
-        
-        .correct {
-            color: #28a745;
-            font-weight: 600;
-        }
-        
-        .incorrect {
-            color: #dc3545;
-            font-weight: 600;
-        }
-
-        .question-group {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
-
-        .question-group h3 {
-            color: #f5576c;
-            margin-bottom: 15px;
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .btn-group .btn {
-            flex: 1;
-        }
-    </style>
+    <title>D.PotD Admin Portal</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
-        <h1>🔧 Math Club Admin Portal</h1>
+        <h1>D.PotD Admin Portal</h1>
         <p class="subtitle">Manage Questions, Schedule & View Submissions</p>
         
         <div class="tabs">
@@ -238,31 +32,31 @@
             </div>
             
             <div class="question-group">
-                <h3>Question 1</h3>
+                <h3>Question 1 (Auto-Graded)</h3>
                 <div class="form-group">
                     <label>Question Text:</label>
                     <textarea id="q1Text" rows="3"></textarea>
                 </div>
                 <div class="form-group">
-                    <label>Answer:</label>
-                    <input type="text" id="q1Answer">
+                    <label>Answer (numbers only):</label>
+                    <input type="text" id="q1Answer" placeholder="e.g., 42 or -15">
                 </div>
             </div>
             
             <div class="question-group">
-                <h3>Question 2</h3>
+                <h3>Question 2 (Auto-Graded)</h3>
                 <div class="form-group">
                     <label>Question Text:</label>
                     <textarea id="q2Text" rows="3"></textarea>
                 </div>
                 <div class="form-group">
-                    <label>Answer:</label>
-                    <input type="text" id="q2Answer">
+                    <label>Answer (numbers only):</label>
+                    <input type="text" id="q2Answer" placeholder="e.g., 42 or -15">
                 </div>
             </div>
             
             <div class="question-group">
-                <h3>Question 3 (Proof/Explanation)</h3>
+                <h3>Question 3 (Manually Graded - Proof/Explanation)</h3>
                 <div class="form-group">
                     <label>Question Text:</label>
                     <textarea id="q3Text" rows="3"></textarea>
@@ -279,7 +73,7 @@
         
         <!-- Schedule Tab -->
         <div id="schedule" class="tab-content">
-            <p style="color: #666; margin-bottom: 20px;">Set when each day's test becomes available (format: YYYY-MM-DD HH:MM:SS)</p>
+            <p style="color: #666; margin-bottom: 20px;">Set when each day's test becomes available. Students will automatically see the correct day based on the current date/time.</p>
             
             <div class="form-group">
                 <label>Day 1 Opens:</label>
@@ -335,269 +129,88 @@
         <div id="submissions" class="tab-content">
             <div class="btn-group">
                 <button class="btn" onclick="loadSubmissions()">Refresh Submissions</button>
+                <button class="btn" onclick="exportToCSV()" style="background: #28a745;">Export to CSV</button>
             </div>
             <div id="submissionsContainer"></div>
             <div id="submissionsStatus" class="status"></div>
         </div>
     </div>
     
-    <script>
-        // REPLACE THIS WITH YOUR ACTUAL GOOGLE APPS SCRIPT WEB APP URL
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzxkGRgLvAMg4UhU-vWO21b7TbW2Ms-wJhCpA5rB0U0sE-ZNQ-eEBUaRfOV8sA0ag47/exec';
-
-        function showStatus(elementId, message, type) {
-            const el = document.getElementById(elementId);
-            el.textContent = message;
-            el.className = 'status ' + type;
-            el.style.display = 'block';
+    <script src="admin.js"></script>
+    
+    <style>
+        .submission-card {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            
-            event.target.classList.add('active');
-            document.getElementById(tabName).classList.add('active');
-            
-            if (tabName === 'questions') loadQuestions();
-            if (tabName === 'schedule') loadSchedule();
-            if (tabName === 'settings') loadSettings();
-            if (tabName === 'submissions') loadSubmissions();
+        
+        .submission-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e9ecef;
         }
-
-        async function loadQuestions() {
-            const day = document.getElementById('questionDay').value;
-            
-            if (!SCRIPT_URL || SCRIPT_URL.includes('YOUR_DEPLOYMENT_ID')) {
-                showStatus('questionStatus', 'Error: Script URL not configured', 'error');
-                return;
-            }
-
-            try {
-                const response = await fetch(`${SCRIPT_URL}?action=getQuestions&day=${day}`);
-                const data = await response.json();
-                
-                if (data.error) {
-                    document.getElementById('q1Text').value = '';
-                    document.getElementById('q1Answer').value = '';
-                    document.getElementById('q2Text').value = '';
-                    document.getElementById('q2Answer').value = '';
-                    document.getElementById('q3Text').value = '';
-                    document.getElementById('q3Answer').value = '';
-                } else {
-                    document.getElementById('q1Text').value = data.q1_text || '';
-                    document.getElementById('q1Answer').value = data.q1_answer || '';
-                    document.getElementById('q2Text').value = data.q2_text || '';
-                    document.getElementById('q2Answer').value = data.q2_answer || '';
-                    document.getElementById('q3Text').value = data.q3_text || '';
-                    document.getElementById('q3Answer').value = data.q3_answer || '';
-                }
-            } catch (error) {
-                showStatus('questionStatus', 'Error loading questions: ' + error.message, 'error');
-            }
+        
+        .submission-header h3 {
+            margin: 0;
+            color: #212529;
         }
-
-        async function saveQuestions() {
-            const day = document.getElementById('questionDay').value;
-            const data = {
-                day: day,
-                q1_text: document.getElementById('q1Text').value,
-                q1_answer: document.getElementById('q1Answer').value,
-                q2_text: document.getElementById('q2Text').value,
-                q2_answer: document.getElementById('q2Answer').value,
-                q3_text: document.getElementById('q3Text').value,
-                q3_answer: document.getElementById('q3Answer').value
-            };
-
-            showStatus('questionStatus', 'Saving...', 'info');
-
-            try {
-                const response = await fetch(`${SCRIPT_URL}?action=saveQuestions`, {
-                    method: 'POST',
-                    body: JSON.stringify(data)
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    showStatus('questionStatus', '✅ Questions saved successfully!', 'success');
-                } else {
-                    showStatus('questionStatus', 'Error: ' + (result.error || 'Unknown error'), 'error');
-                }
-            } catch (error) {
-                showStatus('questionStatus', 'Error saving: ' + error.message, 'error');
-            }
+        
+        .submission-details {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
-
-        async function loadSchedule() {
-            try {
-                const response = await fetch(`${SCRIPT_URL}?action=getSchedule`);
-                const data = await response.json();
-                
-                for (let i = 1; i <= 5; i++) {
-                    const value = data[`day${i}`];
-                    if (value) {
-                        const date = new Date(value);
-                        const formatted = date.toISOString().slice(0, 16);
-                        document.getElementById(`day${i}`).value = formatted;
-                    }
-                }
-            } catch (error) {
-                showStatus('scheduleStatus', 'Error loading schedule: ' + error.message, 'error');
-            }
+        
+        .detail-item {
+            padding: 8px 0;
         }
-
-        async function saveSchedule() {
-            const data = {};
-            
-            for (let i = 1; i <= 5; i++) {
-                const value = document.getElementById(`day${i}`).value;
-                if (value) {
-                    const date = new Date(value);
-                    data[`day${i}`] = date.toISOString().replace('T', ' ').slice(0, 19);
-                }
-            }
-
-            showStatus('scheduleStatus', 'Saving...', 'info');
-
-            try {
-                const response = await fetch(`${SCRIPT_URL}?action=saveSchedule`, {
-                    method: 'POST',
-                    body: JSON.stringify(data)
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    showStatus('scheduleStatus', '✅ Schedule saved successfully!', 'success');
-                } else {
-                    showStatus('scheduleStatus', 'Error: ' + (result.error || 'Unknown error'), 'error');
-                }
-            } catch (error) {
-                showStatus('scheduleStatus', 'Error saving: ' + error.message, 'error');
-            }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #495057;
+            margin-right: 8px;
         }
-
-        async function loadSettings() {
-            try {
-                const response = await fetch(`${SCRIPT_URL}?action=getSettings`);
-                const data = await response.json();
-                
-                document.getElementById('adminEmail').value = data['Admin Email'] || '';
-                document.getElementById('testDuration').value = data['Test Duration'] || 120;
-                document.getElementById('uploadTime').value = data['Upload Time'] || 30;
-            } catch (error) {
-                showStatus('settingsStatus', 'Error loading settings: ' + error.message, 'error');
-            }
+        
+        .correct {
+            color: #28a745;
+            font-weight: bold;
         }
-
-        async function saveSettings() {
-            const data = {
-                'Admin Email': document.getElementById('adminEmail').value,
-                'Test Duration': document.getElementById('testDuration').value,
-                'Upload Time': document.getElementById('uploadTime').value
-            };
-
-            showStatus('settingsStatus', 'Saving...', 'info');
-
-            try {
-                const response = await fetch(`${SCRIPT_URL}?action=saveSettings`, {
-                    method: 'POST',
-                    body: JSON.stringify(data)
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    showStatus('settingsStatus', '✅ Settings saved successfully!', 'success');
-                } else {
-                    showStatus('settingsStatus', 'Error: ' + (result.error || 'Unknown error'), 'error');
-                }
-            } catch (error) {
-                showStatus('settingsStatus', 'Error saving: ' + error.message, 'error');
-            }
+        
+        .incorrect {
+            color: #dc3545;
+            font-weight: bold;
         }
-
-        async function loadSubmissions() {
-            const container = document.getElementById('submissionsContainer');
-            container.innerHTML = '<p style="color: #666;">Loading submissions...</p>';
-
-            try {
-                const response = await fetch(`${SCRIPT_URL}?action=getSubmissions`);
-                const submissions = await response.json();
-                
-                if (submissions.error) {
-                    showStatus('submissionsStatus', 'Error: ' + submissions.error, 'error');
-                    return;
-                }
-
-                if (submissions.length === 0) {
-                    container.innerHTML = '<p style="color: #666; text-align: center; padding: 40px;">No submissions yet.</p>';
-                    return;
-                }
-
-                container.innerHTML = '';
-                
-                submissions.reverse().forEach(sub => {
-                    const card = document.createElement('div');
-                    card.className = 'submission-card';
-                    
-                    const timestamp = new Date(sub.timestamp).toLocaleString();
-                    
-                    card.innerHTML = `
-                        <div class="submission-header">
-                            <h3>${sub.studentName}</h3>
-                            <span style="color: #666;">Day ${sub.day}</span>
-                        </div>
-                        <div class="submission-details">
-                            <div class="detail-item">
-                                <span class="detail-label">Email:</span> ${sub.studentEmail}
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Submitted:</span> ${timestamp}
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Q1:</span> 
-                                <span class="${sub.q1_correct ? 'correct' : 'incorrect'}">
-                                    ${sub.q1_correct ? '✓ Correct' : '✗ Incorrect'}
-                                </span> (${sub.q1_answer})
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Q2:</span> 
-                                <span class="${sub.q2_correct ? 'correct' : 'incorrect'}">
-                                    ${sub.q2_correct ? '✓ Correct' : '✗ Incorrect'}
-                                </span> (${sub.q2_answer})
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Q3 Answer:</span> ${sub.q3_answer.substring(0, 50)}${sub.q3_answer.length > 50 ? '...' : ''}
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Total Time:</span> ${Math.floor(sub.totalTime / 60)}m ${sub.totalTime % 60}s
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Exit Count:</span> ${sub.exitCount}
-                            </div>
-                            ${sub.workFileURL ? `<div class="detail-item"><a href="${sub.workFileURL}" target="_blank">View Uploaded Work</a></div>` : ''}
-                        </div>
-                    `;
-                    
-                    container.appendChild(card);
-                });
-                
-                showStatus('submissionsStatus', `Loaded ${submissions.length} submission(s)`, 'success');
-            } catch (error) {
-                showStatus('submissionsStatus', 'Error loading submissions: ' + error.message, 'error');
-                container.innerHTML = '<p style="color: #dc3545; text-align: center; padding: 40px;">Error loading submissions</p>';
-            }
+        
+        .violation-details {
+            margin-top: 10px;
+            padding: 10px;
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            border-radius: 4px;
         }
-
-        // Load initial data
-        window.addEventListener('load', () => {
-            if (!SCRIPT_URL || SCRIPT_URL.includes('YOUR_DEPLOYMENT_ID')) {
-                alert('⚠️ Please update the SCRIPT_URL in the code with your Google Apps Script deployment URL');
-            }
-            loadQuestions();
-        });
-    </script>
+        
+        .violation-details ul {
+            margin: 5px 0 0 20px;
+            padding: 0;
+        }
+        
+        .violation-details li {
+            color: #856404;
+            font-size: 14px;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+    </style>
 </body>
 </html>
