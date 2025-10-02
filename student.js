@@ -54,18 +54,6 @@ function hideWarning() {
     document.getElementById('warningOverlay').classList.remove('show');
 }
 
-// Request fullscreen
-function enterFullscreen() {
-    return document.documentElement.requestFullscreen().then(() => {
-        console.log('Entered fullscreen successfully');
-        return true;
-    }).catch(err => {
-        console.error('Fullscreen error:', err);
-        alert('You must allow fullscreen mode to take the test.');
-        return false;
-    });
-}
-
 // Monitor fullscreen changes - force back into fullscreen if user exits
 function handleFullscreenChange() {
     if (!document.fullscreenElement && testActive) {
@@ -256,30 +244,34 @@ async function startTest() {
 
         hideLoading();
 
-        // Enter fullscreen mode first, then show questions
-        const fullscreenSuccess = await enterFullscreen();
-        
-        if (!fullscreenSuccess) {
-            showStatus('startStatus', 'You must allow fullscreen mode to take the test.', 'error');
-            return;
-        }
-
-        // Hide form, show questions
+        // Hide form, show questions FIRST
         document.getElementById('studentForm').style.display = 'none';
         document.getElementById('questionSection').style.display = 'block';
         
         // Lock the page and start monitoring
         document.body.classList.add('locked');
         testActive = true;
-        monitorFullscreen();
 
-        // Start timer
-        startTime = Date.now();
-        q1StartTime = Date.now();
-        timerInterval = setInterval(updateTimer, 1000);
-        
-        // Update timer immediately
-        updateTimer();
+        // Enter fullscreen mode and start test
+        document.documentElement.requestFullscreen().then(() => {
+            console.log('Entered fullscreen successfully');
+            monitorFullscreen();
+            
+            // Start timer
+            startTime = Date.now();
+            q1StartTime = Date.now();
+            timerInterval = setInterval(updateTimer, 1000);
+            
+            // Update timer immediately
+            updateTimer();
+        }).catch(() => {
+            alert('You must allow fullscreen mode to take the test.');
+            // Reset if fullscreen denied
+            document.getElementById('studentForm').style.display = 'block';
+            document.getElementById('questionSection').style.display = 'none';
+            document.body.classList.remove('locked');
+            testActive = false;
+        });
 
         // Track question transitions
         document.getElementById('q1Answer').addEventListener('focus', () => {
