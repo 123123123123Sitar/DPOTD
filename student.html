@@ -18,6 +18,11 @@
             padding: 20px;
         }
         
+        body.fullscreen-mode {
+            padding: 0;
+            overflow: hidden;
+        }
+        
         .container {
             max-width: 800px;
             margin: 0 auto;
@@ -25,6 +30,14 @@
             border-radius: 20px;
             padding: 40px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        body.fullscreen-mode .container {
+            max-width: 100%;
+            height: 100vh;
+            border-radius: 0;
+            overflow-y: auto;
+            padding: 60px 40px 40px;
         }
         
         h1 {
@@ -149,9 +162,37 @@
         #studentForm {
             display: block;
         }
+
+        .fullscreen-warning {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #ff6b6b;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: 600;
+            z-index: 9999;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .fullscreen-warning.show {
+            display: block;
+        }
     </style>
 </head>
 <body>
+    <div class="fullscreen-warning" id="fullscreenWarning">
+        ⚠️ WARNING: You have exited fullscreen mode! Return to fullscreen immediately or your test may be flagged.
+    </div>
+
     <div class="container">
         <h1>🧮 Math Club Daily Problem</h1>
         <p class="subtitle">Student Portal</p>
@@ -219,10 +260,55 @@
         let q1StartTime, q2StartTime, q3StartTime;
         let exitCount = 0;
         let exitLogs = [];
+        let fullscreenExits = 0;
+
+        // Fullscreen monitoring
+        function enterFullscreen() {
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem.webkitRequestFullscreen) {
+                elem.webkitRequestFullscreen();
+            } else if (elem.msRequestFullscreen) {
+                elem.msRequestFullscreen();
+            }
+        }
+
+        function checkFullscreen() {
+            return !!(document.fullscreenElement || document.webkitFullscreenElement || 
+                     document.msFullscreenElement || document.mozFullScreenElement);
+        }
+
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+        document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+        document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+        function handleFullscreenChange() {
+            if (!checkFullscreen() && document.getElementById('questionSection').style.display === 'block') {
+                fullscreenExits++;
+                exitCount++;
+                exitLogs.push({
+                    time: new Date().toISOString(),
+                    type: 'fullscreen_exit'
+                });
+                document.getElementById('fullscreenWarning').classList.add('show');
+                
+                // Auto re-enter fullscreen after 3 seconds
+                setTimeout(() => {
+                    if (!checkFullscreen()) {
+                        enterFullscreen();
+                    }
+                }, 3000);
+            } else {
+                document.getElementById('fullscreenWarning').classList.remove('show');
+                document.body.classList.add('fullscreen-mode');
+            }
+        }
 
         // Track tab visibility
         document.addEventListener('visibilitychange', function() {
-            if (document.hidden) {
+            if (document.hidden && document.getElementById('questionSection').style.display === 'block') {
                 exitCount++;
                 exitLogs.push({
                     time: new Date().toISOString(),
@@ -233,11 +319,32 @@
 
         // Track window blur
         window.addEventListener('blur', function() {
-            exitCount++;
-            exitLogs.push({
-                time: new Date().toISOString(),
-                type: 'window_blur'
-            });
+            if (document.getElementById('questionSection').style.display === 'block') {
+                exitCount++;
+                exitLogs.push({
+                    time: new Date().toISOString(),
+                    type: 'window_blur'
+                });
+            }
+        });
+
+        // Prevent right-click during test
+        document.addEventListener('contextmenu', function(e) {
+            if (document.getElementById('questionSection').style.display === 'block') {
+                e.preventDefault();
+            }
+        });
+
+        // Prevent common shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (document.getElementById('questionSection').style.display === 'block') {
+                // Prevent F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+                if (e.keyCode === 123 || 
+                    (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) ||
+                    (e.ctrlKey && e.keyCode === 85)) {
+                    e.preventDefault();
+                }
+            }
         });
 
         function showStatus(elementId, message, type) {
@@ -270,7 +377,10 @@
 
             try {
                 // Check if already submitted
-                const checkResponse = await fetch(`${SCRIPT_URL}?action=checkSubmission&email=${encodeURIComponent(email)}&day=${day}`);
+                const checkResponse = await fetch(`${SCRIPT_URL}?action=checkSubmission&email=${encodeURIComponent(email)}&day=${day}`, {
+                    method: 'GET',
+                    redirect: 'follow'
+                });
                 const checkData = await checkResponse.json();
                 
                 if (checkData.exists) {
@@ -279,7 +389,10 @@
                 }
 
                 // Get questions
-                const response = await fetch(`${SCRIPT_URL}?action=getQuestions&day=${day}`);
+                const response = await fetch(`${SCRIPT_URL}?action=getQuestions&day=${day}`, {
+                    method: 'GET',
+                    redirect: 'follow'
+                });
                 questionsData = await response.json();
 
                 if (questionsData.error) {
@@ -295,6 +408,9 @@
                 // Hide form, show questions
                 document.getElementById('studentForm').style.display = 'none';
                 document.getElementById('questionSection').style.display = 'block';
+
+                // Enter fullscreen
+                enterFullscreen();
 
                 // Start timer
                 startTime = Date.now();
@@ -347,6 +463,7 @@
             const q2Correct = q2Answer.toLowerCase().trim() === questionsData.q2_answer.toLowerCase().trim();
 
             const submission = {
+                action: 'submitTest',
                 studentName: name,
                 studentEmail: email,
                 day: day,
@@ -360,31 +477,39 @@
                 q3_time: q3Time,
                 totalTime: totalTime,
                 exitCount: exitCount,
-                exitLogs: exitLogs,
+                exitLogs: JSON.stringify(exitLogs),
                 workFileURL: ''
             };
 
             showStatus('submitStatus', 'Submitting...', 'info');
+            document.querySelector('#questionSection .btn').disabled = true;
 
             try {
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    body: JSON.stringify(submission),
+                    mode: 'no-cors',
                     headers: {
                         'Content-Type': 'application/json'
-                    }
+                    },
+                    body: JSON.stringify(submission)
                 });
 
-                const result = await response.json();
+                // With no-cors, we can't read the response, so assume success
+                showStatus('submitStatus', '✅ Test submitted successfully! You can now exit fullscreen.', 'success');
+                
+                // Exit fullscreen after submission
+                setTimeout(() => {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    } else if (document.webkitExitFullscreen) {
+                        document.webkitExitFullscreen();
+                    } else if (document.msExitFullscreen) {
+                        document.msExitFullscreen();
+                    }
+                }, 2000);
 
-                if (result.success) {
-                    showStatus('submitStatus', '✅ Test submitted successfully!', 'success');
-                    document.querySelector('#questionSection .btn').disabled = true;
-                } else {
-                    showStatus('submitStatus', 'Error: ' + (result.error || 'Unknown error'), 'error');
-                }
             } catch (error) {
-                showStatus('submitStatus', 'Error submitting: ' + error.message, 'error');
+                showStatus('submitStatus', 'Submission may have succeeded (CORS limitation). Check with admin.', 'info');
                 console.error('Error:', error);
             }
         }
