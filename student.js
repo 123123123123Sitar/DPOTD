@@ -45,8 +45,19 @@ function recordViolation(type) {
     
     document.getElementById('violationCount').textContent = exitCount;
     
-    // Show warning overlay
+    // Show warning overlay with return button
     const overlay = document.getElementById('warningOverlay');
+    const warningText = overlay.querySelector('p:first-child');
+    
+    // Update warning text based on violation type
+    if (type === 'exited_fullscreen') {
+        warningText.innerHTML = '<strong>⚠️ WARNING: YOU EXITED FULLSCREEN MODE!</strong>';
+    } else if (type === 'tab_hidden') {
+        warningText.innerHTML = '<strong>⚠️ WARNING: YOU SWITCHED TABS!</strong>';
+    } else {
+        warningText.innerHTML = '<strong>⚠️ WARNING: YOU LEFT THE TEST PAGE!</strong>';
+    }
+    
     overlay.classList.add('show');
 }
 
@@ -55,6 +66,17 @@ function hideWarning() {
     if (overlay) {
         overlay.classList.remove('show');
     }
+}
+
+// Function to return to fullscreen from warning overlay
+function returnToFullscreen() {
+    document.documentElement.requestFullscreen().then(() => {
+        console.log('Returned to fullscreen');
+        hideWarning();
+    }).catch((err) => {
+        alert('Please allow fullscreen mode to continue the test.');
+        console.error('Fullscreen error:', err);
+    });
 }
 
 // Monitor fullscreen changes - force back into fullscreen if user exits
@@ -427,10 +449,7 @@ async function submitTest(isForced = false) {
         hideLoading();
 
         if (result.success) {
-            showStatus('submitStatus', isForced ? 
-                '⚠️ Test auto-submitted (time expired)!' : 
-                '✅ Test submitted successfully!', 
-                isForced ? 'error' : 'success');
+            testActive = false;
             document.body.classList.remove('locked');
             hideWarning();
             
@@ -443,9 +462,72 @@ async function submitTest(isForced = false) {
                 document.msExitFullscreen();
             }
             
-            // Hide question section after successful submit
+            // Show results
             document.getElementById('questionSection').style.display = 'none';
-            document.getElementById('studentForm').style.display = 'block';
+            
+            // Create results display
+            const resultsHTML = `
+                <div style="text-align: center; padding: 40px 20px;">
+                    <h1 style="color: #28a745; margin-bottom: 20px;">✅ Test Submitted Successfully!</h1>
+                    <p style="font-size: 18px; color: #666; margin-bottom: 30px;">
+                        Thanks for submitting! Your score will be emailed to you soon.
+                    </p>
+                    
+                    <div style="background: #f8f9fa; padding: 30px; border-radius: 8px; border-left: 4px solid #EA5A2F; max-width: 500px; margin: 0 auto;">
+                        <h2 style="margin-bottom: 20px; color: #000;">Your Results</h2>
+                        
+                        <div style="text-align: left; margin-bottom: 15px;">
+                            <strong style="color: #495057;">Question 1:</strong> 
+                            <span class="${q1Correct ? 'correct' : 'incorrect'}" style="font-size: 18px; margin-left: 10px;">
+                                ${q1Correct ? '✓ Correct' : '✗ Incorrect'}
+                            </span>
+                            <div style="color: #666; font-size: 14px; margin-top: 5px;">
+                                Your answer: ${q1Answer}
+                            </div>
+                        </div>
+                        
+                        <div style="text-align: left; margin-bottom: 15px;">
+                            <strong style="color: #495057;">Question 2:</strong> 
+                            <span class="${q2Correct ? 'correct' : 'incorrect'}" style="font-size: 18px; margin-left: 10px;">
+                                ${q2Correct ? '✓ Correct' : '✗ Incorrect'}
+                            </span>
+                            <div style="color: #666; font-size: 14px; margin-top: 5px;">
+                                Your answer: ${q2Answer}
+                            </div>
+                        </div>
+                        
+                        <div style="text-align: left;">
+                            <strong style="color: #495057;">Question 3:</strong> 
+                            <span style="color: #666; font-size: 14px; margin-left: 10px;">
+                                Will be graded manually
+                            </span>
+                        </div>
+                        
+                        <div style="margin-top: 25px; padding-top: 20px; border-top: 2px solid #E3E3E3;">
+                            <strong style="color: #495057;">Total Time:</strong> 
+                            <span style="color: #000; font-size: 18px; margin-left: 10px;">
+                                ${Math.floor(totalTime / 60)} minutes ${totalTime % 60} seconds
+                            </span>
+                        </div>
+                        
+                        ${exitCount > 0 ? `
+                        <div style="margin-top: 15px; padding: 15px; background: #fff3cd; border-radius: 6px;">
+                            <strong style="color: #856404;">⚠️ Violations: ${exitCount}</strong>
+                            <div style="color: #856404; font-size: 14px; margin-top: 5px;">
+                                These have been recorded and may affect your score.
+                            </div>
+                        </div>
+                        ` : ''}
+                    </div>
+                    
+                    <button class="btn" onclick="window.location.reload()" style="max-width: 300px; margin: 30px auto 0;">
+                        Back to Home
+                    </button>
+                </div>
+            `;
+            
+            document.querySelector('.container').innerHTML = resultsHTML;
+            
         } else {
             showStatus('submitStatus', 'Error: ' + (result.error || 'Unknown error'), 'error');
             testActive = true; // Re-enable test if submission failed
@@ -484,14 +566,4 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     });
-    
-    // Add click handler to warning overlay to dismiss it
-    const warningOverlay = document.getElementById('warningOverlay');
-    if (warningOverlay) {
-        warningOverlay.addEventListener('click', function() {
-            if (testActive) {
-                hideWarning();
-            }
-        });
-    }
 });
