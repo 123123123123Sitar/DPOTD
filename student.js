@@ -56,55 +56,66 @@ function hideWarning() {
 
 // Request fullscreen
 function enterFullscreen() {
-    const elem = document.documentElement;
-    if (elem.requestFullscreen) {
-        elem.requestFullscreen().catch(err => {
-            console.log('Fullscreen error:', err);
-        });
-    } else if (elem.webkitRequestFullscreen) {
-        elem.webkitRequestFullscreen();
-    } else if (elem.msRequestFullscreen) {
-        elem.msRequestFullscreen();
+    return document.documentElement.requestFullscreen().then(() => {
+        console.log('Entered fullscreen successfully');
+        return true;
+    }).catch(err => {
+        console.error('Fullscreen error:', err);
+        alert('You must allow fullscreen mode to take the test.');
+        return false;
+    });
+}
+
+// Monitor fullscreen changes - force back into fullscreen if user exits
+function handleFullscreenChange() {
+    if (!document.fullscreenElement && testActive) {
+        recordViolation('exited_fullscreen');
+        const overlay = document.getElementById('warningOverlay');
+        overlay.classList.add('show');
+        
+        // Attempt to re-enter fullscreen after a brief delay
+        setTimeout(() => {
+            enterFullscreen().then(success => {
+                if (!success) {
+                    // If can't re-enter fullscreen, end the test
+                    alert('You exited fullscreen mode. The test has been compromised.');
+                    testActive = false;
+                }
+            });
+        }, 100);
     }
 }
 
-// Monitor fullscreen changes
-document.addEventListener('fullscreenchange', function() {
-    if (!document.fullscreenElement && testActive) {
-        recordViolation('exited_fullscreen');
-        enterFullscreen();
-    }
-});
-
-document.addEventListener('webkitfullscreenchange', function() {
-    if (!document.webkitFullscreenElement && testActive) {
-        recordViolation('exited_fullscreen');
-        enterFullscreen();
-    }
-});
-
 // Monitor visibility changes (tab switching, minimizing)
-document.addEventListener('visibilitychange', function() {
+function handleVisibilityChange() {
     if (document.hidden && testActive) {
         recordViolation('tab_hidden');
     } else if (!document.hidden && testActive) {
         hideWarning();
     }
-});
+}
 
 // Monitor window blur (switching to another application)
-window.addEventListener('blur', function() {
+function handleWindowBlur() {
     if (testActive) {
         recordViolation('window_blur');
     }
-});
+}
 
 // Return to window
-window.addEventListener('focus', function() {
+function handleWindowFocus() {
     if (testActive) {
         hideWarning();
     }
-});
+}
+
+// Set up all monitoring
+function monitorFullscreen() {
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('blur', handleWindowBlur);
+    window.addEventListener('focus', handleWindowFocus);
+}
 
 // Prevent ALL tab switching and common shortcuts during test
 document.addEventListener('keydown', function(e) {
@@ -118,12 +129,14 @@ document.addEventListener('keydown', function(e) {
             (e.ctrlKey && (e.keyCode >= 49 && e.keyCode <= 57)) || // Ctrl+1-9
             (e.metaKey && (e.keyCode >= 49 && e.keyCode <= 57)) || // Cmd+1-9 (Mac)
             e.keyCode === 123 || // F12
-            (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) || // Ctrl+Shift+I/J/C
-            (e.ctrlKey && e.keyCode === 85) || // Ctrl+U
+            (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) || // Ctrl+Shift+I/J/C (DevTools)
+            (e.ctrlKey && e.keyCode === 85) || // Ctrl+U (View Source)
+            (e.ctrlKey && e.keyCode === 83) || // Ctrl+S (Save)
+            (e.ctrlKey && e.keyCode === 80) || // Ctrl+P (Print)
             (e.metaKey && e.altKey && (e.keyCode === 73 || e.keyCode === 74)) || // Cmd+Option+I/J (Mac)
             (e.altKey && e.keyCode === 37) || // Alt+Left Arrow
             (e.altKey && e.keyCode === 39) || // Alt+Right Arrow
-            (e.ctrlKey && e.keyCode === 87) || // Ctrl+W
+            (e.ctrlKey && e.keyCode === 87) || // Ctrl+W (Close Tab)
             (e.metaKey && e.keyCode === 87) || // Cmd+W (Mac)
             e.keyCode === 27) { // Escape key
             
@@ -132,6 +145,14 @@ document.addEventListener('keydown', function(e) {
             recordViolation('keyboard_shortcut_blocked');
             return false;
         }
+    }
+});
+
+// Detect screenshot attempts
+document.addEventListener('keyup', function(e) {
+    if (testActive && e.key === 'PrintScreen') {
+        navigator.clipboard.writeText('');
+        recordViolation('screenshot_attempt');
     }
 });
 
@@ -235,16 +256,22 @@ async function startTest() {
 
         hideLoading();
 
+        // Enter fullscreen mode first, then show questions
+        const fullscreenSuccess = await enterFullscreen();
+        
+        if (!fullscreenSuccess) {
+            showStatus('startStatus', 'You must allow fullscreen mode to take the test.', 'error');
+            return;
+        }
+
         // Hide form, show questions
         document.getElementById('studentForm').style.display = 'none';
         document.getElementById('questionSection').style.display = 'block';
         
-        // Enter fullscreen mode
-        enterFullscreen();
-        
-        // Lock the page
+        // Lock the page and start monitoring
         document.body.classList.add('locked');
         testActive = true;
+        monitorFullscreen();
 
         // Start timer
         startTime = Date.now();
