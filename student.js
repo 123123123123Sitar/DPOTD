@@ -1,5 +1,6 @@
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzRPyEM0A2oP_zU9GTq_tPintK4rU1e16IvGLgCV-P1G4-dsghsw7B_kkgAuPII56X0/exec';
 
+
 let startTime;
 let timerInterval;
 let questionsData;
@@ -63,12 +64,12 @@ function handleFullscreenChange() {
         
         // Attempt to re-enter fullscreen after a brief delay
         setTimeout(() => {
-            enterFullscreen().then(success => {
-                if (!success) {
-                    // If can't re-enter fullscreen, end the test
-                    alert('You exited fullscreen mode. The test has been compromised.');
-                    testActive = false;
-                }
+            document.documentElement.requestFullscreen().then(() => {
+                console.log('Re-entered fullscreen');
+            }).catch(() => {
+                // If can't re-enter fullscreen, end the test
+                alert('You exited fullscreen mode. The test has been compromised.');
+                testActive = false;
             });
         }, 100);
     }
@@ -244,17 +245,19 @@ async function startTest() {
 
         hideLoading();
 
-        // Hide form, show questions FIRST
-        document.getElementById('studentForm').style.display = 'none';
-        document.getElementById('questionSection').style.display = 'block';
-        
-        // Lock the page and start monitoring
-        document.body.classList.add('locked');
-        testActive = true;
-
-        // Enter fullscreen mode and start test
-        document.documentElement.requestFullscreen().then(() => {
+        // CRITICAL: Request fullscreen BEFORE changing screens
+        // This ensures fullscreen is triggered by the user's click action
+        try {
+            await document.documentElement.requestFullscreen();
             console.log('Entered fullscreen successfully');
+            
+            // Now that we're in fullscreen, show the test
+            document.getElementById('studentForm').style.display = 'none';
+            document.getElementById('questionSection').style.display = 'block';
+            
+            // Lock the page and start monitoring
+            document.body.classList.add('locked');
+            testActive = true;
             monitorFullscreen();
             
             // Start timer
@@ -264,14 +267,11 @@ async function startTest() {
             
             // Update timer immediately
             updateTimer();
-        }).catch(() => {
-            alert('You must allow fullscreen mode to take the test.');
-            // Reset if fullscreen denied
-            document.getElementById('studentForm').style.display = 'block';
-            document.getElementById('questionSection').style.display = 'none';
-            document.body.classList.remove('locked');
-            testActive = false;
-        });
+            
+        } catch (err) {
+            console.error('Fullscreen error:', err);
+            showStatus('startStatus', 'You must allow fullscreen mode to take the test. Please try again and click "Allow" when prompted.', 'error');
+        }
 
         // Track question transitions
         document.getElementById('q1Answer').addEventListener('focus', () => {
