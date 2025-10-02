@@ -286,6 +286,11 @@ function updateTimer() {
 // TEST START
 // ============================================
 
+// Make functions globally accessible for HTML onclick handlers
+window.startTest = startTest;
+window.submitTest = submitTest;
+window.returnToFullscreen = returnToFullscreen;
+
 async function startTest() {
     const name = document.getElementById('studentName').value.trim();
     const email = document.getElementById('studentEmail').value.trim();
@@ -391,13 +396,20 @@ async function startTest() {
         statusEl.parentElement.appendChild(confirmBtn);
 
         // Track question transitions
-        document.getElementById('q1Answer').addEventListener('focus', () => {
-            if (!q2StartTime) q2StartTime = Date.now();
-        });
+        const q1AnswerEl = document.getElementById('q1Answer');
+        const q2AnswerEl = document.getElementById('q2Answer');
+        
+        if (q1AnswerEl) {
+            q1AnswerEl.addEventListener('focus', () => {
+                if (!q2StartTime) q2StartTime = Date.now();
+            });
+        }
 
-        document.getElementById('q2Answer').addEventListener('focus', () => {
-            if (!q3StartTime) q3StartTime = Date.now();
-        });
+        if (q2AnswerEl) {
+            q2AnswerEl.addEventListener('focus', () => {
+                if (!q3StartTime) q3StartTime = Date.now();
+            });
+        }
 
         // Auto-submit after 2 hours
         setTimeout(() => {
