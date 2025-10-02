@@ -51,7 +51,10 @@ function recordViolation(type) {
 }
 
 function hideWarning() {
-    document.getElementById('warningOverlay').classList.remove('show');
+    const overlay = document.getElementById('warningOverlay');
+    if (overlay) {
+        overlay.classList.remove('show');
+    }
 }
 
 // Monitor fullscreen changes - force back into fullscreen if user exits
@@ -65,12 +68,17 @@ function handleFullscreenChange() {
         setTimeout(() => {
             document.documentElement.requestFullscreen().then(() => {
                 console.log('Re-entered fullscreen');
+                // Hide warning after successfully re-entering fullscreen
+                hideWarning();
             }).catch(() => {
                 // If can't re-enter fullscreen, end the test
                 alert('You exited fullscreen mode. The test has been compromised.');
                 testActive = false;
             });
         }, 100);
+    } else if (document.fullscreenElement && testActive) {
+        // User is back in fullscreen, hide the warning
+        hideWarning();
     }
 }
 
@@ -78,7 +86,10 @@ function handleFullscreenChange() {
 function handleVisibilityChange() {
     if (document.hidden && testActive) {
         recordViolation('tab_hidden');
+        const overlay = document.getElementById('warningOverlay');
+        overlay.classList.add('show');
     } else if (!document.hidden && testActive) {
+        // User returned to the tab
         hideWarning();
     }
 }
@@ -87,12 +98,15 @@ function handleVisibilityChange() {
 function handleWindowBlur() {
     if (testActive) {
         recordViolation('window_blur');
+        const overlay = document.getElementById('warningOverlay');
+        overlay.classList.add('show');
     }
 }
 
 // Return to window
 function handleWindowFocus() {
     if (testActive) {
+        // User returned to window
         hideWarning();
     }
 }
@@ -470,4 +484,14 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     });
+    
+    // Add click handler to warning overlay to dismiss it
+    const warningOverlay = document.getElementById('warningOverlay');
+    if (warningOverlay) {
+        warningOverlay.addEventListener('click', function() {
+            if (testActive) {
+                hideWarning();
+            }
+        });
+    }
 });
