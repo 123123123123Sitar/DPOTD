@@ -54,6 +54,33 @@ function hideWarning() {
     document.getElementById('warningOverlay').classList.remove('show');
 }
 
+// Request fullscreen
+function enterFullscreen() {
+    const elem = document.documentElement;
+    if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+    } else if (elem.webkitRequestFullscreen) {
+        elem.webkitRequestFullscreen();
+    } else if (elem.msRequestFullscreen) {
+        elem.msRequestFullscreen();
+    }
+}
+
+// Monitor fullscreen changes
+document.addEventListener('fullscreenchange', function() {
+    if (!document.fullscreenElement && testActive) {
+        recordViolation('exited_fullscreen');
+        enterFullscreen();
+    }
+});
+
+document.addEventListener('webkitfullscreenchange', function() {
+    if (!document.webkitFullscreenElement && testActive) {
+        recordViolation('exited_fullscreen');
+        enterFullscreen();
+    }
+});
+
 // Monitor visibility changes (tab switching, minimizing)
 document.addEventListener('visibilitychange', function() {
     if (document.hidden && testActive) {
@@ -95,7 +122,8 @@ document.addEventListener('keydown', function(e) {
             (e.altKey && e.keyCode === 37) || // Alt+Left Arrow
             (e.altKey && e.keyCode === 39) || // Alt+Right Arrow
             (e.ctrlKey && e.keyCode === 87) || // Ctrl+W
-            (e.metaKey && e.keyCode === 87)) { // Cmd+W (Mac)
+            (e.metaKey && e.keyCode === 87) || // Cmd+W (Mac)
+            e.keyCode === 27) { // Escape key
             
             e.preventDefault();
             e.stopPropagation();
@@ -209,6 +237,9 @@ async function startTest() {
         document.getElementById('studentForm').style.display = 'none';
         document.getElementById('questionSection').style.display = 'block';
         
+        // Enter fullscreen mode
+        enterFullscreen();
+        
         // Lock the page
         document.body.classList.add('locked');
         testActive = true;
@@ -217,6 +248,9 @@ async function startTest() {
         startTime = Date.now();
         q1StartTime = Date.now();
         timerInterval = setInterval(updateTimer, 1000);
+        
+        // Update timer immediately
+        updateTimer();
 
         // Track question transitions
         document.getElementById('q1Answer').addEventListener('focus', () => {
@@ -250,11 +284,11 @@ function updateTimer() {
     const minutes = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
     const seconds = Math.floor((remaining % (60 * 1000)) / 1000);
     
-    document.getElementById('timer').textContent = 
-        `Time Remaining: ${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    const timerEl = document.getElementById('timer');
+    timerEl.textContent = `Time Remaining: ${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    timerEl.style.display = 'block';
     
     // Change color when time is running out
-    const timerEl = document.getElementById('timer');
     if (remaining < 10 * 60 * 1000) { // Less than 10 minutes
         timerEl.style.color = '#ff6b6b';
     }
@@ -320,7 +354,7 @@ async function submitTest(isForced = false) {
         const response = await fetch(SCRIPT_URL, {
             method: 'POST',
             headers: {
-                'Content-Type': 'text/plain'
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify(submission)
         });
@@ -336,6 +370,15 @@ async function submitTest(isForced = false) {
                 isForced ? 'error' : 'success');
             document.body.classList.remove('locked');
             hideWarning();
+            
+            // Exit fullscreen
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
         } else {
             showStatus('submitStatus', 'Error: ' + (result.error || 'Unknown error'), 'error');
             testActive = true; // Re-enable test if submission failed
