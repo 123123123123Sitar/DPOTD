@@ -9,8 +9,19 @@ let exitCount = 0;
 let exitLogs = [];
 let testActive = false;
 let currentDay = null;
+let isInIframe = false;
 
 const TEST_DURATION = 120 * 60 * 1000; // 2 hours in milliseconds
+
+// Detect if running in iframe
+function checkIfInIframe() {
+    try {
+        isInIframe = window.self !== window.top;
+    } catch (e) {
+        isInIframe = true;
+    }
+    return isInIframe;
+}
 
 // ============================================
 // UTILITY FUNCTIONS
@@ -42,8 +53,64 @@ function validateEmail(email) {
 
 // Clean answer to only accept numbers
 function cleanAnswer(answer) {
-    // Remove all non-numeric characters except minus sign at the beginning
     return answer.replace(/[^0-9-]/g, '').replace(/(?!^)-/g, '');
+}
+
+// ============================================
+// FULLSCREEN HANDLING
+// ============================================
+
+async function requestFullscreenMode() {
+    if (isInIframe) {
+        // In iframe - show instructions to open in new tab
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 10000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        `;
+        modal.innerHTML = `
+            <div style="max-width: 600px;">
+                <h2 style="color: #EA5A2F; margin-bottom: 20px;">⚠️ Fullscreen Required</h2>
+                <p style="font-size: 18px; margin-bottom: 30px;">
+                    This test requires fullscreen mode, which is not available in embedded mode.
+                </p>
+                <p style="font-size: 16px; margin-bottom: 30px;">
+                    Please open this test in a new tab to continue:
+                </p>
+                <button onclick="window.open(window.location.href, '_blank')" 
+                    style="background: #EA5A2F; color: white; border: none; padding: 15px 30px; 
+                    font-size: 18px; border-radius: 8px; cursor: pointer; margin: 10px;">
+                    Open Test in New Tab
+                </button>
+                <p style="font-size: 14px; margin-top: 30px; opacity: 0.8;">
+                    After opening in a new tab, you'll be able to enter fullscreen mode.
+                </p>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        return false;
+    } else {
+        // Not in iframe - use normal fullscreen
+        try {
+            await document.documentElement.requestFullscreen();
+            return true;
+        } catch (err) {
+            console.error('Fullscreen error:', err);
+            alert('Fullscreen mode is required to take the test. Please allow fullscreen and try again.');
+            return false;
+        }
+    }
 }
 
 // ============================================
@@ -61,11 +128,9 @@ function recordViolation(type) {
 
     document.getElementById('violationCount').textContent = exitCount;
 
-    // Show warning overlay with return button
     const overlay = document.getElementById('warningOverlay');
     const warningText = overlay.querySelector('p:first-child');
 
-    // Update warning text based on violation type
     if (type === 'exited_fullscreen') {
         warningText.innerHTML = '<strong>⚠️ WARNING: YOU EXITED FULLSCREEN MODE!</strong>';
     } else if (type === 'tab_hidden') {
@@ -84,8 +149,12 @@ function hideWarning() {
     }
 }
 
-// Function to return to fullscreen from warning overlay
 function returnToFullscreen() {
+    if (isInIframe) {
+        alert('Please ensure you opened this test in a new tab (not embedded in Wix).');
+        return;
+    }
+    
     document.documentElement.requestFullscreen()
         .then(() => {
             console.log('Returned to fullscreen');
@@ -97,14 +166,14 @@ function returnToFullscreen() {
         });
 }
 
-// Monitor fullscreen changes - force back into fullscreen if user exits
 function handleFullscreenChange() {
+    if (isInIframe) return; // Skip fullscreen monitoring in iframe
+    
     if (!document.fullscreenElement && testActive) {
         recordViolation('exited_fullscreen');
         const overlay = document.getElementById('warningOverlay');
         overlay.classList.add('show');
 
-        // Attempt to re-enter fullscreen after a brief delay
         setTimeout(() => {
             document.documentElement.requestFullscreen()
                 .then(() => {
@@ -113,28 +182,23 @@ function handleFullscreenChange() {
                 })
                 .catch((err) => {
                     console.error('Failed to re-enter fullscreen:', err);
-                    // Keep the warning visible but allow test to continue
                 });
         }, 100);
     } else if (document.fullscreenElement && testActive) {
-        // User is back in fullscreen, hide the warning
         hideWarning();
     }
 }
 
-// Monitor visibility changes (tab switching, minimizing)
 function handleVisibilityChange() {
     if (document.hidden && testActive) {
         recordViolation('tab_hidden');
         const overlay = document.getElementById('warningOverlay');
         overlay.classList.add('show');
     } else if (!document.hidden && testActive) {
-        // User returned to the tab
         hideWarning();
     }
 }
 
-// Monitor window blur (switching to another application)
 function handleWindowBlur() {
     if (testActive) {
         recordViolation('window_blur');
@@ -143,17 +207,16 @@ function handleWindowBlur() {
     }
 }
 
-// Return to window
 function handleWindowFocus() {
     if (testActive) {
-        // User returned to window
         hideWarning();
     }
 }
 
-// Set up all monitoring
 function monitorFullscreen() {
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    if (!isInIframe) {
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+    }
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('blur', handleWindowBlur);
     window.addEventListener('focus', handleWindowFocus);
@@ -163,28 +226,26 @@ function monitorFullscreen() {
 // KEYBOARD & INTERACTION BLOCKING
 // ============================================
 
-// Prevent ALL tab switching and common shortcuts during test
 document.addEventListener('keydown', function(e) {
     if (testActive) {
-        // Block tab switching shortcuts
-        if ((e.ctrlKey && e.keyCode === 9) ||                         // Ctrl+Tab
-            (e.ctrlKey && e.shiftKey && e.keyCode === 9) ||           // Ctrl+Shift+Tab
-            (e.altKey && e.keyCode === 9) ||                          // Alt+Tab
-            (e.metaKey && e.keyCode === 9) ||                         // Cmd+Tab (Mac)
-            (e.metaKey && e.keyCode === 192) ||                       // Cmd+` (Mac)
-            (e.ctrlKey && (e.keyCode >= 49 && e.keyCode <= 57)) ||    // Ctrl+1-9
-            (e.metaKey && (e.keyCode >= 49 && e.keyCode <= 57)) ||    // Cmd+1-9 (Mac)
-            e.keyCode === 123 ||                                      // F12
-            (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) || // Ctrl+Shift+I/J/C (DevTools)
-            (e.ctrlKey && e.keyCode === 85) ||                        // Ctrl+U (View Source)
-            (e.ctrlKey && e.keyCode === 83) ||                        // Ctrl+S (Save)
-            (e.ctrlKey && e.keyCode === 80) ||                        // Ctrl+P (Print)
-            (e.metaKey && e.altKey && (e.keyCode === 73 || e.keyCode === 74)) || // Cmd+Option+I/J (Mac)
-            (e.altKey && e.keyCode === 37) ||                         // Alt+Left Arrow
-            (e.altKey && e.keyCode === 39) ||                         // Alt+Right Arrow
-            (e.ctrlKey && e.keyCode === 87) ||                        // Ctrl+W (Close Tab)
-            (e.metaKey && e.keyCode === 87) ||                        // Cmd+W (Mac)
-            e.keyCode === 27) {                                       // Escape key
+        if ((e.ctrlKey && e.keyCode === 9) ||
+            (e.ctrlKey && e.shiftKey && e.keyCode === 9) ||
+            (e.altKey && e.keyCode === 9) ||
+            (e.metaKey && e.keyCode === 9) ||
+            (e.metaKey && e.keyCode === 192) ||
+            (e.ctrlKey && (e.keyCode >= 49 && e.keyCode <= 57)) ||
+            (e.metaKey && (e.keyCode >= 49 && e.keyCode <= 57)) ||
+            e.keyCode === 123 ||
+            (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) ||
+            (e.ctrlKey && e.keyCode === 85) ||
+            (e.ctrlKey && e.keyCode === 83) ||
+            (e.ctrlKey && e.keyCode === 80) ||
+            (e.metaKey && e.altKey && (e.keyCode === 73 || e.keyCode === 74)) ||
+            (e.altKey && e.keyCode === 37) ||
+            (e.altKey && e.keyCode === 39) ||
+            (e.ctrlKey && e.keyCode === 87) ||
+            (e.metaKey && e.keyCode === 87) ||
+            e.keyCode === 27) {
             
             e.preventDefault();
             e.stopPropagation();
@@ -194,7 +255,6 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// Detect screenshot attempts
 document.addEventListener('keyup', function(e) {
     if (testActive && e.key === 'PrintScreen') {
         navigator.clipboard.writeText('');
@@ -202,7 +262,6 @@ document.addEventListener('keyup', function(e) {
     }
 });
 
-// Prevent right-click during test
 document.addEventListener('contextmenu', function(e) {
     if (testActive) {
         e.preventDefault();
@@ -210,7 +269,6 @@ document.addEventListener('contextmenu', function(e) {
     }
 });
 
-// Warn before leaving page
 window.addEventListener('beforeunload', function(e) {
     if (testActive) {
         e.preventDefault();
@@ -224,7 +282,6 @@ window.addEventListener('beforeunload', function(e) {
 // TEST SCHEDULE & DAY MANAGEMENT
 // ============================================
 
-// Get current day based on schedule
 async function getCurrentDay() {
     try {
         const response = await fetch(`${SCRIPT_URL}?action=getSchedule`);
@@ -232,7 +289,6 @@ async function getCurrentDay() {
         const now = new Date();
         let activeDay = null;
 
-        // Check which day is currently active
         for (let i = 1; i <= 5; i++) {
             const dayStart = schedule[`day${i}`] ? new Date(schedule[`day${i}`]) : null;
             const nextDay = schedule[`day${i + 1}`] ? new Date(schedule[`day${i + 1}`]) : null;
@@ -269,10 +325,9 @@ function updateTimer() {
     const timerEl = document.getElementById('timer');
     timerEl.textContent = `Time Remaining: ${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     timerEl.style.display = 'block';
-    timerEl.style.color = '#000000'; // Black text
+    timerEl.style.color = '#000000';
 
-    // Change color when time is running out
-    if (remaining < 10 * 60 * 1000) { // Less than 10 minutes
+    if (remaining < 10 * 60 * 1000) {
         timerEl.style.color = '#ff6b6b';
     }
 
@@ -286,17 +341,17 @@ function updateTimer() {
 // TEST START
 // ============================================
 
-// Make functions globally accessible for HTML onclick handlers
 window.startTest = startTest;
 window.submitTest = submitTest;
 window.returnToFullscreen = returnToFullscreen;
 
 async function startTest() {
+    checkIfInIframe();
+    
     const name = document.getElementById('studentName').value.trim();
     const email = document.getElementById('studentEmail').value.trim();
     const emailError = document.getElementById('emailError');
 
-    // Clear previous error
     emailError.textContent = '';
 
     if (!name || !email) {
@@ -304,7 +359,6 @@ async function startTest() {
         return;
     }
 
-    // Validate email format
     if (!validateEmail(email)) {
         emailError.textContent = 'Please enter a valid email address (e.g., student@example.com)';
         showStatus('startStatus', 'Invalid email format', 'error');
@@ -313,7 +367,6 @@ async function startTest() {
 
     showLoading('Determining current day...');
 
-    // Get current day
     currentDay = await getCurrentDay();
     if (!currentDay) {
         hideLoading();
@@ -324,7 +377,6 @@ async function startTest() {
     showLoading(`Loading Day ${currentDay} questions...`);
 
     try {
-        // Check if already submitted
         const checkResponse = await fetch(`${SCRIPT_URL}?action=checkSubmission&email=${encodeURIComponent(email)}&day=${currentDay}`);
         const checkData = await checkResponse.json();
 
@@ -334,7 +386,6 @@ async function startTest() {
             return;
         }
 
-        // Get questions
         showLoading('Loading questions...');
         const response = await fetch(`${SCRIPT_URL}?action=getQuestions&day=${currentDay}`);
         questionsData = await response.json();
@@ -345,7 +396,6 @@ async function startTest() {
             return;
         }
 
-        // Display questions
         document.getElementById('q1Text').textContent = questionsData.q1_text;
         document.getElementById('q2Text').textContent = questionsData.q2_text;
         document.getElementById('q3Text').textContent = questionsData.q3_text;
@@ -353,49 +403,38 @@ async function startTest() {
 
         hideLoading();
 
-        // Show fullscreen confirmation button
         const confirmBtn = document.createElement('button');
         confirmBtn.className = 'btn';
         confirmBtn.style.marginTop = '20px';
-        confirmBtn.textContent = 'Enter Fullscreen & Begin Test';
+        confirmBtn.textContent = isInIframe ? 'Open in New Tab to Begin' : 'Enter Fullscreen & Begin Test';
+        
         confirmBtn.onclick = async function() {
-            try {
-                await document.documentElement.requestFullscreen();
-                console.log('Entered fullscreen successfully');
+            const success = await requestFullscreenMode();
+            if (!success) return;
 
-                // Remove the button
-                confirmBtn.remove();
+            confirmBtn.remove();
 
-                // Now that we're in fullscreen, show the test
-                document.getElementById('studentForm').style.display = 'none';
-                document.getElementById('questionSection').style.display = 'block';
+            document.getElementById('studentForm').style.display = 'none';
+            document.getElementById('questionSection').style.display = 'block';
 
-                // Lock the page and start monitoring
-                document.body.classList.add('locked');
-                testActive = true;
-                monitorFullscreen();
+            document.body.classList.add('locked');
+            testActive = true;
+            monitorFullscreen();
 
-                // Start timer
-                startTime = Date.now();
-                q1StartTime = Date.now();
-                timerInterval = setInterval(updateTimer, 1000);
-
-                // Update timer immediately
-                updateTimer();
-            } catch (err) {
-                console.error('Fullscreen error:', err);
-                alert('Fullscreen mode is required to take the test. Please allow fullscreen and try again.');
-            }
+            startTime = Date.now();
+            q1StartTime = Date.now();
+            timerInterval = setInterval(updateTimer, 1000);
+            updateTimer();
         };
 
-        // Add button to the form
         const statusEl = document.getElementById('startStatus');
-        statusEl.textContent = 'Questions loaded! Click below to enter fullscreen mode and begin.';
+        statusEl.textContent = isInIframe ? 
+            'Questions loaded! Click below to open in a new tab.' : 
+            'Questions loaded! Click below to enter fullscreen mode and begin.';
         statusEl.className = 'status success';
         statusEl.style.display = 'block';
         statusEl.parentElement.appendChild(confirmBtn);
 
-        // Track question transitions
         const q1AnswerEl = document.getElementById('q1Answer');
         const q2AnswerEl = document.getElementById('q2Answer');
         
@@ -411,7 +450,6 @@ async function startTest() {
             });
         }
 
-        // Auto-submit after 2 hours
         setTimeout(() => {
             if (testActive) {
                 alert('Time is up! Your test will be submitted automatically.');
@@ -456,7 +494,6 @@ async function submitTest(isForced = false) {
     const q2Time = q3StartTime ? Math.floor((q3StartTime - q2StartTime) / 1000) : 0;
     const q3Time = Math.floor((endTime - (q3StartTime || q2StartTime || q1StartTime)) / 1000);
 
-    // Check answers (clean both before comparing)
     const q1Correct = q1Answer === cleanAnswer(questionsData.q1_answer);
     const q2Correct = q2Answer === cleanAnswer(questionsData.q2_answer);
 
@@ -482,9 +519,6 @@ async function submitTest(isForced = false) {
     document.getElementById('submitBtn').disabled = true;
 
     try {
-        console.log('Submitting to:', SCRIPT_URL);
-        console.log('Submission data:', submission);
-
         const response = await fetch(SCRIPT_URL, {
             method: 'POST',
             headers: {
@@ -493,12 +527,8 @@ async function submitTest(isForced = false) {
             body: JSON.stringify(submission)
         });
 
-        console.log('Response status:', response.status);
         const responseText = await response.text();
-        console.log('Response text:', responseText);
-
         const result = JSON.parse(responseText);
-        console.log('Parsed result:', result);
 
         hideLoading();
 
@@ -507,19 +537,12 @@ async function submitTest(isForced = false) {
             document.body.classList.remove('locked');
             hideWarning();
 
-            // Exit fullscreen
             if (document.exitFullscreen) {
                 document.exitFullscreen();
-            } else if (document.webkitExitFullscreen) {
-                document.webkitExitFullscreen();
-            } else if (document.msExitFullscreen) {
-                document.msExitFullscreen();
             }
 
-            // Show results
             document.getElementById('questionSection').style.display = 'none';
 
-            // Create results display
             const resultsHTML = `
                 <div style="text-align: center; padding: 40px 20px;">
                     <h1 style="color: #28a745; margin-bottom: 20px;">✅ Test Submitted Successfully!</h1>
@@ -582,14 +605,14 @@ async function submitTest(isForced = false) {
             document.querySelector('.container').innerHTML = resultsHTML;
         } else {
             showStatus('submitStatus', 'Error: ' + (result.error || 'Unknown error'), 'error');
-            testActive = true; // Re-enable test if submission failed
+            testActive = true;
             document.getElementById('submitBtn').disabled = false;
         }
     } catch (error) {
         hideLoading();
         showStatus('submitStatus', 'Error submitting: ' + error.message, 'error');
         console.error('Error:', error);
-        testActive = true; // Re-enable test if submission failed
+        testActive = true;
         document.getElementById('submitBtn').disabled = false;
     }
 }
@@ -598,8 +621,9 @@ async function submitTest(isForced = false) {
 // INPUT VALIDATION
 // ============================================
 
-// Add input validation for number-only fields
 document.addEventListener('DOMContentLoaded', function() {
+    checkIfInIframe();
+    
     const numberInputs = ['q1Answer', 'q2Answer'];
     
     numberInputs.forEach(id => {
