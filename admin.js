@@ -1,7 +1,33 @@
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzRPyEM0A2oP_zU9GTq_tPintK4rU1e16IvGLgCV-P1G4-dsghsw7B_kkgAuPII56X0/exec';
+const ADMIN_PASSWORD = 'SitarsTheGOAT!';
 
 let cachedSubmissions = [];
+let isAuthenticated = false;
 
+// Password Protection Functions
+function checkPassword() {
+    const password = document.getElementById('passwordInput').value;
+    const loginError = document.getElementById('loginError');
+    
+    if (password === ADMIN_PASSWORD) {
+        isAuthenticated = true;
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('adminPanel').style.display = 'block';
+        loadQuestions();
+    } else {
+        loginError.textContent = 'Incorrect password';
+        loginError.style.display = 'block';
+        document.getElementById('passwordInput').value = '';
+    }
+}
+
+function handlePasswordKeyPress(event) {
+    if (event.key === 'Enter') {
+        checkPassword();
+    }
+}
+
+// Status Display
 function showStatus(elementId, message, type) {
     const el = document.getElementById(elementId);
     el.textContent = message;
@@ -9,6 +35,7 @@ function showStatus(elementId, message, type) {
     el.style.display = 'block';
 }
 
+// Tab Switching
 function switchTab(tabName) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -22,7 +49,10 @@ function switchTab(tabName) {
     if (tabName === 'submissions') loadSubmissions();
 }
 
+// Questions Management
 async function loadQuestions() {
+    if (!isAuthenticated) return;
+    
     const day = document.getElementById('questionDay').value;
     
     if (!SCRIPT_URL || SCRIPT_URL.includes('YOUR_DEPLOYMENT_ID')) {
@@ -55,6 +85,8 @@ async function loadQuestions() {
 }
 
 async function saveQuestions() {
+    if (!isAuthenticated) return;
+    
     const day = document.getElementById('questionDay').value;
     const data = {
         day: day,
@@ -86,7 +118,10 @@ async function saveQuestions() {
     }
 }
 
+// Schedule Management
 async function loadSchedule() {
+    if (!isAuthenticated) return;
+    
     try {
         const response = await fetch(`${SCRIPT_URL}?action=getSchedule`);
         const data = await response.json();
@@ -105,6 +140,8 @@ async function loadSchedule() {
 }
 
 async function saveSchedule() {
+    if (!isAuthenticated) return;
+    
     const data = {};
     
     for (let i = 1; i <= 5; i++) {
@@ -135,7 +172,10 @@ async function saveSchedule() {
     }
 }
 
+// Settings Management
 async function loadSettings() {
+    if (!isAuthenticated) return;
+    
     try {
         const response = await fetch(`${SCRIPT_URL}?action=getSettings`);
         const data = await response.json();
@@ -149,6 +189,8 @@ async function loadSettings() {
 }
 
 async function saveSettings() {
+    if (!isAuthenticated) return;
+    
     const data = {
         'Admin Email': document.getElementById('adminEmail').value,
         'Test Duration': document.getElementById('testDuration').value,
@@ -175,6 +217,7 @@ async function saveSettings() {
     }
 }
 
+// Submissions Management
 function formatTime(seconds) {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -182,6 +225,8 @@ function formatTime(seconds) {
 }
 
 async function loadSubmissions() {
+    if (!isAuthenticated) return;
+    
     const container = document.getElementById('submissionsContainer');
     container.innerHTML = '<p style="color: #666;">Loading submissions...</p>';
 
@@ -209,7 +254,6 @@ async function loadSubmissions() {
             
             const timestamp = new Date(sub.timestamp).toLocaleString();
             
-            // Parse exit logs if it's a string
             let exitLogs = [];
             try {
                 exitLogs = typeof sub.exitLogs === 'string' ? JSON.parse(sub.exitLogs) : sub.exitLogs || [];
@@ -217,7 +261,6 @@ async function loadSubmissions() {
                 exitLogs = [];
             }
             
-            // Create violation details
             let violationDetails = '';
             if (exitLogs.length > 0) {
                 violationDetails = '<div class="violation-details"><strong>Violations:</strong><ul>';
@@ -283,13 +326,15 @@ async function loadSubmissions() {
     }
 }
 
+// CSV Export
 function exportToCSV() {
+    if (!isAuthenticated) return;
+    
     if (cachedSubmissions.length === 0) {
         alert('No submissions to export. Please load submissions first.');
         return;
     }
 
-    // Create CSV header
     const headers = [
         'Student Name',
         'Email',
@@ -308,7 +353,6 @@ function exportToCSV() {
         'Violations'
     ];
 
-    // Create CSV rows
     const rows = cachedSubmissions.map(sub => {
         let exitLogs = [];
         try {
@@ -330,7 +374,7 @@ function exportToCSV() {
             sub.q2_answer,
             sub.q2_correct,
             sub.q2_time,
-            `"${sub.q3_answer.replace(/"/g, '""')}"`, // Escape quotes in Q3 answer
+            `"${sub.q3_answer.replace(/"/g, '""')}"`,
             sub.q3_time,
             sub.totalTime,
             sub.exitCount,
@@ -338,13 +382,11 @@ function exportToCSV() {
         ];
     });
 
-    // Combine headers and rows
     const csv = [
         headers.join(','),
         ...rows.map(row => row.join(','))
     ].join('\n');
 
-    // Download CSV
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -356,10 +398,10 @@ function exportToCSV() {
     window.URL.revokeObjectURL(url);
 }
 
-// Load initial data
+// Initialize on page load
 window.addEventListener('load', () => {
     if (!SCRIPT_URL || SCRIPT_URL.includes('YOUR_DEPLOYMENT_ID')) {
-        alert('⚠️ Please update the SCRIPT_URL in the code with your Google Apps Script deployment URL');
+        alert('⚠️ Please update the SCRIPT_URL in admin.js with your Google Apps Script deployment URL');
     }
-    loadQuestions();
+    document.getElementById('passwordInput').focus();
 });
