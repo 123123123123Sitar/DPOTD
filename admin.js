@@ -1,4 +1,4 @@
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzxkGRgLvAMg4UhU-vWO21b7TbW2Ms-wJhCpA5rB0U0sE-ZNQ-eEBUaRfOV8sA0ag47/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzRPyEM0A2oP_zU9GTq_tPintK4rU1e16IvGLgCV-P1G4-dsghsw7B_kkgAuPII56X0/exec';
 
 let cachedSubmissions = [];
 
