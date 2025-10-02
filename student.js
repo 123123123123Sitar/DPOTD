@@ -110,10 +110,12 @@ function handleFullscreenChange() {
                 .then(() => {
                     console.log('Re-entered fullscreen');
                     hideWarning();
+                    // Don't set testActive to false here - keep the test active
                 })
-                .catch(() => {
-                    alert('You exited fullscreen mode. The test has been compromised.');
-                    testActive = false;
+                .catch((err) => {
+                    console.error('Failed to re-enter fullscreen:', err);
+                    // Don't disable the test - just keep the warning visible
+                    // User can still submit via the warning overlay button
                 });
         }, 100);
     } else if (document.fullscreenElement && testActive) {
