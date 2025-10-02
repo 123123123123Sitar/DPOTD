@@ -9,19 +9,8 @@ let exitCount = 0;
 let exitLogs = [];
 let testActive = false;
 let currentDay = null;
-let isInIframe = false;
 
 const TEST_DURATION = 120 * 60 * 1000; // 2 hours in milliseconds
-
-// Detect if running in iframe
-function checkIfInIframe() {
-    try {
-        isInIframe = window.self !== window.top;
-    } catch (e) {
-        isInIframe = true;
-    }
-    return isInIframe;
-}
 
 // ============================================
 // UTILITY FUNCTIONS
@@ -54,63 +43,6 @@ function validateEmail(email) {
 // Clean answer to only accept numbers
 function cleanAnswer(answer) {
     return answer.replace(/[^0-9-]/g, '').replace(/(?!^)-/g, '');
-}
-
-// ============================================
-// FULLSCREEN HANDLING
-// ============================================
-
-async function requestFullscreenMode() {
-    if (isInIframe) {
-        // In iframe - show instructions to open in new tab
-        const modal = document.createElement('div');
-        modal.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            z-index: 10000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            text-align: center;
-            padding: 20px;
-        `;
-        modal.innerHTML = `
-            <div style="max-width: 600px;">
-                <h2 style="color: #EA5A2F; margin-bottom: 20px;">⚠️ Fullscreen Required</h2>
-                <p style="font-size: 18px; margin-bottom: 30px;">
-                    This test requires fullscreen mode, which is not available in embedded mode.
-                </p>
-                <p style="font-size: 16px; margin-bottom: 30px;">
-                    Please open this test in a new tab to continue:
-                </p>
-                <button onclick="window.open(window.location.href, '_blank')" 
-                    style="background: #EA5A2F; color: white; border: none; padding: 15px 30px; 
-                    font-size: 18px; border-radius: 8px; cursor: pointer; margin: 10px;">
-                    Open Test in New Tab
-                </button>
-                <p style="font-size: 14px; margin-top: 30px; opacity: 0.8;">
-                    After opening in a new tab, you'll be able to enter fullscreen mode.
-                </p>
-            </div>
-        `;
-        document.body.appendChild(modal);
-        return false;
-    } else {
-        // Not in iframe - use normal fullscreen
-        try {
-            await document.documentElement.requestFullscreen();
-            return true;
-        } catch (err) {
-            console.error('Fullscreen error:', err);
-            alert('Fullscreen mode is required to take the test. Please allow fullscreen and try again.');
-            return false;
-        }
-    }
 }
 
 // ============================================
@@ -150,11 +82,6 @@ function hideWarning() {
 }
 
 function returnToFullscreen() {
-    if (isInIframe) {
-        alert('Please ensure you opened this test in a new tab (not embedded in Wix).');
-        return;
-    }
-    
     document.documentElement.requestFullscreen()
         .then(() => {
             console.log('Returned to fullscreen');
@@ -167,8 +94,6 @@ function returnToFullscreen() {
 }
 
 function handleFullscreenChange() {
-    if (isInIframe) return; // Skip fullscreen monitoring in iframe
-    
     if (!document.fullscreenElement && testActive) {
         recordViolation('exited_fullscreen');
         const overlay = document.getElementById('warningOverlay');
@@ -214,9 +139,7 @@ function handleWindowFocus() {
 }
 
 function monitorFullscreen() {
-    if (!isInIframe) {
-        document.addEventListener('fullscreenchange', handleFullscreenChange);
-    }
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('blur', handleWindowBlur);
     window.addEventListener('focus', handleWindowFocus);
@@ -346,8 +269,6 @@ window.submitTest = submitTest;
 window.returnToFullscreen = returnToFullscreen;
 
 async function startTest() {
-    checkIfInIframe();
-    
     const name = document.getElementById('studentName').value.trim();
     const email = document.getElementById('studentEmail').value.trim();
     const emailError = document.getElementById('emailError');
@@ -406,31 +327,34 @@ async function startTest() {
         const confirmBtn = document.createElement('button');
         confirmBtn.className = 'btn';
         confirmBtn.style.marginTop = '20px';
-        confirmBtn.textContent = isInIframe ? 'Open in New Tab to Begin' : 'Enter Fullscreen & Begin Test';
+        confirmBtn.textContent = 'Enter Fullscreen & Begin Test';
         
         confirmBtn.onclick = async function() {
-            const success = await requestFullscreenMode();
-            if (!success) return;
+            try {
+                await document.documentElement.requestFullscreen();
+                console.log('Entered fullscreen successfully');
+                
+                confirmBtn.remove();
 
-            confirmBtn.remove();
+                document.getElementById('studentForm').style.display = 'none';
+                document.getElementById('questionSection').style.display = 'block';
 
-            document.getElementById('studentForm').style.display = 'none';
-            document.getElementById('questionSection').style.display = 'block';
+                document.body.classList.add('locked');
+                testActive = true;
+                monitorFullscreen();
 
-            document.body.classList.add('locked');
-            testActive = true;
-            monitorFullscreen();
-
-            startTime = Date.now();
-            q1StartTime = Date.now();
-            timerInterval = setInterval(updateTimer, 1000);
-            updateTimer();
+                startTime = Date.now();
+                q1StartTime = Date.now();
+                timerInterval = setInterval(updateTimer, 1000);
+                updateTimer();
+            } catch (err) {
+                console.error('Fullscreen error:', err);
+                alert('Fullscreen mode is required to take the test. Please allow fullscreen and try again.');
+            }
         };
 
         const statusEl = document.getElementById('startStatus');
-        statusEl.textContent = isInIframe ? 
-            'Questions loaded! Click below to open in a new tab.' : 
-            'Questions loaded! Click below to enter fullscreen mode and begin.';
+        statusEl.textContent = 'Questions loaded! Click below to enter fullscreen mode and begin.';
         statusEl.className = 'status success';
         statusEl.style.display = 'block';
         statusEl.parentElement.appendChild(confirmBtn);
@@ -622,8 +546,6 @@ async function submitTest(isForced = false) {
 // ============================================
 
 document.addEventListener('DOMContentLoaded', function() {
-    checkIfInIframe();
-    
     const numberInputs = ['q1Answer', 'q2Answer'];
     
     numberInputs.forEach(id => {
