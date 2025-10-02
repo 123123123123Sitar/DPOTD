@@ -359,6 +359,9 @@ async function submitTest(isForced = false) {
     document.getElementById('submitBtn').disabled = true;
 
     try {
+        console.log('Submitting to:', SCRIPT_URL);
+        console.log('Submission data:', submission);
+        
         const response = await fetch(SCRIPT_URL, {
             method: 'POST',
             headers: {
@@ -367,7 +370,12 @@ async function submitTest(isForced = false) {
             body: JSON.stringify(submission)
         });
 
-        const result = await response.json();
+        console.log('Response status:', response.status);
+        const responseText = await response.text();
+        console.log('Response text:', responseText);
+        
+        const result = JSON.parse(responseText);
+        console.log('Parsed result:', result);
 
         hideLoading();
 
