@@ -4,7 +4,303 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>D.PotD Student Portal</title>
-    <link rel="stylesheet" href="styles.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #E3E3E3;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        body.locked {
+            padding: 0;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            border: 2px solid #E3E3E3;
+        }
+
+        body.locked .container {
+            max-width: 100%;
+            height: 100vh;
+            border-radius: 0;
+            overflow-y: auto;
+            padding: 80px 40px 40px;
+            margin: 0;
+        }
+
+        h1 {
+            color: #000;
+            margin-bottom: 10px;
+            text-align: center;
+            font-size: 2.2em;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #000;
+            font-weight: 600;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #E3E3E3;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            background: #fff;
+            color: #000;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #EA5A2F;
+            box-shadow: 0 0 0 3px rgba(234, 90, 47, 0.1);
+        }
+
+        .btn {
+            background: #EA5A2F;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            background: #d84a1f;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            background: #E3E3E3;
+            color: #666;
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        .question-section {
+            display: none;
+        }
+
+        .question-box {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #EA5A2F;
+            min-height: 300px;
+        }
+
+        .question-box h2 {
+            color: #000;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .question-box p {
+            color: #333;
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .timer {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-size: 18px;
+            font-weight: 600;
+            color: #000;
+            z-index: 10000;
+            border: 2px solid #E3E3E3;
+        }
+
+        .progress-indicator {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-size: 16px;
+            font-weight: 600;
+            color: #EA5A2F;
+            z-index: 10000;
+            border: 2px solid #E3E3E3;
+        }
+
+        .warning-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(234, 90, 47, 0.95);
+            z-index: 99999;
+            color: white;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            font-size: 24px;
+            font-weight: 600;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .warning-overlay.show {
+            display: flex;
+        }
+
+        .warning-count {
+            font-size: 48px;
+            color: #000;
+            margin: 20px 0;
+        }
+
+        .loading-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .loading-modal.show {
+            display: flex;
+        }
+        
+        .loading-content {
+            background: white;
+            padding: 40px 60px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #EA5A2F;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 14px;
+            display: block;
+            margin-top: 5px;
+        }
+
+        .day-indicator {
+            background: #EA5A2F;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 18px;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .correct {
+            color: #28a745;
+        }
+
+        .incorrect {
+            color: #dc3545;
+        }
+
+        body.locked::after {
+            content: 'TEST IN PROGRESS - DO NOT LEAVE THIS PAGE';
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #000;
+            color: white;
+            padding: 12px;
+            text-align: center;
+            font-weight: 600;
+            z-index: 9999;
+            font-size: 14px;
+        }
+    </style>
 </head>
 <body>
     <!-- Loading Modal -->
@@ -23,7 +319,6 @@
         <button class="btn" onclick="returnToFullscreen()" style="max-width: 400px; padding: 20px 40px; font-size: 18px; margin-top: 20px; background: #fff; color: #dc3545; border: 3px solid #fff;">
             🔒 Return to Test & Enter Fullscreen
         </button>
-        <p style="font-size: 14px; margin-top: 20px; opacity: 0.9;">Click the button above to continue your test</p>
     </div>
 
     <!-- Main Container -->
@@ -48,9 +343,10 @@
             <div id="startStatus" class="status"></div>
         </div>
         
-        <!-- Question Section -->
+        <!-- Question Sections -->
         <div id="questionSection" class="question-section">
             <div class="timer" id="timer">Time Remaining: 2:00:00</div>
+            <div class="progress-indicator" id="progressIndicator">Question 1 of 3</div>
             
             <div style="text-align: center; margin-bottom: 30px;">
                 <div class="day-indicator" id="dayIndicator">Day -</div>
@@ -60,40 +356,56 @@
                     <span>🔒 Do not leave this page</span>
                 </div>
             </div>
-            
-            <div class="question-box">
-                <h3>Question 1</h3>
-                <p id="q1Text"></p>
-                <input type="text" id="q1Answer" placeholder="Your answer (numbers only)">
+
+            <!-- Question 1 Page -->
+            <div id="q1Page" style="display: none;">
+                <div class="question-box">
+                    <h2>Question 1</h2>
+                    <p id="q1Text"></p>
+                    <input type="text" id="q1Answer" placeholder="Your answer (numbers only)">
+                </div>
+                <button class="btn" onclick="nextQuestion(1)">Next Question →</button>
+                <div id="q1Status" class="status"></div>
             </div>
-            
-            <div class="question-box">
-                <h3>Question 2</h3>
-                <p id="q2Text"></p>
-                <input type="text" id="q2Answer" placeholder="Your answer (numbers only)">
+
+            <!-- Question 2 Page -->
+            <div id="q2Page" style="display: none;">
+                <div class="question-box">
+                    <h2>Question 2</h2>
+                    <p id="q2Text"></p>
+                    <input type="text" id="q2Answer" placeholder="Your answer (numbers only)">
+                </div>
+                <button class="btn" onclick="nextQuestion(2)">Next Question →</button>
+                <div id="q2Status" class="status"></div>
             </div>
-            
-            <div class="question-box">
-                <h3>Question 3 (Proof/Explanation)</h3>
-                <p id="q3Text"></p>
-                <textarea id="q3Answer" rows="8" placeholder="Your detailed explanation"></textarea>
+
+            <!-- Question 3 Page -->
+            <div id="q3Page" style="display: none;">
+                <div class="question-box">
+                    <h2>Question 3 (Proof/Explanation)</h2>
+                    <p id="q3Text"></p>
+                    <textarea id="q3Answer" rows="12" placeholder="Your detailed explanation"></textarea>
+                </div>
+                <button class="btn" onclick="submitTest()">Submit Test</button>
+                <div id="q3Status" class="status"></div>
             </div>
-            
-            <button class="btn" id="submitBtn" onclick="submitTest()">Submit Test</button>
-            <div id="submitStatus" class="status"></div>
         </div>
     </div>
     
     <script>
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzRPyEM0A2oP_zU9GTq_tPintK4rU1e16IvGLgCV-P1G4-dsghsw7B_kkgAuPII56X0/exec';
+        
         let startTime;
         let timerInterval;
         let questionsData;
         let q1StartTime, q2StartTime, q3StartTime;
+        let q1EndTime, q2EndTime, q3EndTime;
         let exitCount = 0;
         let exitLogs = [];
         let testActive = false;
         let currentDay = null;
+        let currentQuestion = 0;
+        
         const TEST_DURATION = 120 * 60 * 1000; // 2 hours in milliseconds
 
         function showStatus(elementId, message, type) {
@@ -120,6 +432,10 @@
             return emailRegex.test(email);
         }
 
+        function cleanAnswer(answer) {
+            return answer.replace(/[^0-9-]/g, '').replace(/(?!^)-/g, '');
+        }
+
         function recordViolation(type) {
             if (!testActive) return;
             
@@ -131,11 +447,9 @@
             
             document.getElementById('violationCount').textContent = exitCount;
             
-            // Show warning overlay
             const overlay = document.getElementById('warningOverlay');
             const warningText = overlay.querySelector('p:first-child');
             
-            // Update warning text based on violation type
             if (type === 'exited_fullscreen') {
                 warningText.innerHTML = '<strong>⚠️ WARNING: YOU EXITED FULLSCREEN MODE!</strong>';
             } else if (type === 'tab_hidden') {
@@ -154,7 +468,6 @@
             }
         }
 
-        // Function to return to fullscreen from warning overlay
         function returnToFullscreen() {
             document.documentElement.requestFullscreen().then(() => {
                 console.log('Returned to fullscreen');
@@ -165,21 +478,18 @@
             });
         }
 
-        // Monitor fullscreen changes
         function handleFullscreenChange() {
             if (!document.fullscreenElement && testActive) {
                 recordViolation('exited_fullscreen');
                 const overlay = document.getElementById('warningOverlay');
                 overlay.classList.add('show');
                 
-                // Attempt to re-enter fullscreen after a brief delay
                 setTimeout(() => {
                     document.documentElement.requestFullscreen().then(() => {
                         console.log('Re-entered fullscreen');
                         hideWarning();
-                    }).catch(() => {
-                        alert('You exited fullscreen mode. The test has been compromised.');
-                        testActive = false;
+                    }).catch((err) => {
+                        console.error('Failed to re-enter fullscreen:', err);
                     });
                 }, 100);
             } else if (document.fullscreenElement && testActive) {
@@ -187,36 +497,30 @@
             }
         }
 
-        // Monitor visibility changes (tab switching, minimizing)
         function handleVisibilityChange() {
             if (document.hidden && testActive) {
                 recordViolation('tab_hidden');
+                const overlay = document.getElementById('warningOverlay');
+                overlay.classList.add('show');
             } else if (!document.hidden && testActive) {
-                // When returning to tab, keep warning visible if not in fullscreen
-                if (!document.fullscreenElement) {
-                    const overlay = document.getElementById('warningOverlay');
-                    overlay.classList.add('show');
-                }
+                hideWarning();
             }
         }
 
-        // Monitor window blur (switching to another application)
         function handleWindowBlur() {
             if (testActive) {
                 recordViolation('window_blur');
-            }
-        }
-
-        // Return to window
-        function handleWindowFocus() {
-            if (testActive && !document.fullscreenElement) {
-                // Keep warning visible when returning if not in fullscreen
                 const overlay = document.getElementById('warningOverlay');
                 overlay.classList.add('show');
             }
         }
 
-        // Set up all monitoring
+        function handleWindowFocus() {
+            if (testActive) {
+                hideWarning();
+            }
+        }
+
         function monitorFullscreen() {
             document.addEventListener('fullscreenchange', handleFullscreenChange);
             document.addEventListener('visibilitychange', handleVisibilityChange);
@@ -224,7 +528,6 @@
             window.addEventListener('focus', handleWindowFocus);
         }
 
-        // Prevent ALL tab switching and common shortcuts during test
         document.addEventListener('keydown', function(e) {
             if (testActive) {
                 if ((e.ctrlKey && e.keyCode === 9) || 
@@ -253,7 +556,6 @@
             }
         });
 
-        // Detect screenshot attempts
         document.addEventListener('keyup', function(e) {
             if (testActive && e.key === 'PrintScreen') {
                 navigator.clipboard.writeText('');
@@ -261,7 +563,6 @@
             }
         });
 
-        // Prevent right-click during test
         document.addEventListener('contextmenu', function(e) {
             if (testActive) {
                 e.preventDefault();
@@ -269,7 +570,15 @@
             }
         });
 
-        // Get current day based on schedule
+        window.addEventListener('beforeunload', function(e) {
+            if (testActive) {
+                e.preventDefault();
+                e.returnValue = '';
+                recordViolation('attempted_close');
+                return '';
+            }
+        });
+
         async function getCurrentDay() {
             try {
                 const response = await fetch(`${SCRIPT_URL}?action=getSchedule`);
@@ -293,6 +602,61 @@
             } catch (error) {
                 console.error('Error getting current day:', error);
                 return null;
+            }
+        }
+
+        function updateTimer() {
+            if (!startTime) return;
+            
+            const elapsed = Date.now() - startTime;
+            const remaining = Math.max(0, TEST_DURATION - elapsed);
+            
+            const hours = Math.floor(remaining / (60 * 60 * 1000));
+            const minutes = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
+            const seconds = Math.floor((remaining % (60 * 1000)) / 1000);
+            
+            const timerEl = document.getElementById('timer');
+            timerEl.textContent = `Time Remaining: ${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            timerEl.style.display = 'block';
+            timerEl.style.color = '#000000';
+            
+            if (remaining < 10 * 60 * 1000) {
+                timerEl.style.color = '#ff6b6b';
+            }
+            
+            if (remaining <= 0) {
+                clearInterval(timerInterval);
+                submitTest(true);
+            }
+        }
+
+        function showQuestion(questionNum) {
+            document.getElementById('q1Page').style.display = 'none';
+            document.getElementById('q2Page').style.display = 'none';
+            document.getElementById('q3Page').style.display = 'none';
+            
+            document.getElementById(`q${questionNum}Page`).style.display = 'block';
+            document.getElementById('progressIndicator').textContent = `Question ${questionNum} of 3`;
+            currentQuestion = questionNum;
+        }
+
+        function nextQuestion(fromQuestion) {
+            const answer = document.getElementById(`q${fromQuestion}Answer`).value.trim();
+            
+            if (!answer) {
+                showStatus(`q${fromQuestion}Status`, 'Please provide an answer before continuing', 'error');
+                return;
+            }
+            
+            // Record end time for current question
+            if (fromQuestion === 1) {
+                q1EndTime = Date.now();
+                q2StartTime = Date.now();
+                showQuestion(2);
+            } else if (fromQuestion === 2) {
+                q2EndTime = Date.now();
+                q3StartTime = Date.now();
+                showQuestion(3);
             }
         }
 
@@ -375,6 +739,9 @@
                         q1StartTime = Date.now();
                         timerInterval = setInterval(updateTimer, 1000);
                         updateTimer();
+                        
+                        // Show first question
+                        showQuestion(1);
                     } catch (err) {
                         console.error('Fullscreen error:', err);
                         alert('Fullscreen mode is required to take the test. Please allow fullscreen and try again.');
@@ -386,14 +753,6 @@
                 statusEl.className = 'status success';
                 statusEl.style.display = 'block';
                 statusEl.parentElement.appendChild(confirmBtn);
-                
-                document.getElementById('q1Answer').addEventListener('focus', () => {
-                    if (!q2StartTime) q2StartTime = Date.now();
-                });
-                
-                document.getElementById('q2Answer').addEventListener('focus', () => {
-                    if (!q3StartTime) q3StartTime = Date.now();
-                });
                 
                 setTimeout(() => {
                     if (testActive) {
@@ -409,35 +768,6 @@
             }
         }
 
-        function updateTimer() {
-            if (!startTime) return;
-            
-            const elapsed = Date.now() - startTime;
-            const remaining = Math.max(0, TEST_DURATION - elapsed);
-            
-            const hours = Math.floor(remaining / (60 * 60 * 1000));
-            const minutes = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
-            const seconds = Math.floor((remaining % (60 * 1000)) / 1000);
-            
-            const timerEl = document.getElementById('timer');
-            timerEl.textContent = `Time Remaining: ${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            timerEl.style.display = 'block';
-            timerEl.style.color = '#EA5A2F';
-            
-            if (remaining < 10 * 60 * 1000) {
-                timerEl.style.color = '#ff6b6b';
-            }
-            
-            if (remaining <= 0) {
-                clearInterval(timerInterval);
-                submitTest(true);
-            }
-        }
-
-        function cleanAnswer(answer) {
-            return answer.replace(/[^0-9-]/g, '').replace(/(?!^)-/g, '');
-        }
-
         async function submitTest(isForced = false) {
             if (!testActive && !isForced) {
                 console.log('Test not active, submission blocked');
@@ -451,7 +781,7 @@
             const q3Answer = document.getElementById('q3Answer').value.trim();
             
             if (!isForced && (!q1Answer || !q2Answer || !q3Answer)) {
-                showStatus('submitStatus', 'Please answer all questions', 'error');
+                showStatus('q3Status', 'Please answer all questions', 'error');
                 return;
             }
             
@@ -459,10 +789,13 @@
             clearInterval(timerInterval);
             
             const endTime = Date.now();
+            q3EndTime = endTime;
+            
+            // Calculate times for each question
+            const q1Time = q1EndTime ? Math.floor((q1EndTime - q1StartTime) / 1000) : 0;
+            const q2Time = q2EndTime && q2StartTime ? Math.floor((q2EndTime - q2StartTime) / 1000) : 0;
+            const q3Time = q3StartTime ? Math.floor((q3EndTime - q3StartTime) / 1000) : 0;
             const totalTime = Math.floor((endTime - startTime) / 1000);
-            const q1Time = q2StartTime ? Math.floor((q2StartTime - q1StartTime) / 1000) : totalTime;
-            const q2Time = q3StartTime ? Math.floor((q3StartTime - q2StartTime) / 1000) : 0;
-            const q3Time = Math.floor((endTime - (q3StartTime || q2StartTime || q1StartTime)) / 1000);
             
             const q1Correct = q1Answer === cleanAnswer(questionsData.q1_answer);
             const q2Correct = q2Answer === cleanAnswer(questionsData.q2_answer);
@@ -486,7 +819,6 @@
             };
             
             showLoading(isForced ? 'Auto-submitting test...' : 'Submitting your answers...');
-            document.getElementById('submitBtn').disabled = true;
             
             try {
                 const response = await fetch(SCRIPT_URL, {
@@ -519,52 +851,46 @@
                         <p style="font-size: 18px; color: #666; margin-bottom: 30px;">
                             Thanks for submitting! Your score will be emailed to you soon.
                         </p>
-                        
-                        <div style="background: #fff3e0; padding: 25px; border-radius: 8px; border-left: 4px solid #EA5A2F; max-width: 600px; margin: 0 auto 30px;">
-                            <h3 style="color: #EA5A2F; margin-bottom: 15px;">📧 Important: Email Your Solutions</h3>
-                            <p style="color: #333; font-size: 16px; margin-bottom: 10px;">
-                                Please email your detailed work and solutions to:
-                            </p>
-                            <a href="mailto:solutions@dtechmathclub.org" style="font-size: 20px; font-weight: bold; color: #EA5A2F; text-decoration: none; display: block; margin: 15px 0;">
-                                solutions@dtechmathclub.org
-                            </a>
-                            <p style="color: #666; font-size: 14px; margin-top: 15px;">
-                                Include your name and Day ${currentDay} in the email subject line.
-                            </p>
-                        </div>
-                        
                         <div style="background: #f8f9fa; padding: 30px; border-radius: 8px; border-left: 4px solid #EA5A2F; max-width: 500px; margin: 0 auto;">
                             <h2 style="margin-bottom: 20px; color: #000;">Your Results</h2>
+                            
                             <div style="text-align: left; margin-bottom: 15px;">
                                 <strong style="color: #495057;">Question 1:</strong>
                                 <span class="${q1Correct ? 'correct' : 'incorrect'}" style="font-size: 18px; margin-left: 10px;">
                                     ${q1Correct ? '✓ Correct' : '✗ Incorrect'}
                                 </span>
                                 <div style="color: #666; font-size: 14px; margin-top: 5px;">
-                                    Your answer: ${q1Answer}
+                                    Your answer: ${q1Answer} | Time spent: ${Math.floor(q1Time / 60)}m ${q1Time % 60}s
                                 </div>
                             </div>
+                            
                             <div style="text-align: left; margin-bottom: 15px;">
                                 <strong style="color: #495057;">Question 2:</strong>
                                 <span class="${q2Correct ? 'correct' : 'incorrect'}" style="font-size: 18px; margin-left: 10px;">
                                     ${q2Correct ? '✓ Correct' : '✗ Incorrect'}
                                 </span>
                                 <div style="color: #666; font-size: 14px; margin-top: 5px;">
-                                    Your answer: ${q2Answer}
+                                    Your answer: ${q2Answer} | Time spent: ${Math.floor(q2Time / 60)}m ${q2Time % 60}s
                                 </div>
                             </div>
+                            
                             <div style="text-align: left;">
                                 <strong style="color: #495057;">Question 3:</strong>
                                 <span style="color: #666; font-size: 14px; margin-left: 10px;">
                                     Will be graded manually
                                 </span>
+                                <div style="color: #666; font-size: 14px; margin-top: 5px;">
+                                    Time spent: ${Math.floor(q3Time / 60)}m ${q3Time % 60}s
+                                </div>
                             </div>
+                            
                             <div style="margin-top: 25px; padding-top: 20px; border-top: 2px solid #E3E3E3;">
                                 <strong style="color: #495057;">Total Time:</strong>
                                 <span style="color: #000; font-size: 18px; margin-left: 10px;">
                                     ${Math.floor(totalTime / 60)} minutes ${totalTime % 60} seconds
                                 </span>
                             </div>
+                            
                             ${exitCount > 0 ? `
                             <div style="margin-top: 15px; padding: 15px; background: #fff3cd; border-radius: 6px;">
                                 <strong style="color: #856404;">⚠️ Violations: ${exitCount}</strong>
@@ -574,6 +900,7 @@
                             </div>
                             ` : ''}
                         </div>
+                        
                         <button class="btn" onclick="window.location.reload()" style="max-width: 300px; margin: 30px auto 0;">
                             Back to Home
                         </button>
@@ -582,27 +909,16 @@
                     
                     document.querySelector('.container').innerHTML = resultsHTML;
                 } else {
-                    showStatus('submitStatus', 'Error: ' + (result.error || 'Unknown error'), 'error');
+                    showStatus('q3Status', 'Error: ' + (result.error || 'Unknown error'), 'error');
                     testActive = true;
-                    document.getElementById('submitBtn').disabled = false;
                 }
             } catch (error) {
                 hideLoading();
-                showStatus('submitStatus', 'Error submitting: ' + error.message, 'error');
+                showStatus('q3Status', 'Error submitting: ' + error.message, 'error');
                 console.error('Error:', error);
                 testActive = true;
-                document.getElementById('submitBtn').disabled = false;
             }
         }
-
-        window.addEventListener('beforeunload', function(e) {
-            if (testActive) {
-                e.preventDefault();
-                e.returnValue = '';
-                recordViolation('attempted_close');
-                return '';
-            }
-        });
 
         document.addEventListener('DOMContentLoaded', function() {
             const numberInputs = ['q1Answer', 'q2Answer'];
@@ -619,53 +935,5 @@
             });
         });
     </script>
-    
-    <style>
-        .loading-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 9999;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .loading-modal.show {
-            display: flex;
-        }
-        
-        .loading-content {
-            background: white;
-            padding: 40px 60px;
-            border-radius: 15px;
-            text-align: center;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-        }
-        
-        .spinner {
-            width: 60px;
-            height: 60px;
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #EA5A2F;
-            border-radius: 50%;
-            margin: 0 auto 20px;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        #loadingText {
-            font-size: 18px;
-            color: #333;
-            font-weight: 600;
-        }
-    </style>
 </body>
 </html>
