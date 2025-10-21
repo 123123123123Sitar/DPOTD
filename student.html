@@ -580,7 +580,20 @@ Use \\ for new lines"></textarea>
     
     <script>
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzRPyEM0A2oP_zU9GTq_tPintK4rU1e16IvGLgCV-P1G4-dsghsw7B_kkgAuPII56X0/exec';
-        const OPENAI_API_KEY = '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'; // Replace with your OpenAI API key
+        
+        // Function to get API key from server
+        async function getApiKey() {
+            try {
+                const response = await fetch('/api/config');
+                const data = await response.json();
+                return data.openaiApiKey;
+            } catch (error) {
+                console.error('Error fetching API key:', error);
+                return null;
+            }
+        }
+        
+        let OPENAI_API_KEY = null;
         
         let startTime;
         let timerInterval;
@@ -605,10 +618,8 @@ Use \\ for new lines"></textarea>
                 return;
             }
             
-            // Wrap content in display math mode
             preview.innerHTML = '$$' + input + '$$';
             
-            // Trigger MathJax to render
             if (window.MathJax) {
                 MathJax.typesetPromise([preview]).catch((err) => console.log('MathJax error:', err));
             }
@@ -632,11 +643,18 @@ Use \\ for new lines"></textarea>
             
             if (!message) return;
             
-            // Add user message to chat
             addAIMessage(message, 'user');
             input.value = '';
             
-            // Check if question is appropriate
+            // Lazy load API key if not already loaded
+            if (!OPENAI_API_KEY) {
+                OPENAI_API_KEY = await getApiKey();
+                if (!OPENAI_API_KEY) {
+                    addAIMessage('LaTeX Helper is currently unavailable. Please contact your administrator.', 'assistant');
+                    return;
+                }
+            }
+            
             const systemPrompt = `You are a LaTeX syntax helper for a math competition. You can ONLY help with LaTeX formatting and syntax questions.
 
 STRICT RULES:
@@ -703,7 +721,6 @@ If the user asks a forbidden question, respond with: "I can only help with LaTeX
             container.scrollTop = container.scrollHeight;
         }
 
-        // Rest of your existing functions
         function showStatus(elementId, message, type) {
             const el = document.getElementById(elementId);
             el.textContent = message;
@@ -935,7 +952,6 @@ If the user asks a forbidden question, respond with: "I can only help with LaTeX
             document.getElementById('progressIndicator').textContent = `Question ${questionNum} of 3`;
             currentQuestion = questionNum;
             
-            // Show AI helper button only on Q3
             const aiBtn = document.getElementById('aiToggleBtn');
             if (questionNum === 3) {
                 aiBtn.style.display = 'block';
@@ -953,7 +969,6 @@ If the user asks a forbidden question, respond with: "I can only help with LaTeX
                 return;
             }
             
-            // Record end time for current question
             if (fromQuestion === 1) {
                 q1EndTime = Date.now();
                 q2StartTime = Date.now();
@@ -1045,7 +1060,6 @@ If the user asks a forbidden question, respond with: "I can only help with LaTeX
                         timerInterval = setInterval(updateTimer, 1000);
                         updateTimer();
                         
-                        // Show first question
                         showQuestion(1);
                     } catch (err) {
                         console.error('Fullscreen error:', err);
@@ -1096,7 +1110,6 @@ If the user asks a forbidden question, respond with: "I can only help with LaTeX
             const endTime = Date.now();
             q3EndTime = endTime;
             
-            // Calculate times for each question
             const q1Time = q1EndTime ? Math.floor((q1EndTime - q1StartTime) / 1000) : 0;
             const q2Time = q2EndTime && q2StartTime ? Math.floor((q2EndTime - q2StartTime) / 1000) : 0;
             const q3Time = q3StartTime ? Math.floor((q3EndTime - q3StartTime) / 1000) : 0;
@@ -1225,7 +1238,6 @@ If the user asks a forbidden question, respond with: "I can only help with LaTeX
             }
         }
 
-        // Set up LaTeX preview listener
         document.addEventListener('DOMContentLoaded', function() {
             const numberInputs = ['q1Answer', 'q2Answer'];
             numberInputs.forEach(id => {
@@ -1240,7 +1252,6 @@ If the user asks a forbidden question, respond with: "I can only help with LaTeX
                 }
             });
             
-            // LaTeX input listener
             const latexInput = document.getElementById('latexInput');
             if (latexInput) {
                 latexInput.addEventListener('input', updateLatexPreview);
