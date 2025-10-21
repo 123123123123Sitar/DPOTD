@@ -581,24 +581,8 @@ Use \\ for new lines"></textarea>
     <script>
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzRPyEM0A2oP_zU9GTq_tPintK4rU1e16IvGLgCV-P1G4-dsghsw7B_kkgAuPII56X0/exec';
         
-        // Function to get API key from server
-        async function getApiKey() {
-            try {
-                const response = await fetch('/api/config');
-                if (!response.ok) {
-                    console.error('API config fetch failed:', response.status, response.statusText);
-                    return null;
-                }
-                const data = await response.json();
-                console.log('API key fetched:', data.geminiApiKey ? 'Success' : 'Missing');
-                return data.geminiApiKey;
-            } catch (error) {
-                console.error('Error fetching API key:', error);
-                return null;
-            }
-        }
-        
-        let GEMINI_API_KEY = null;
+        // REPLACE THIS WITH YOUR ACTUAL GEMINI API KEY
+        const GEMINI_API_KEY = 'YOUR_GEMINI_API_KEY_HERE';
         
         let startTime;
         let timerInterval;
@@ -648,18 +632,15 @@ Use \\ for new lines"></textarea>
             
             if (!message) return;
             
+            // Check if API key is set
+            if (GEMINI_API_KEY === 'YOUR_GEMINI_API_KEY_HERE') {
+                addAIMessage('⚠️ Error: Gemini API key is not configured. Please add your API key to the code.', 'assistant');
+                input.value = '';
+                return;
+            }
+            
             addAIMessage(message, 'user');
             input.value = '';
-            
-            // Lazy load API key if not already loaded
-            if (!GEMINI_API_KEY) {
-                addAIMessage('Loading LaTeX Helper...', 'assistant');
-                GEMINI_API_KEY = await getApiKey();
-                if (!GEMINI_API_KEY) {
-                    addAIMessage('LaTeX Helper is currently unavailable. Please check the console for errors or contact your administrator.', 'assistant');
-                    return;
-                }
-            }
             
             const systemPrompt = `You are a LaTeX syntax helper for a math competition. You can ONLY help with LaTeX formatting and syntax questions.
 
@@ -706,7 +687,12 @@ If the user asks a forbidden question, respond with: "I can only help with LaTeX
                 if (!response.ok) {
                     const errorData = await response.text();
                     console.error('Gemini API error:', response.status, errorData);
-                    addAIMessage('Sorry, I encountered an error with the AI service. Please try again.', 'assistant');
+                    
+                    if (response.status === 400) {
+                        addAIMessage('⚠️ Invalid API key or request. Please check your Gemini API key configuration.', 'assistant');
+                    } else {
+                        addAIMessage('Sorry, I encountered an error with the AI service. Please try again.', 'assistant');
+                    }
                     return;
                 }
                 
@@ -722,7 +708,7 @@ If the user asks a forbidden question, respond with: "I can only help with LaTeX
                 
                 addAIMessage(aiResponse, 'assistant');
             } catch (error) {
-                addAIMessage('Sorry, I encountered an error. Please try again.', 'assistant');
+                addAIMessage('Sorry, I encountered an error. Please check your internet connection and try again.', 'assistant');
                 console.error('AI Error:', error);
             }
         }
