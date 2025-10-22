@@ -730,12 +730,17 @@ If the user asks a forbidden question, respond with: "I can only help with LaTeX
             messageDiv.className = `ai-message ${type}`;
             
             if (type === 'assistant') {
-                // Convert backticks to code formatting
-                let formattedMessage = message
-                    .replace(/```([\s\S]*?)```/g, '<pre style="background: #2d2d2d; color: #f8f8f2; padding: 10px; border-radius: 4px; overflow-x: auto; margin: 10px 0;"><code>$1</code></pre>')
-                    .replace(/`([^`]+)`/g, '<code style="background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-family: monospace; color: #e83e8c;">$1</code>');
+                // First escape HTML to prevent XSS
+                const tempDiv = document.createElement('div');
+                tempDiv.textContent = message;
+                let escapedMessage = tempDiv.innerHTML;
                 
-                messageDiv.innerHTML = `<strong>LaTeX Helper:</strong> ${formattedMessage}`;
+                // Then convert markdown-style code blocks to HTML
+                escapedMessage = escapedMessage
+                    .replace(/```([\s\S]*?)```/g, '<pre style="background: #2d2d2d; color: #f8f8f2; padding: 10px; border-radius: 4px; overflow-x: auto; margin: 10px 0; font-family: monospace;"><code>$1</code></pre>')
+                    .replace(/`([^`]+)`/g, '<code style="background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-family: monospace; color: #e83e8c; font-size: 13px;">$1</code>');
+                
+                messageDiv.innerHTML = `<strong>LaTeX Helper:</strong> ${escapedMessage}`;
             } else {
                 messageDiv.textContent = message;
             }
@@ -1278,6 +1283,23 @@ If the user asks a forbidden question, respond with: "I can only help with LaTeX
             const latexInput = document.getElementById('latexInput');
             if (latexInput) {
                 latexInput.addEventListener('input', updateLatexPreview);
+                
+                // Set initial LaTeX template (like Overleaf blank document)
+                latexInput.value = `\\documentclass{article}
+\\usepackage[utf8]{inputenc}
+
+\\title{}
+\\author{}
+\\date{}
+
+\\begin{document}
+
+
+
+\\end{document}`;
+                
+                // Trigger initial preview
+                updateLatexPreview();
             }
         });
     </script>
