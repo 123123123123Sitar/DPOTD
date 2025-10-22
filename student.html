@@ -355,12 +355,14 @@
             border-radius: 50%;
             font-weight: bold;
             font-size: 18px;
+            line-height: 1;
             cursor: pointer;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             z-index: 10000;
             display: none;
             align-items: center;
             justify-content: center;
+            padding: 0;
         }
 
         .latex-help-btn:hover {
@@ -560,7 +562,7 @@
     </button>
 
     <button class="latex-help-btn" id="latexHelpBtn" onmouseenter="showLatexHelp()" onmouseleave="hideLatexHelp()">
-        How do I use LaTeX?
+        ?
     </button>
 
     <div class="latex-help-dropdown" id="latexHelpDropdown" onmouseenter="showLatexHelp()" onmouseleave="hideLatexHelp()">
@@ -978,8 +980,18 @@ Keep responses brief and focused on LaTeX code syntax only.`;
             document.getElementById(`q${num}Page`).style.display = 'block';
             document.getElementById('progressIndicator').textContent = `Question ${num} of 3`;
             document.getElementById('progressIndicator').style.display = 'block';
-            document.getElementById('aiToggleBtn').style.display = num === 3 ? 'block' : 'none';
-            document.getElementById('latexHelpBtn').style.display = num === 3 ? 'block' : 'none';
+            
+            const aiBtn = document.getElementById('aiToggleBtn');
+            const helpBtn = document.getElementById('latexHelpBtn');
+            
+            if (num === 3) {
+                aiBtn.style.display = 'block';
+                helpBtn.style.display = 'flex';
+            } else {
+                aiBtn.style.display = 'none';
+                helpBtn.style.display = 'none';
+            }
+            
             currentQuestion = num;
         }
 
