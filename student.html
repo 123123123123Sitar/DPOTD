@@ -4,6 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>D.PotD Student Portal</title>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+            }
+        };
+    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
     <style>
         * {
@@ -448,7 +461,6 @@
     </style>
 </head>
 <body>
-    <!-- Loading Modal -->
     <div class="loading-modal" id="loadingModal">
         <div class="loading-content">
             <div class="spinner"></div>
@@ -456,7 +468,6 @@
         </div>
     </div>
 
-    <!-- Warning Overlay -->
     <div class="warning-overlay" id="warningOverlay">
         <p><strong>⚠️ WARNING: YOU HAVE LEFT THE TEST PAGE!</strong></p>
         <p style="font-size: 18px; margin: 20px 0;">Return to the test immediately!</p>
@@ -466,12 +477,10 @@
         </button>
     </div>
 
-    <!-- AI Helper Toggle Button -->
     <button class="ai-toggle-btn" id="aiToggleBtn" onclick="toggleAIHelper()">
         🤖 LaTeX Helper
     </button>
 
-    <!-- AI Helper Panel -->
     <div class="ai-helper" id="aiHelper">
         <div class="ai-header">
             <span>🤖 LaTeX Helper</span>
@@ -489,12 +498,10 @@
         </div>
     </div>
 
-    <!-- Main Container -->
     <div class="container">
         <h1>D.PotD Problems of the Day</h1>
         <p class="subtitle">Student Portal</p>
         
-        <!-- Student Form -->
         <div id="studentForm">
             <div class="form-group">
                 <label>Full Name:</label>
@@ -511,7 +518,6 @@
             <div id="startStatus" class="status"></div>
         </div>
         
-        <!-- Question Sections -->
         <div id="questionSection" class="question-section">
             <div class="timer" id="timer">Time Remaining: 2:00:00</div>
             <div class="progress-indicator" id="progressIndicator">Question 1 of 3</div>
@@ -525,7 +531,6 @@
                 </div>
             </div>
 
-            <!-- Question 1 Page -->
             <div id="q1Page" style="display: none;">
                 <div class="question-box">
                     <h2>Question 1</h2>
@@ -536,7 +541,6 @@
                 <div id="q1Status" class="status"></div>
             </div>
 
-            <!-- Question 2 Page -->
             <div id="q2Page" style="display: none;">
                 <div class="question-box">
                     <h2>Question 2</h2>
@@ -547,7 +551,6 @@
                 <div id="q2Status" class="status"></div>
             </div>
 
-            <!-- Question 3 Page with LaTeX Editor -->
             <div id="q3Page" style="display: none;">
                 <div class="question-box">
                     <h2>Question 3 (Proof/Explanation)</h2>
@@ -575,20 +578,13 @@
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzRPyEM0A2oP_zU9GTq_tPintK4rU1e16IvGLgCV-P1G4-dsghsw7B_kkgAuPII56X0/exec';
         const GEMINI_API_KEY = 'AIzaSyAG0HmsIkxuESxsq0sYNPRANTfqHdIk6Tk';
         
-        let startTime;
-        let timerInterval;
-        let questionsData;
+        let startTime, timerInterval, questionsData;
         let q1StartTime, q2StartTime, q3StartTime;
         let q1EndTime, q2EndTime, q3EndTime;
-        let exitCount = 0;
-        let exitLogs = [];
-        let testActive = false;
-        let currentDay = null;
-        let currentQuestion = 0;
-        
+        let exitCount = 0, exitLogs = [];
+        let testActive = false, currentDay = null, currentQuestion = 0;
         const TEST_DURATION = 120 * 60 * 1000;
 
-        // LaTeX Preview Update with proper MathJax rendering
         let latexUpdateTimer = null;
         
         function updateLatexPreview() {
@@ -604,8 +600,6 @@
                 }
                 
                 let content = input;
-                
-                // Remove LaTeX preamble commands
                 content = content.replace(/\\documentclass\{[^}]+\}/g, '');
                 content = content.replace(/\\usepackage\{[^}]+\}/g, '');
                 content = content.replace(/\\title\{[^}]*\}/g, '');
@@ -613,42 +607,12 @@
                 content = content.replace(/\\date\{[^}]*\}/g, '');
                 content = content.replace(/\\maketitle/g, '');
                 
-                // Extract content between \begin{document} and \end{document}
                 const docMatch = content.match(/\\begin\{document\}([\s\S]*)\\end\{document\}/);
-                if (docMatch) {
-                    content = docMatch[1].trim();
-                }
+                if (docMatch) content = docMatch[1].trim();
                 
-                // Process content line by line
-                const lines = content.split('\n');
-                let html = '';
-                let inMathBlock = false;
+                preview.innerHTML = content || '<p style="color: #999;">Write your proof...</p>';
                 
-                for (let line of lines) {
-                    const trimmed = line.trim();
-                    
-                    // Skip empty lines and comments
-                    if (!trimmed || trimmed.startsWith('%')) continue;
-                    
-                    // Handle display math blocks
-                    if (trimmed.startsWith('$$') || trimmed.startsWith('\\[') || trimmed.includes('\\begin{equation')) {
-                        inMathBlock = true;
-                        html += line + '\n';
-                    } else if (trimmed.endsWith('$$') || trimmed.endsWith('\\]') || trimmed.includes('\\end{equation')) {
-                        html += line + '\n';
-                        inMathBlock = false;
-                    } else if (inMathBlock) {
-                        html += line + '\n';
-                    } else {
-                        // Regular text - wrap in paragraph but preserve inline math
-                        html += '<p>' + line + '</p>\n';
-                    }
-                }
-                
-                preview.innerHTML = html || '<p style="color: #999;">Write your proof...</p>';
-                
-                // Use MathJax to render all math
-                if (window.MathJax) {
+                if (window.MathJax && window.MathJax.typesetPromise) {
                     MathJax.typesetClear([preview]);
                     MathJax.typesetPromise([preview]).catch((err) => {
                         console.error('MathJax error:', err);
@@ -658,7 +622,6 @@
             }, 500);
         }
 
-        // AI Helper Functions
         function toggleAIHelper() {
             document.getElementById('aiHelper').classList.toggle('show');
         }
@@ -670,7 +633,6 @@
         async function sendAIMessage() {
             const input = document.getElementById('aiInput');
             const message = input.value.trim();
-            
             if (!message) return;
             
             addAIMessage(message, 'user');
@@ -856,7 +818,6 @@
             }
             
             showLoading('Determining current day...');
-            
             currentDay = await getCurrentDay();
             
             if (!currentDay) {
@@ -880,15 +841,12 @@
                 const response = await fetch(`${SCRIPT_URL}?action=getQuestions&day=${currentDay}`);
                 questionsData = await response.json();
                 
-                console.log('Questions data received:', questionsData);
-                
                 if (questionsData.error) {
                     hideLoading();
                     showStatus('startStatus', 'Error: ' + questionsData.error, 'error');
                     return;
                 }
                 
-                // Set question texts
                 document.getElementById('q1Text').textContent = questionsData.q1_text || 'Question 1 text not available';
                 document.getElementById('q2Text').textContent = questionsData.q2_text || 'Question 2 text not available';
                 document.getElementById('q3Text').textContent = questionsData.q3_text || 'Question 3 text not available';
@@ -896,7 +854,6 @@
                 
                 hideLoading();
                 
-                // Create fullscreen button
                 const confirmBtn = document.createElement('button');
                 confirmBtn.className = 'btn';
                 confirmBtn.style.marginTop = '20px';
@@ -904,8 +861,6 @@
                 confirmBtn.onclick = async function() {
                     try {
                         await document.documentElement.requestFullscreen();
-                        console.log('Entered fullscreen successfully');
-                        
                         confirmBtn.remove();
                         
                         document.getElementById('studentForm').style.display = 'none';
@@ -919,11 +874,9 @@
                         q1StartTime = Date.now();
                         timerInterval = setInterval(updateTimer, 1000);
                         updateTimer();
-                        
                         showQuestion(1);
                     } catch (err) {
-                        console.error('Fullscreen error:', err);
-                        alert('Fullscreen mode is required to take the test. Please allow fullscreen access and try again.');
+                        alert('Fullscreen mode is required. Please allow fullscreen and try again.');
                     }
                 };
                 
@@ -935,7 +888,6 @@
                 
             } catch (error) {
                 hideLoading();
-                console.error('Full error:', error);
                 showStatus('startStatus', 'Error: ' + error.message, 'error');
             }
         }
@@ -1071,9 +1023,7 @@
             }
         }
 
-        // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
-            // Clean number inputs
             ['q1Answer', 'q2Answer'].forEach(id => {
                 const input = document.getElementById(id);
                 if (input) {
@@ -1084,7 +1034,6 @@
                 }
             });
             
-            // Set up LaTeX editor
             const latexInput = document.getElementById('latexInput');
             if (latexInput) {
                 latexInput.addEventListener('input', updateLatexPreview);
@@ -1115,14 +1064,13 @@ Common symbols:
             }
         });
 
-        // Prevent keyboard shortcuts during test
         document.addEventListener('keydown', (e) => {
             if (testActive) {
                 const blocked = [
-                    e.keyCode === 123, // F12
-                    (e.ctrlKey || e.metaKey) && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74), // Dev tools
-                    (e.ctrlKey || e.metaKey) && e.keyCode === 85, // View source
-                    e.keyCode === 27 // Escape
+                    e.keyCode === 123,
+                    (e.ctrlKey || e.metaKey) && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74),
+                    (e.ctrlKey || e.metaKey) && e.keyCode === 85,
+                    e.keyCode === 27
                 ];
                 
                 if (blocked.some(x => x)) {
