@@ -349,14 +349,22 @@
             right: 180px;
             background: #4A90E2;
             color: white;
-            padding: 12px 20px;
+            width: 32px;
+            height: 32px;
             border: none;
-            border-radius: 8px;
-            font-weight: 600;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 18px;
             cursor: pointer;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             z-index: 10000;
             display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .latex-help-btn:hover {
+            background: #3A7BC8;
         }
 
         .latex-help-dropdown {
@@ -551,6 +559,60 @@
         LaTeX Helper
     </button>
 
+    <button class="latex-help-btn" id="latexHelpBtn" onmouseenter="showLatexHelp()" onmouseleave="hideLatexHelp()">
+        How do I use LaTeX?
+    </button>
+
+    <div class="latex-help-dropdown" id="latexHelpDropdown" onmouseenter="showLatexHelp()" onmouseleave="hideLatexHelp()">
+        <h3>Basic LaTeX Syntax</h3>
+        
+        <div class="latex-help-section">
+            <h4>Inline Math</h4>
+            <p>Wrap math in single dollar signs: <code>$x^2 + y^2 = z^2$</code></p>
+        </div>
+        
+        <div class="latex-help-section">
+            <h4>Display Math (Centered)</h4>
+            <p>Use double dollar signs:</p>
+            <p><code>$\frac{a}{b} = \frac{c}{d}$</code></p>
+        </div>
+        
+        <div class="latex-help-section">
+            <h4>Fractions</h4>
+            <p><code>\frac{numerator}{denominator}</code></p>
+            <p>Example: <code>$\frac{1}{2}$</code></p>
+        </div>
+        
+        <div class="latex-help-section">
+            <h4>Exponents & Subscripts</h4>
+            <p>Exponent: <code>x^2</code> or <code>x^{10}</code></p>
+            <p>Subscript: <code>x_1</code> or <code>x_{10}</code></p>
+        </div>
+        
+        <div class="latex-help-section">
+            <h4>Square Roots</h4>
+            <p><code>\sqrt{x}</code> or <code>\sqrt[3]{x}</code></p>
+        </div>
+        
+        <div class="latex-help-section">
+            <h4>Greek Letters</h4>
+            <p><code>\alpha</code>, <code>\beta</code>, <code>\gamma</code>, <code>\theta</code>, <code>\pi</code></p>
+        </div>
+        
+        <div class="latex-help-section">
+            <h4>Common Symbols</h4>
+            <p>Summation: <code>\sum_{i=1}^{n}</code></p>
+            <p>Integral: <code>\int_0^1 f(x) dx</code></p>
+            <p>Less/Greater: <code>\leq</code>, <code>\geq</code></p>
+            <p>Infinity: <code>\infty</code></p>
+        </div>
+        
+        <div class="latex-help-section">
+            <h4>Parentheses (Auto-sizing)</h4>
+            <p><code>\left( \frac{a}{b} \right)</code></p>
+        </div>
+    </div>
+
     <div class="ai-helper" id="aiHelper">
         <div class="ai-header">
             <span>LaTeX Helper</span>
@@ -707,6 +769,19 @@
 
         function toggleAIHelper() {
             document.getElementById('aiHelper').classList.toggle('show');
+        }
+
+        let latexHelpTimeout;
+        
+        function showLatexHelp() {
+            clearTimeout(latexHelpTimeout);
+            document.getElementById('latexHelpDropdown').classList.add('show');
+        }
+        
+        function hideLatexHelp() {
+            latexHelpTimeout = setTimeout(() => {
+                document.getElementById('latexHelpDropdown').classList.remove('show');
+            }, 300);
         }
 
         function handleAIEnter(event) {
@@ -904,6 +979,7 @@ Keep responses brief and focused on LaTeX code syntax only.`;
             document.getElementById('progressIndicator').textContent = `Question ${num} of 3`;
             document.getElementById('progressIndicator').style.display = 'block';
             document.getElementById('aiToggleBtn').style.display = num === 3 ? 'block' : 'none';
+            document.getElementById('latexHelpBtn').style.display = num === 3 ? 'block' : 'none';
             currentQuestion = num;
         }
 
