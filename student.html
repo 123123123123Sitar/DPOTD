@@ -588,81 +588,78 @@
         const TEST_DURATION = 120 * 60 * 1000;
 
         // LaTeX Preview Update - FIXED VERSION
+        let updateTimer = null;
+        
         function updateLatexPreview() {
-            const input = document.getElementById('latexInput').value;
-            const preview = document.getElementById('latexPreview');
-            
-            if (input.trim() === '') {
-                preview.innerHTML = 'Your formatted proof will appear here...';
-                return;
+            // Debounce the update to avoid too many MathJax renders
+            if (updateTimer) {
+                clearTimeout(updateTimer);
             }
             
-            // Extract content between \begin{document} and \end{document}
-            let content = input;
-            const beginDocMatch = input.match(/\\begin\{document\}/);
-            const endDocMatch = input.match(/\\end\{document\}/);
-            
-            if (beginDocMatch && endDocMatch) {
-                const beginIdx = beginDocMatch.index + beginDocMatch[0].length;
-                const endIdx = endDocMatch.index;
-                content = input.substring(beginIdx, endIdx).trim();
-            }
-            
-            if (!content || content.trim() === '') {
-                preview.innerHTML = 'Your formatted proof will appear here...';
-                return;
-            }
-            
-            // Convert LaTeX content to HTML-friendly format
-            // Replace display math environments with $$ delimiters for MathJax
-            content = content.replace(/\\begin\{equation\*?\}([\s\S]*?)\\end\{equation\*?\}/g, '$$$$1$$');
-            content = content.replace(/\\begin\{align\*?\}([\s\S]*?)\\end\{align\*?\}/g, '$$$$1$$');
-            content = content.replace(/\\\[([\s\S]*?)\\\]/g, '$$$$1$$');
-            
-            // Handle common LaTeX commands that need to work in MathJax
-            // Split by newlines and wrap paragraphs
-            const lines = content.split('\n');
-            let html = '';
-            let inParagraph = false;
-            
-            for (let line of lines) {
-                const trimmedLine = line.trim();
+            updateTimer = setTimeout(() => {
+                const input = document.getElementById('latexInput').value;
+                const preview = document.getElementById('latexPreview');
                 
-                if (trimmedLine === '') {
-                    if (inParagraph) {
-                        html += '</p>';
-                        inParagraph = false;
-                    }
-                    html += '<br>';
-                } else if (trimmedLine.startsWith('%')) {
-                    // Skip LaTeX comments
-                    continue;
-                } else if (trimmedLine.startsWith('$$') || trimmedLine.includes('\\begin{') || trimmedLine.includes('\\[')) {
-                    // Display math - don't wrap in paragraph
-                    if (inParagraph) {
-                        html += '</p>';
-                        inParagraph = false;
-                    }
-                    html += line + '\n';
-                } else {
-                    // Regular text or inline math
-                    if (!inParagraph) {
-                        html += '<p>';
-                        inParagraph = true;
-                    }
-                    html += line + ' ';
+                if (input.trim() === '') {
+                    preview.innerHTML = '<p style="color: #999;">Your formatted proof will appear here...</p>';
+                    return;
                 }
-            }
-            
-            if (inParagraph) {
-                html += '</p>';
-            }
-            
-            preview.innerHTML = html || 'Your formatted proof will appear here...';
-            
-            if (window.MathJax) {
-                MathJax.typesetPromise([preview]).catch((err) => console.log('MathJax error:', err));
-            }
+                
+                // Extract content between \begin{document} and \end{document}
+                let content = input;
+                const beginDocMatch = input.match(/\\begin\{document\}/);
+                const endDocMatch = input.match(/\\end\{document\}/);
+                
+                if (beginDocMatch && endDocMatch) {
+                    const beginIdx = beginDocMatch.index + beginDocMatch[0].length;
+                    const endIdx = endDocMatch.index;
+                    content = input.substring(beginIdx, endIdx).trim();
+                }
+                
+                if (!content || content.trim() === '') {
+                    preview.innerHTML = '<p style="color: #999;">Write your proof between \\begin{document} and \\end{document}...</p>';
+                    return;
+                }
+                
+                // Convert LaTeX content to MathJax-friendly format
+                let processedContent = content;
+                
+                // Handle display math environments
+                processedContent = processedContent.replace(/\\begin\{equation\*?\}([\s\S]*?)\\end\{equation\*?\}/g, '$$$$1$$');
+                processedContent = processedContent.replace(/\\begin\{align\*?\}([\s\S]*?)\\end\{align\*?\}/g, '$$\\begin{align*}$1\\end{align*}$$');
+                processedContent = processedContent.replace(/\\\[([\s\S]*?)\\\]/g, '$$$$1$$');
+                
+                // Split by lines and process
+                const lines = processedContent.split('\n');
+                let html = '';
+                
+                for (let line of lines) {
+                    const trimmedLine = line.trim();
+                    
+                    if (trimmedLine === '') {
+                        html += '<br>';
+                    } else if (trimmedLine.startsWith('%')) {
+                        // Skip LaTeX comments
+                        continue;
+                    } else if (trimmedLine.startsWith('$$')) {
+                        // Display math
+                        html += line + '\n';
+                    } else {
+                        // Regular text or inline math (with $ delimiters)
+                        html += '<p>' + line + '</p>\n';
+                    }
+                }
+                
+                preview.innerHTML = html || '<p style="color: #999;">Your formatted proof will appear here...</p>';
+                
+                // Trigger MathJax rendering
+                if (window.MathJax && window.MathJax.typesetPromise) {
+                    MathJax.typesetPromise([preview]).catch((err) => {
+                        console.log('MathJax rendering error:', err);
+                        preview.innerHTML += '<p style="color: #dc3545; font-size: 12px; margin-top: 10px;"><strong>⚠️ LaTeX Error:</strong> Check your syntax. Common issues: unclosed braces { }, missing $ signs, or invalid commands.</p>';
+                    });
+                }
+            }, 300); // Wait 300ms after user stops typing before updating
         }
 
         // AI Helper Functions
