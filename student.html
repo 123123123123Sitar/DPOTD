@@ -588,7 +588,7 @@
         
         const TEST_DURATION = 120 * 60 * 1000;
 
-        // SIMPLIFIED LaTeX Preview Update
+        // LaTeX Preview Update with proper MathJax rendering
         let latexUpdateTimer = null;
         
         function updateLatexPreview() {
@@ -603,10 +603,9 @@
                     return;
                 }
                 
-                // Simple conversion: wrap everything in display math for now
                 let content = input;
                 
-                // Replace common LaTeX document structure markers
+                // Remove LaTeX preamble commands
                 content = content.replace(/\\documentclass\{[^}]+\}/g, '');
                 content = content.replace(/\\usepackage\{[^}]+\}/g, '');
                 content = content.replace(/\\title\{[^}]*\}/g, '');
@@ -615,28 +614,42 @@
                 content = content.replace(/\\maketitle/g, '');
                 
                 // Extract content between \begin{document} and \end{document}
-                const beginMatch = content.match(/\\begin\{document\}([\s\S]*)\\end\{document\}/);
-                if (beginMatch) {
-                    content = beginMatch[1];
+                const docMatch = content.match(/\\begin\{document\}([\s\S]*)\\end\{document\}/);
+                if (docMatch) {
+                    content = docMatch[1].trim();
                 }
                 
-                // Convert to paragraphs and math
-                const lines = content.split('\n').filter(line => line.trim() && !line.trim().startsWith('%'));
+                // Process content line by line
+                const lines = content.split('\n');
                 let html = '';
+                let inMathBlock = false;
                 
                 for (let line of lines) {
                     const trimmed = line.trim();
-                    if (trimmed.startsWith('$$') || trimmed.includes('\\begin{') || trimmed.includes('\\[')) {
+                    
+                    // Skip empty lines and comments
+                    if (!trimmed || trimmed.startsWith('%')) continue;
+                    
+                    // Handle display math blocks
+                    if (trimmed.startsWith('$$') || trimmed.startsWith('\\[') || trimmed.includes('\\begin{equation')) {
+                        inMathBlock = true;
                         html += line + '\n';
-                    } else if (trimmed) {
+                    } else if (trimmed.endsWith('$$') || trimmed.endsWith('\\]') || trimmed.includes('\\end{equation')) {
+                        html += line + '\n';
+                        inMathBlock = false;
+                    } else if (inMathBlock) {
+                        html += line + '\n';
+                    } else {
+                        // Regular text - wrap in paragraph but preserve inline math
                         html += '<p>' + line + '</p>\n';
                     }
                 }
                 
                 preview.innerHTML = html || '<p style="color: #999;">Write your proof...</p>';
                 
-                // Render with MathJax
-                if (window.MathJax && window.MathJax.typesetPromise) {
+                // Use MathJax to render all math
+                if (window.MathJax) {
+                    MathJax.typesetClear([preview]);
                     MathJax.typesetPromise([preview]).catch((err) => {
                         console.error('MathJax error:', err);
                         preview.innerHTML += '<p style="color: #dc3545; font-size: 12px; margin-top: 10px;"><strong>⚠️ LaTeX Error:</strong> Check your syntax</p>';
@@ -787,6 +800,7 @@
             
             const timer = document.getElementById('timer');
             timer.textContent = `Time Remaining: ${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            timer.style.display = 'block';
             timer.style.color = remaining < 600000 ? '#ff6b6b' : '#000';
             
             if (remaining <= 0) {
@@ -889,29 +903,23 @@
                 confirmBtn.textContent = 'Enter Fullscreen & Begin Test';
                 confirmBtn.onclick = async function() {
                     try {
-                        // Try to enter fullscreen
                         await document.documentElement.requestFullscreen();
                         console.log('Entered fullscreen successfully');
                         
-                        // Remove the button
                         confirmBtn.remove();
                         
-                        // Hide form and show questions
                         document.getElementById('studentForm').style.display = 'none';
                         document.getElementById('questionSection').style.display = 'block';
                         
-                        // Lock the page
                         document.body.classList.add('locked');
                         testActive = true;
                         monitorFullscreen();
                         
-                        // Start timer
                         startTime = Date.now();
                         q1StartTime = Date.now();
                         timerInterval = setInterval(updateTimer, 1000);
                         updateTimer();
                         
-                        // Show first question
                         showQuestion(1);
                     } catch (err) {
                         console.error('Fullscreen error:', err);
@@ -919,7 +927,6 @@
                     }
                 };
                 
-                // Show success message and button
                 const statusEl = document.getElementById('startStatus');
                 statusEl.textContent = 'Questions loaded! Click below to enter fullscreen mode and begin.';
                 statusEl.className = 'status success';
@@ -1086,7 +1093,22 @@
 
 \\begin{document}
 
-Write your proof here. Use $x^2$ for inline math and $\\frac{a}{b}$ for display math.
+Write your proof here. 
+
+For inline math, use: $x^2 + y^2 = z^2$
+
+For display math, use double dollar signs:
+$
+\\frac{a}{b} = \\frac{c}{d}
+$
+
+Common symbols:
+- Fractions: $\\frac{numerator}{denominator}$
+- Exponents: $x^2$ or $x^{10}$
+- Subscripts: $x_1$ or $x_{10}$
+- Square root: $\\sqrt{x}$ or $\\sqrt[3]{x}$
+- Summation: $\\sum_{i=1}^{n} i$
+- Integral: $\\int_0^1 f(x) dx$
 
 \\end{document}`;
                 updateLatexPreview();
