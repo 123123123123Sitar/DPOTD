@@ -597,7 +597,39 @@
                 return;
             }
             
-            preview.innerHTML = '$$' + input + '$$';
+            // Extract content between \begin{document} and \end{document}
+            let content = input;
+            const beginDoc = input.indexOf('\\begin{document}');
+            const endDoc = input.indexOf('\\end{document}');
+            
+            if (beginDoc !== -1 && endDoc !== -1) {
+                content = input.substring(beginDoc + 16, endDoc).trim();
+            }
+            
+            // Convert LaTeX content to HTML-friendly format
+            // Replace display math environments
+            content = content.replace(/\\begin{equation}([\s\S]*?)\\end{equation}/g, '$$1$');
+            content = content.replace(/\\begin{align\*?}([\s\S]*?)\\end{align\*?}/g, '$$1$');
+            content = content.replace(/\\\[([\s\S]*?)\\\]/g, '$$1$');
+            
+            // Handle inline math (already in $ $)
+            // Split by newlines and wrap each paragraph
+            const lines = content.split('\n');
+            let html = '';
+            
+            for (let line of lines) {
+                line = line.trim();
+                if (line === '') {
+                    html += '<br><br>';
+                } else if (line.startsWith('%')) {
+                    // Skip comments
+                    continue;
+                } else {
+                    html += '<p>' + line + '</p>';
+                }
+            }
+            
+            preview.innerHTML = html || 'Your formatted proof will appear here...';
             
             if (window.MathJax) {
                 MathJax.typesetPromise([preview]).catch((err) => console.log('MathJax error:', err));
