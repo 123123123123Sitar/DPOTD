@@ -554,17 +554,7 @@
                 <div class="latex-editor-container">
                     <div class="latex-input-section">
                         <h3>📝 LaTeX Code</h3>
-                        <textarea id="latexInput" placeholder="Write your proof using LaTeX here...
-
-Examples:
-\frac{a}{b} for fractions
-x^2 for superscripts
-x_i for subscripts
-\sqrt{x} for square root
-\sum_{i=1}^{n} for summation
-\int_{a}^{b} for integrals
-
-Use \\ for new lines"></textarea>
+                        <textarea id="latexInput" placeholder="Write your proof using LaTeX here..."></textarea>
                     </div>
                     <div class="latex-preview-section">
                         <h3>👁️ Live Preview</h3>
@@ -740,7 +730,12 @@ If the user asks a forbidden question, respond with: "I can only help with LaTeX
             messageDiv.className = `ai-message ${type}`;
             
             if (type === 'assistant') {
-                messageDiv.innerHTML = `<strong>LaTeX Helper:</strong> ${message}`;
+                // Convert backticks to code formatting
+                let formattedMessage = message
+                    .replace(/```([\s\S]*?)```/g, '<pre style="background: #2d2d2d; color: #f8f8f2; padding: 10px; border-radius: 4px; overflow-x: auto; margin: 10px 0;"><code>$1</code></pre>')
+                    .replace(/`([^`]+)`/g, '<code style="background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-family: monospace; color: #e83e8c;">$1</code>');
+                
+                messageDiv.innerHTML = `<strong>LaTeX Helper:</strong> ${formattedMessage}`;
             } else {
                 messageDiv.textContent = message;
             }
