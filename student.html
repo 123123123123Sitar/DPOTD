@@ -762,17 +762,32 @@ If the user asks a forbidden question, respond with: "I can only help with LaTeX
             messageDiv.className = `ai-message ${type}`;
             
             if (type === 'assistant') {
-                // First escape HTML to prevent XSS
-                const tempDiv = document.createElement('div');
-                tempDiv.textContent = message;
-                let escapedMessage = tempDiv.innerHTML;
+                // Process the message to handle code blocks properly
+                let processedMessage = message;
                 
-                // Then convert markdown-style code blocks to HTML
-                escapedMessage = escapedMessage
-                    .replace(/```([\s\S]*?)```/g, '<pre style="background: #2d2d2d; color: #f8f8f2; padding: 10px; border-radius: 4px; overflow-x: auto; margin: 10px 0; font-family: monospace;"><code>$1</code></pre>')
-                    .replace(/`([^`]+)`/g, '<code style="background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-family: monospace; color: #e83e8c; font-size: 13px;">$1</code>');
+                // Handle triple backtick code blocks
+                processedMessage = processedMessage.replace(/```([^`]+)```/g, function(match, code) {
+                    return '<pre style="background: #2d2d2d; color: #f8f8f2; padding: 10px; border-radius: 4px; overflow-x: auto; margin: 10px 0; font-family: \'Courier New\', monospace; white-space: pre-wrap;">' + 
+                           code.replace(/</g, '&lt;').replace(/>/g, '&gt;') + 
+                           '</pre>';
+                });
                 
-                messageDiv.innerHTML = `<strong>LaTeX Helper:</strong> ${escapedMessage}`;
+                // Handle single backtick inline code (for LaTeX commands shown as examples)
+                processedMessage = processedMessage.replace(/`([^`]+)`/g, function(match, code) {
+                    return '<code style="background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-family: \'Courier New\', monospace; color: #e83e8c; font-size: 13px;">' + 
+                           code.replace(/</g, '&lt;').replace(/>/g, '&gt;') + 
+                           '</code>';
+                });
+                
+                messageDiv.innerHTML = `<strong>LaTeX Helper:</strong> ${processedMessage}`;
+                
+                // Render any LaTeX math in the message (like $\frac{1}{2}$)
+                if (window.MathJax) {
+                    container.appendChild(messageDiv);
+                    MathJax.typesetPromise([messageDiv]).catch((err) => console.log('MathJax error in AI message:', err));
+                    container.scrollTop = container.scrollHeight;
+                    return; // Exit early since we already appended
+                }
             } else {
                 messageDiv.textContent = message;
             }
