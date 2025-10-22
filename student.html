@@ -469,35 +469,35 @@
     </div>
 
     <div class="warning-overlay" id="warningOverlay">
-        <p><strong>⚠️ WARNING: YOU HAVE LEFT THE TEST PAGE!</strong></p>
+        <p><strong>WARNING: YOU HAVE LEFT THE TEST PAGE!</strong></p>
         <p style="font-size: 18px; margin: 20px 0;">Return to the test immediately!</p>
         <p class="warning-count">Violations recorded: <span id="violationCount">0</span></p>
         <button class="btn" onclick="returnToFullscreen()" style="max-width: 400px; padding: 20px 40px; font-size: 18px; margin-top: 20px; background: #fff; color: #dc3545; border: 3px solid #fff;">
-            🔒 Return to Test & Enter Fullscreen
+            Return to Test & Enter Fullscreen
         </button>
     </div>
 
     <button class="ai-toggle-btn" id="aiToggleBtn" onclick="toggleAIHelper()">
-        🤖 LaTeX Helper
+        LaTeX Helper
     </button>
 
     <div class="ai-helper" id="aiHelper">
         <div class="ai-header">
-            <span>🤖 LaTeX Helper</span>
+            <span>LaTeX Helper</span>
             <button class="ai-close" onclick="toggleAIHelper()">×</button>
         </div>
         <div class="ai-chat-container" id="aiChatContainer">
             <div class="ai-message assistant">
                 <strong>LaTeX Helper:</strong> I can ONLY help with LaTeX syntax and formatting.
                 <br><br>
-                <strong style="color: #dc3545;">✗ I CANNOT:</strong>
+                <strong style="color: #dc3545;">I CANNOT:</strong>
                 <ul style="margin: 10px 0; padding-left: 20px;">
                     <li>Solve math problems</li>
                     <li>Provide answers or hints</li>
                     <li>Explain math concepts</li>
                     <li>Calculate anything</li>
                 </ul>
-                <strong style="color: #28a745;">✓ I CAN help with:</strong>
+                <strong style="color: #28a745;">I CAN help with:</strong>
                 <ul style="margin: 10px 0; padding-left: 20px;">
                     <li>"How do I write a fraction?"</li>
                     <li>"What's the syntax for square roots?"</li>
@@ -910,6 +910,12 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                 document.getElementById('dayIndicator').textContent = `Day ${currentDay}`;
                 
                 hideLoading();
+                
+                // Remove the original start button before adding the fullscreen button
+                const originalStartBtn = document.querySelector('#studentForm .btn');
+                if (originalStartBtn) {
+                    originalStartBtn.style.display = 'none';
+                }
                 
                 const confirmBtn = document.createElement('button');
                 confirmBtn.className = 'btn';
