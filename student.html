@@ -592,9 +592,9 @@
         let latexUpdateTimer = null;
         
         function updateLatexPreview() {
-            if (updateTimer) clearTimeout(updateTimer);
+            if (latexUpdateTimer) clearTimeout(latexUpdateTimer);
             
-            updateTimer = setTimeout(() => {
+            latexUpdateTimer = setTimeout(() => {
                 const input = document.getElementById('latexInput').value;
                 const preview = document.getElementById('latexPreview');
                 
@@ -866,54 +866,69 @@
                 const response = await fetch(`${SCRIPT_URL}?action=getQuestions&day=${currentDay}`);
                 questionsData = await response.json();
                 
+                console.log('Questions data received:', questionsData);
+                
                 if (questionsData.error) {
                     hideLoading();
                     showStatus('startStatus', 'Error: ' + questionsData.error, 'error');
                     return;
                 }
                 
-                document.getElementById('q1Text').textContent = questionsData.q1_text;
-                document.getElementById('q2Text').textContent = questionsData.q2_text;
-                document.getElementById('q3Text').textContent = questionsData.q3_text;
+                // Set question texts
+                document.getElementById('q1Text').textContent = questionsData.q1_text || 'Question 1 text not available';
+                document.getElementById('q2Text').textContent = questionsData.q2_text || 'Question 2 text not available';
+                document.getElementById('q3Text').textContent = questionsData.q3_text || 'Question 3 text not available';
                 document.getElementById('dayIndicator').textContent = `Day ${currentDay}`;
                 
                 hideLoading();
                 
+                // Create fullscreen button
                 const confirmBtn = document.createElement('button');
                 confirmBtn.className = 'btn';
                 confirmBtn.style.marginTop = '20px';
                 confirmBtn.textContent = 'Enter Fullscreen & Begin Test';
                 confirmBtn.onclick = async function() {
                     try {
+                        // Try to enter fullscreen
                         await document.documentElement.requestFullscreen();
+                        console.log('Entered fullscreen successfully');
+                        
+                        // Remove the button
                         confirmBtn.remove();
                         
+                        // Hide form and show questions
                         document.getElementById('studentForm').style.display = 'none';
                         document.getElementById('questionSection').style.display = 'block';
                         
+                        // Lock the page
                         document.body.classList.add('locked');
                         testActive = true;
                         monitorFullscreen();
                         
+                        // Start timer
                         startTime = Date.now();
                         q1StartTime = Date.now();
                         timerInterval = setInterval(updateTimer, 1000);
                         updateTimer();
                         
+                        // Show first question
                         showQuestion(1);
                     } catch (err) {
-                        alert('Fullscreen required. Please allow and try again.');
+                        console.error('Fullscreen error:', err);
+                        alert('Fullscreen mode is required to take the test. Please allow fullscreen access and try again.');
                     }
                 };
                 
+                // Show success message and button
                 const statusEl = document.getElementById('startStatus');
-                statusEl.textContent = 'Questions loaded! Click below to begin.';
+                statusEl.textContent = 'Questions loaded! Click below to enter fullscreen mode and begin.';
                 statusEl.className = 'status success';
                 statusEl.style.display = 'block';
                 statusEl.parentElement.appendChild(confirmBtn);
                 
             } catch (error) {
                 hideLoading();
+                console.error('Full error:', error);
                 showStatus('startStatus', 'Error: ' + error.message, 'error');
             }
         }
