@@ -343,6 +343,76 @@
             display: none;
         }
 
+        .latex-help-btn {
+            position: fixed;
+            top: 20px;
+            right: 180px;
+            background: #4A90E2;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 10000;
+            display: none;
+        }
+
+        .latex-help-dropdown {
+            position: fixed;
+            top: 65px;
+            right: 180px;
+            width: 400px;
+            max-height: 500px;
+            overflow-y: auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            z-index: 10001;
+            display: none;
+            padding: 20px;
+            border: 2px solid #4A90E2;
+        }
+
+        .latex-help-dropdown.show {
+            display: block;
+        }
+
+        .latex-help-dropdown h3 {
+            color: #4A90E2;
+            margin-bottom: 15px;
+            font-size: 18px;
+            border-bottom: 2px solid #E3E3E3;
+            padding-bottom: 10px;
+        }
+
+        .latex-help-section {
+            margin-bottom: 20px;
+        }
+
+        .latex-help-section h4 {
+            color: #000;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .latex-help-section code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #e83e8c;
+        }
+
+        .latex-help-section p {
+            font-size: 13px;
+            color: #666;
+            margin: 5px 0;
+            line-height: 1.6;
+        }
+
         .warning-overlay {
             display: none;
             position: fixed;
@@ -538,9 +608,9 @@
             <div style="text-align: center; margin-bottom: 30px;">
                 <div class="day-indicator" id="dayIndicator">Day -</div>
                 <div style="margin-top: 15px; font-size: 14px; color: #666;">
-                    <span style="margin-right: 15px;">⏰ 2 hours total</span>
-                    <span style="margin-right: 15px;">📝 3 questions</span>
-                    <span>🔒 Do not leave this page</span>
+                    <span style="margin-right: 15px;">2 hours total</span>
+                    <span style="margin-right: 15px;">3 questions</span>
+                    <span>Do not leave this page</span>
                 </div>
             </div>
 
@@ -572,11 +642,11 @@
                 
                 <div class="latex-editor-container">
                     <div class="latex-input-section">
-                        <h3>📝 LaTeX Code</h3>
+                        <h3>LaTeX Code</h3>
                         <textarea id="latexInput" placeholder="Write your proof using LaTeX here..."></textarea>
                     </div>
                     <div class="latex-preview-section">
-                        <h3>👁️ Live Preview</h3>
+                        <h3>Live Preview</h3>
                         <div id="latexPreview">Your formatted proof will appear here...</div>
                     </div>
                 </div>
@@ -675,7 +745,7 @@
             
             // Block if clearly problem-solving AND not a syntax question
             if (isProblemSolving && !isSyntaxQuestion) {
-                addAIMessage('⚠️ I cannot help solve math problems or provide answers. I can ONLY help with LaTeX syntax questions like:\n\n• "How do I write a fraction?"\n• "How do I make superscripts?"\n• "How do I write Greek letters?"\n• "What\'s the syntax for square roots?"', 'assistant');
+                addAIMessage('I cannot help solve math problems or provide answers. I can ONLY help with LaTeX syntax questions like:\n\n"How do I write a fraction?"\n"How do I make superscripts?"\n"How do I write Greek letters?"\n"What\'s the syntax for square roots?"', 'assistant');
                 return;
             }
             
@@ -1023,7 +1093,7 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                     
                     document.querySelector('.container').innerHTML = `
                     <div style="text-align: center; padding: 40px 20px;">
-                        <h1 style="color: #28a745; margin-bottom: 20px;">✅ Test Submitted Successfully!</h1>
+                        <h1 style="color: #28a745; margin-bottom: 20px;">Test Submitted Successfully!</h1>
                         <p style="font-size: 18px; color: #666; margin-bottom: 30px;">
                             Your score will be emailed to you soon.
                         </p>
@@ -1033,7 +1103,7 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                             <div style="text-align: left; margin-bottom: 15px;">
                                 <strong>Question 1:</strong>
                                 <span class="${q1Correct ? 'correct' : 'incorrect'}" style="font-size: 18px; margin-left: 10px;">
-                                    ${q1Correct ? '✓ Correct' : '✗ Incorrect'}
+                                    ${q1Correct ? 'Correct' : 'Incorrect'}
                                 </span>
                                 <div style="color: #666; font-size: 14px; margin-top: 5px;">
                                     Your answer: ${q1Answer} | Time: ${Math.floor(q1Time / 60)}m ${q1Time % 60}s
@@ -1043,7 +1113,7 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                             <div style="text-align: left; margin-bottom: 15px;">
                                 <strong>Question 2:</strong>
                                 <span class="${q2Correct ? 'correct' : 'incorrect'}" style="font-size: 18px; margin-left: 10px;">
-                                    ${q2Correct ? '✓ Correct' : '✗ Incorrect'}
+                                    ${q2Correct ? 'Correct' : 'Incorrect'}
                                 </span>
                                 <div style="color: #666; font-size: 14px; margin-top: 5px;">
                                     Your answer: ${q2Answer} | Time: ${Math.floor(q2Time / 60)}m ${q2Time % 60}s
@@ -1067,7 +1137,7 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                             
                             ${exitCount > 0 ? `
                             <div style="margin-top: 15px; padding: 15px; background: #fff3cd; border-radius: 6px;">
-                                <strong style="color: #856404;">⚠️ Violations: ${exitCount}</strong>
+                                <strong style="color: #856404;">Violations: ${exitCount}</strong>
                             </div>` : ''}
                         </div>
                         
