@@ -4,19 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>D.PotD Student Portal</title>
-    <script>
-        window.MathJax = {
-            tex: {
-                inlineMath: [['$', '$'], ['\\(', '\\)']],
-                displayMath: [['$$', '$$'], ['\\[', '\\]']],
-                processEscapes: true,
-                processEnvironments: true
-            },
-            options: {
-                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
-            }
-        };
-    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
     <style>
         * {
@@ -85,7 +72,7 @@
             font-weight: 600;
         }
 
-        input, textarea {
+        input, textarea, select {
             width: 100%;
             padding: 12px;
             border: 2px solid #E3E3E3;
@@ -97,7 +84,7 @@
             font-family: 'Courier New', monospace;
         }
 
-        input:focus, textarea:focus {
+        input:focus, textarea:focus, select:focus {
             outline: none;
             border-color: #EA5A2F;
             box-shadow: 0 0 0 3px rgba(234, 90, 47, 0.1);
@@ -129,6 +116,14 @@
             color: #666;
         }
 
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
         .status {
             padding: 15px;
             border-radius: 6px;
@@ -148,6 +143,129 @@
             color: #721c24;
             border: 1px solid #f5c6cb;
             display: block;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #E3E3E3;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            color: #EA5A2F;
+            border-bottom-color: #EA5A2F;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .score-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #EA5A2F;
+        }
+
+        .score-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .score-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .score-item {
+            padding: 8px;
+            background: white;
+            border-radius: 4px;
+        }
+
+        .correct {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .incorrect {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .feedback-box {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .profile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: #EA5A2F;
+            color: white;
+            border-radius: 8px 8px 0 0;
+            margin: -40px -40px 20px -40px;
+        }
+
+        .profile-name {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 8px 16px;
+            border: 1px solid white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .link-btn {
+            background: none;
+            border: none;
+            color: #EA5A2F;
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 0;
+            margin-top: 10px;
         }
 
         .question-section {
@@ -250,179 +368,6 @@
             display: none;
         }
 
-        .ai-helper {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            width: 350px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            border: 2px solid #E3E3E3;
-            z-index: 10001;
-            display: none;
-        }
-
-        .ai-helper.show {
-            display: block;
-        }
-
-        .ai-header {
-            background: #EA5A2F;
-            color: white;
-            padding: 15px;
-            border-radius: 10px 10px 0 0;
-            font-weight: 600;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .ai-close {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 20px;
-            cursor: pointer;
-            padding: 0;
-            width: 25px;
-            height: 25px;
-        }
-
-        .ai-chat-container {
-            height: 400px;
-            overflow-y: auto;
-            padding: 15px;
-            background: #f8f9fa;
-        }
-
-        .ai-message {
-            margin-bottom: 15px;
-            padding: 10px;
-            border-radius: 8px;
-            max-width: 90%;
-        }
-
-        .ai-message.user {
-            background: #EA5A2F;
-            color: white;
-            margin-left: auto;
-        }
-
-        .ai-message.assistant {
-            background: white;
-            border: 1px solid #E3E3E3;
-        }
-
-        .ai-input-container {
-            padding: 15px;
-            border-top: 2px solid #E3E3E3;
-        }
-
-        .ai-input-container input {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #E3E3E3;
-            border-radius: 6px;
-            font-size: 14px;
-        }
-
-        .ai-toggle-btn {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #EA5A2F;
-            color: white;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            z-index: 10000;
-            display: none;
-        }
-
-        .latex-help-btn {
-            position: fixed;
-            top: 20px;
-            right: 180px;
-            background: #4A90E2;
-            color: white;
-            width: 32px;
-            height: 32px;
-            border: none;
-            border-radius: 50%;
-            font-weight: bold;
-            font-size: 18px;
-            line-height: 1;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            z-index: 10000;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 0;
-        }
-
-        .latex-help-btn:hover {
-            background: #3A7BC8;
-        }
-
-        .latex-help-dropdown {
-            position: fixed;
-            top: 65px;
-            right: 180px;
-            width: 400px;
-            max-height: 500px;
-            overflow-y: auto;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-            z-index: 10001;
-            display: none;
-            padding: 20px;
-            border: 2px solid #4A90E2;
-        }
-
-        .latex-help-dropdown.show {
-            display: block;
-        }
-
-        .latex-help-dropdown h3 {
-            color: #4A90E2;
-            margin-bottom: 15px;
-            font-size: 18px;
-            border-bottom: 2px solid #E3E3E3;
-            padding-bottom: 10px;
-        }
-
-        .latex-help-section {
-            margin-bottom: 20px;
-        }
-
-        .latex-help-section h4 {
-            color: #000;
-            font-size: 14px;
-            margin-bottom: 8px;
-        }
-
-        .latex-help-section code {
-            background: #f4f4f4;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-            color: #e83e8c;
-        }
-
-        .latex-help-section p {
-            font-size: 13px;
-            color: #666;
-            margin: 5px 0;
-            line-height: 1.6;
-        }
-
         .warning-overlay {
             display: none;
             position: fixed;
@@ -492,32 +437,6 @@
             100% { transform: rotate(360deg); }
         }
 
-        .error-message {
-            color: #dc3545;
-            font-size: 14px;
-            display: block;
-            margin-top: 5px;
-        }
-
-        .day-indicator {
-            background: #EA5A2F;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 25px;
-            font-weight: bold;
-            font-size: 18px;
-            display: inline-block;
-            margin-bottom: 20px;
-        }
-
-        .correct {
-            color: #28a745;
-        }
-
-        .incorrect {
-            color: #dc3545;
-        }
-
         body.locked::after {
             content: 'TEST IN PROGRESS - DO NOT LEAVE THIS PAGE';
             position: fixed;
@@ -531,12 +450,6 @@
             font-weight: 600;
             z-index: 9999;
             font-size: 14px;
-        }
-
-        @media (max-width: 1200px) {
-            .latex-editor-container {
-                grid-template-columns: 1fr;
-            }
         }
     </style>
 </head>
@@ -557,127 +470,113 @@
         </button>
     </div>
 
-    <button class="ai-toggle-btn" id="aiToggleBtn" onclick="toggleAIHelper()">
-        LaTeX Helper
-    </button>
-
-    <button class="latex-help-btn" id="latexHelpBtn" onmouseenter="showLatexHelp()" onmouseleave="hideLatexHelp()">
-        ?
-    </button>
-
-    <div class="latex-help-dropdown" id="latexHelpDropdown" onmouseenter="showLatexHelp()" onmouseleave="hideLatexHelp()">
-        <h3>Basic LaTeX Syntax</h3>
-        
-        <div class="latex-help-section">
-            <h4>Inline Math</h4>
-            <p>Wrap math in single dollar signs: <code>$x^2 + y^2 = z^2$</code></p>
-        </div>
-        
-        <div class="latex-help-section">
-            <h4>Display Math (Centered)</h4>
-            <p>Use double dollar signs:</p>
-            <p><code>$\frac{a}{b} = \frac{c}{d}$</code></p>
-        </div>
-        
-        <div class="latex-help-section">
-            <h4>Fractions</h4>
-            <p><code>\frac{numerator}{denominator}</code></p>
-            <p>Example: <code>$\frac{1}{2}$</code></p>
-        </div>
-        
-        <div class="latex-help-section">
-            <h4>Exponents & Subscripts</h4>
-            <p>Exponent: <code>x^2</code> or <code>x^{10}</code></p>
-            <p>Subscript: <code>x_1</code> or <code>x_{10}</code></p>
-        </div>
-        
-        <div class="latex-help-section">
-            <h4>Square Roots</h4>
-            <p><code>\sqrt{x}</code> or <code>\sqrt[3]{x}</code></p>
-        </div>
-        
-        <div class="latex-help-section">
-            <h4>Greek Letters</h4>
-            <p><code>\alpha</code>, <code>\beta</code>, <code>\gamma</code>, <code>\theta</code>, <code>\pi</code></p>
-        </div>
-        
-        <div class="latex-help-section">
-            <h4>Common Symbols</h4>
-            <p>Summation: <code>\sum_{i=1}^{n}</code></p>
-            <p>Integral: <code>\int_0^1 f(x) dx</code></p>
-            <p>Less/Greater: <code>\leq</code>, <code>\geq</code></p>
-            <p>Infinity: <code>\infty</code></p>
-        </div>
-        
-        <div class="latex-help-section">
-            <h4>Parentheses (Auto-sizing)</h4>
-            <p><code>\left( \frac{a}{b} \right)</code></p>
-        </div>
-    </div>
-
-    <div class="ai-helper" id="aiHelper">
-        <div class="ai-header">
-            <span>LaTeX Helper</span>
-            <button class="ai-close" onclick="toggleAIHelper()">×</button>
-        </div>
-        <div class="ai-chat-container" id="aiChatContainer">
-            <div class="ai-message assistant">
-                <strong>LaTeX Helper:</strong> I can ONLY help with LaTeX syntax and formatting.
-                <br><br>
-                <strong style="color: #dc3545;">I CANNOT:</strong>
-                <ul style="margin: 10px 0; padding-left: 20px;">
-                    <li>Solve math problems</li>
-                    <li>Provide answers or hints</li>
-                    <li>Explain math concepts</li>
-                    <li>Calculate anything</li>
-                </ul>
-                <strong style="color: #28a745;">I CAN help with:</strong>
-                <ul style="margin: 10px 0; padding-left: 20px;">
-                    <li>"How do I write a fraction?"</li>
-                    <li>"What's the syntax for square roots?"</li>
-                    <li>"How do I make subscripts?"</li>
-                    <li>"How do I write Greek letters?"</li>
-                </ul>
-            </div>
-        </div>
-        <div class="ai-input-container">
-            <input type="text" id="aiInput" placeholder="Ask about LaTeX syntax..." onkeypress="handleAIEnter(event)">
-        </div>
-    </div>
-
     <div class="container">
-        <h1>D.PotD Problems of the Day</h1>
-        <p class="subtitle">Student Portal</p>
-        
-        <div id="studentForm">
-            <div class="form-group">
-                <label>Full Name:</label>
-                <input type="text" id="studentName" required>
-            </div>
+        <!-- Login/Register Screen -->
+        <div id="authScreen">
+            <h1>D.PotD Problems of the Day</h1>
+            <p class="subtitle">Student Portal</p>
             
-            <div class="form-group">
-                <label>Email:</label>
-                <input type="email" id="studentEmail" required>
-                <span id="emailError" class="error-message"></span>
+            <div class="tabs">
+                <button class="tab active" onclick="switchAuthTab('login')">Login</button>
+                <button class="tab" onclick="switchAuthTab('register')">Register</button>
             </div>
-            
-            <button class="btn" onclick="startTest()">Start Test</button>
-            <div id="startStatus" class="status"></div>
+
+            <!-- Login Form -->
+            <div id="loginForm" class="tab-content active">
+                <div class="form-group">
+                    <label>Email:</label>
+                    <input type="email" id="loginEmail">
+                </div>
+                <div class="form-group">
+                    <label>Password:</label>
+                    <input type="password" id="loginPassword">
+                </div>
+                <button class="btn" onclick="login()">Login</button>
+                <div id="loginStatus" class="status"></div>
+            </div>
+
+            <!-- Register Form -->
+            <div id="registerForm" class="tab-content">
+                <div class="form-group">
+                    <label>Full Name:</label>
+                    <input type="text" id="registerName">
+                </div>
+                <div class="form-group">
+                    <label>Email:</label>
+                    <input type="email" id="registerEmail">
+                </div>
+                <div class="form-group">
+                    <label>Password:</label>
+                    <input type="password" id="registerPassword">
+                </div>
+                <div class="form-group">
+                    <label>Confirm Password:</label>
+                    <input type="password" id="registerConfirmPassword">
+                </div>
+                <button class="btn" onclick="register()">Register</button>
+                <div id="registerStatus" class="status"></div>
+            </div>
         </div>
-        
+
+        <!-- Main Portal (after login) -->
+        <div id="mainPortal" class="hidden">
+            <div class="profile-header">
+                <span class="profile-name" id="profileName"></span>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" onclick="switchMainTab('today')">Today's Test</button>
+                <button class="tab" onclick="switchMainTab('history')">Score History</button>
+                <button class="tab" onclick="switchMainTab('profile')">Profile</button>
+            </div>
+
+            <!-- Today's Test Tab -->
+            <div id="todayTab" class="tab-content active">
+                <div id="testStatus"></div>
+            </div>
+
+            <!-- Score History Tab -->
+            <div id="historyTab" class="tab-content">
+                <h2 style="margin-bottom: 20px;">Your Score History</h2>
+                <div id="historyContainer"></div>
+            </div>
+
+            <!-- Profile Tab -->
+            <div id="profileTab" class="tab-content">
+                <h2 style="margin-bottom: 20px;">Profile Settings</h2>
+                <div class="form-group">
+                    <label>Name:</label>
+                    <input type="text" id="profileNameInput" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Email:</label>
+                    <input type="email" id="profileEmailInput" readonly>
+                </div>
+                <hr style="margin: 30px 0; border: none; border-top: 2px solid #E3E3E3;">
+                <h3 style="margin-bottom: 20px;">Change Password</h3>
+                <div class="form-group">
+                    <label>Current Password:</label>
+                    <input type="password" id="currentPassword">
+                </div>
+                <div class="form-group">
+                    <label>New Password:</label>
+                    <input type="password" id="newPassword">
+                </div>
+                <div class="form-group">
+                    <label>Confirm New Password:</label>
+                    <input type="password" id="confirmNewPassword">
+                </div>
+                <button class="btn" onclick="changePassword()">Update Password</button>
+                <div id="profileStatus" class="status"></div>
+            </div>
+        </div>
+
+        <!-- Test Section (fullscreen) -->
         <div id="questionSection" class="question-section">
             <div class="timer" id="timer">Time Remaining: 2:00:00</div>
             <div class="progress-indicator" id="progressIndicator">Question 1 of 3</div>
             
-            <div style="text-align: center; margin-bottom: 30px;">
-                <div class="day-indicator" id="dayIndicator">Day -</div>
-                <div style="margin-top: 15px; font-size: 14px; color: #666;">
-                    <span style="margin-right: 15px;">2 hours total</span>
-                    <span style="margin-right: 15px;">3 questions</span>
-                    <span>Do not leave this page</span>
-                </div>
-            </div>
-
             <div id="q1Page" style="display: none;">
                 <div class="question-box">
                     <h2>Question 1</h2>
@@ -723,8 +622,8 @@
     
     <script>
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyAXEa9CdJYfl2TEpscqIb-w-zCPvzUfL-VBirzH8ilZ_N_exuDc3uQbPcfqLo3Fl5a/exec';
-        const GEMINI_API_KEY = 'AIzaSyAG0HmsIkxuESxsq0sYNPRANTfqHdIk6Tk';
         
+        let currentUser = null;
         let startTime, timerInterval, questionsData;
         let q1StartTime, q2StartTime, q3StartTime;
         let q1EndTime, q2EndTime, q3EndTime;
@@ -732,205 +631,278 @@
         let testActive = false, currentDay = null, currentQuestion = 0;
         const TEST_DURATION = 120 * 60 * 1000;
 
-        let latexUpdateTimer = null;
-        
-        function updateLatexPreview() {
-            if (latexUpdateTimer) clearTimeout(latexUpdateTimer);
+        // Check if user is logged in on page load
+        window.addEventListener('load', () => {
+            const storedUser = localStorage.getItem('dpotdUser');
+            if (storedUser) {
+                currentUser = JSON.parse(storedUser);
+                showMainPortal();
+            }
+        });
+
+        function switchAuthTab(tab) {
+            document.querySelectorAll('#authScreen .tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('#authScreen .tab-content').forEach(c => c.classList.remove('active'));
             
-            latexUpdateTimer = setTimeout(() => {
-                const input = document.getElementById('latexInput').value;
-                const preview = document.getElementById('latexPreview');
-                
-                if (!input.trim()) {
-                    preview.innerHTML = '<p style="color: #999;">Your formatted proof will appear here...</p>';
-                    return;
-                }
-                
-                let content = input;
-                content = content.replace(/\\documentclass\{[^}]+\}/g, '');
-                content = content.replace(/\\usepackage\{[^}]+\}/g, '');
-                content = content.replace(/\\title\{[^}]*\}/g, '');
-                content = content.replace(/\\author\{[^}]*\}/g, '');
-                content = content.replace(/\\date\{[^}]*\}/g, '');
-                content = content.replace(/\\maketitle/g, '');
-                
-                const docMatch = content.match(/\\begin\{document\}([\s\S]*)\\end\{document\}/);
-                if (docMatch) content = docMatch[1].trim();
-                
-                preview.innerHTML = content || '<p style="color: #999;">Write your proof...</p>';
-                
-                if (window.MathJax && window.MathJax.typesetPromise) {
-                    MathJax.typesetClear([preview]);
-                    MathJax.typesetPromise([preview]).catch((err) => {
-                        console.error('MathJax error:', err);
-                        preview.innerHTML += '<p style="color: #dc3545; font-size: 12px; margin-top: 10px;"><strong>⚠️ LaTeX Error:</strong> Check your syntax</p>';
-                    });
-                }
-            }, 500);
+            event.target.classList.add('active');
+            document.getElementById(tab + 'Form').classList.add('active');
         }
 
-        function toggleAIHelper() {
-            document.getElementById('aiHelper').classList.toggle('show');
+        function switchMainTab(tab) {
+            document.querySelectorAll('#mainPortal .tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('#mainPortal .tab-content').forEach(c => c.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tab + 'Tab').classList.add('active');
+
+            if (tab === 'today') checkTodayTest();
+            if (tab === 'history') loadHistory();
         }
 
-        let latexHelpTimeout;
-        
-        function showLatexHelp() {
-            clearTimeout(latexHelpTimeout);
-            document.getElementById('latexHelpDropdown').classList.add('show');
-        }
-        
-        function hideLatexHelp() {
-            latexHelpTimeout = setTimeout(() => {
-                document.getElementById('latexHelpDropdown').classList.remove('show');
-            }, 300);
-        }
+        async function register() {
+            const name = document.getElementById('registerName').value.trim();
+            const email = document.getElementById('registerEmail').value.trim();
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('registerConfirmPassword').value;
 
-        function handleAIEnter(event) {
-            if (event.key === 'Enter') sendAIMessage();
-        }
-
-        async function sendAIMessage() {
-            const input = document.getElementById('aiInput');
-            const message = input.value.trim();
-            if (!message) return;
-            
-            addAIMessage(message, 'user');
-            input.value = '';
-            
-            // Check for actual problem-solving attempts (not syntax questions)
-            const lowerMessage = message.toLowerCase();
-            
-            // These are RED FLAGS for problem solving
-            const problemSolvingPhrases = [
-                'solve', 'calculate', 'compute', 'what is', 'how much is', 
-                'find the answer', 'find the solution', 'the answer to',
-                'result of', 'evaluate', 'simplify'
-            ];
-            
-            // These are OK - they're about LaTeX syntax
-            const syntaxPhrases = [
-                'how do i write', 'how to write', 'syntax for', 'latex code',
-                'in latex', 'using latex', 'format', 'display'
-            ];
-            
-            // Check if it's a syntax question
-            const isSyntaxQuestion = syntaxPhrases.some(phrase => lowerMessage.includes(phrase));
-            
-            // Check if it's asking to solve something
-            const isProblemSolving = problemSolvingPhrases.some(phrase => lowerMessage.includes(phrase));
-            
-            // Block if clearly problem-solving AND not a syntax question
-            if (isProblemSolving && !isSyntaxQuestion) {
-                addAIMessage('I cannot help solve math problems or provide answers. I can ONLY help with LaTeX syntax questions like:\n\n"How do I write a fraction?"\n"How do I make superscripts?"\n"How do I write Greek letters?"\n"What\'s the syntax for square roots?"', 'assistant');
+            if (!name || !email || !password) {
+                showStatus('registerStatus', 'Please fill in all fields', 'error');
                 return;
             }
-            
-            const systemPrompt = `You are a STRICT LaTeX syntax helper. You can ONLY answer questions about how to write LaTeX code.
 
-ALLOWED:
-- Explain LaTeX syntax and commands (e.g., "use \\frac{a}{b} for fractions")
-- Show how to format mathematical expressions in LaTeX
-- Explain LaTeX symbols and structures
+            if (password !== confirmPassword) {
+                showStatus('registerStatus', 'Passwords do not match', 'error');
+                return;
+            }
 
-FORBIDDEN:
-- Solve ANY math problems
-- Provide numerical answers to calculations
-- Give hints about problem solutions
-- Explain mathematical concepts or theory
+            if (password.length < 6) {
+                showStatus('registerStatus', 'Password must be at least 6 characters', 'error');
+                return;
+            }
 
-If asked to solve something, respond: "I can only help with LaTeX syntax, not solving problems."
-
-Keep responses brief and focused on LaTeX code syntax only.`;
+            showLoading('Creating account...');
 
             try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_API_KEY}`, {
+                const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
-                        contents: [{parts: [{text: `${systemPrompt}\n\nUser: ${message}`}]}],
-                        generationConfig: {temperature: 0.4, maxOutputTokens: 200}
+                        action: 'register',
+                        name, email, password
                     })
                 });
-                
-                if (!response.ok) throw new Error(`API Error: ${response.status}`);
-                
-                const data = await response.json();
-                const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sorry, no response';
-                
-                addAIMessage(aiResponse, 'assistant');
+
+                const result = await response.json();
+                hideLoading();
+
+                if (result.success) {
+                    showStatus('registerStatus', 'Account created! Please login.', 'success');
+                    setTimeout(() => switchAuthTab('login'), 2000);
+                } else {
+                    showStatus('registerStatus', result.error || 'Registration failed', 'error');
+                }
             } catch (error) {
-                addAIMessage(`Error: ${error.message}`, 'assistant');
+                hideLoading();
+                showStatus('registerStatus', 'Error: ' + error.message, 'error');
             }
         }
 
-        function addAIMessage(message, type) {
-            const container = document.getElementById('aiChatContainer');
-            const div = document.createElement('div');
-            div.className = `ai-message ${type}`;
-            
-            if (type === 'assistant') {
-                let processed = message
-                    .replace(/```([^`]+)```/g, '<pre style="background:#2d2d2d;color:#f8f8f2;padding:10px;border-radius:4px;overflow-x:auto;margin:10px 0">$1</pre>')
-                    .replace(/`([^`]+)`/g, '<code style="background:#f4f4f4;padding:2px 6px;border-radius:3px;color:#e83e8c">$1</code>');
-                div.innerHTML = `<strong>LaTeX Helper:</strong> ${processed}`;
-                container.appendChild(div);
-                if (window.MathJax) MathJax.typesetPromise([div]).catch(e => console.log(e));
-            } else {
-                div.textContent = message;
-                container.appendChild(div);
+        async function login() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            if (!email || !password) {
+                showStatus('loginStatus', 'Please enter email and password', 'error');
+                return;
             }
-            
-            container.scrollTop = container.scrollHeight;
+
+            showLoading('Logging in...');
+
+            try {
+                const response = await fetch(`${SCRIPT_URL}?action=login&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`);
+                const result = await response.json();
+                hideLoading();
+
+                if (result.success) {
+                    currentUser = { name: result.name, email: result.email };
+                    localStorage.setItem('dpotdUser', JSON.stringify(currentUser));
+                    showMainPortal();
+                } else {
+                    showStatus('loginStatus', result.error || 'Invalid credentials', 'error');
+                }
+            } catch (error) {
+                hideLoading();
+                showStatus('loginStatus', 'Error: ' + error.message, 'error');
+            }
         }
 
-        function showStatus(elementId, message, type) {
-            const el = document.getElementById(elementId);
-            el.textContent = message;
-            el.className = 'status ' + type;
-            el.style.display = 'block';
+        function logout() {
+            localStorage.removeItem('dpotdUser');
+            currentUser = null;
+            document.getElementById('mainPortal').classList.add('hidden');
+            document.getElementById('authScreen').classList.remove('hidden');
+            location.reload();
         }
 
-        function showLoading(message) {
-            document.getElementById('loadingText').textContent = message;
-            document.getElementById('loadingModal').classList.add('show');
+        function showMainPortal() {
+            document.getElementById('authScreen').classList.add('hidden');
+            document.getElementById('mainPortal').classList.remove('hidden');
+            document.getElementById('profileName').textContent = currentUser.name;
+            document.getElementById('profileNameInput').value = currentUser.name;
+            document.getElementById('profileEmailInput').value = currentUser.email;
+            checkTodayTest();
         }
 
-        function hideLoading() {
-            document.getElementById('loadingModal').classList.remove('show');
+        async function checkTodayTest() {
+            const container = document.getElementById('testStatus');
+            container.innerHTML = '<p style="color: #666;">Checking for today\'s test...</p>';
+
+            try {
+                currentDay = await getCurrentDay();
+
+                if (!currentDay) {
+                    container.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">No test available today. Check back later!</p>';
+                    return;
+                }
+
+                const checkResponse = await fetch(`${SCRIPT_URL}?action=checkSubmission&email=${encodeURIComponent(currentUser.email)}&day=${currentDay}`);
+                const checkData = await checkResponse.json();
+
+                if (checkData.exists) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 40px;">
+                            <h2 style="color: #28a745; margin-bottom: 20px;">✅ Test Already Submitted</h2>
+                            <p style="font-size: 18px; color: #666; margin-bottom: 20px;">
+                                You have already submitted Day ${currentDay}'s test.
+                            </p>
+                            <p style="color: #666;">
+                                Check your Score History tab to see your results and feedback.
+                            </p>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 40px;">
+                            <h2 style="color: #EA5A2F; margin-bottom: 20px;">Day ${currentDay} Test Available!</h2>
+                            <p style="font-size: 18px; color: #666; margin-bottom: 30px;">
+                                Ready to take today's test?
+                            </p>
+                            <button class="btn" onclick="startTest()" style="max-width: 400px; margin: 0 auto;">
+                                Start Test (2 hours, 3 questions)
+                            </button>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                container.innerHTML = '<p style="color: #dc3545; text-align: center;">Error loading test status</p>';
+            }
         }
 
-        function validateEmail(email) {
-            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        async function loadHistory() {
+            const container = document.getElementById('historyContainer');
+            container.innerHTML = '<p style="color: #666;">Loading your scores...</p>';
+
+            try {
+                const response = await fetch(`${SCRIPT_URL}?action=getUserSubmissions&email=${encodeURIComponent(currentUser.email)}`);
+                const submissions = await response.json();
+
+                if (!submissions || submissions.length === 0) {
+                    container.innerHTML = '<p style="text-align: center; color: #666;">No submissions yet. Take your first test!</p>';
+                    return;
+                }
+
+                container.innerHTML = '';
+                submissions.reverse().forEach(sub => {
+                    const card = document.createElement('div');
+                    card.className = 'score-card';
+                    
+                    const timestamp = new Date(sub.timestamp).toLocaleString();
+                    
+                    card.innerHTML = `
+                        <div class="score-header">
+                            <h3>Day ${sub.day}</h3>
+                            <span style="color: #666; font-size: 14px;">${timestamp}</span>
+                        </div>
+                        <div class="score-details">
+                            <div class="score-item">
+                                <strong>Q1:</strong> <span class="${sub.q1_correct ? 'correct' : 'incorrect'}">
+                                    ${sub.q1_correct ? '✓ Correct' : '✗ Incorrect'}
+                                </span>
+                            </div>
+                            <div class="score-item">
+                                <strong>Q2:</strong> <span class="${sub.q2_correct ? 'correct' : 'incorrect'}">
+                                    ${sub.q2_correct ? '✓ Correct' : '✗ Incorrect'}
+                                </span>
+                            </div>
+                            <div class="score-item">
+                                <strong>Q3 Score:</strong> ${sub.q3_score !== undefined ? sub.q3_score + '/10' : 'Pending'}
+                            </div>
+                            <div class="score-item">
+                                <strong>Time:</strong> ${Math.floor(sub.totalTime / 60)}m ${sub.totalTime % 60}s
+                            </div>
+                        </div>
+                        ${sub.q3_feedback ? `
+                        <div class="feedback-box">
+                            <strong>📝 Q3 Feedback:</strong>
+                            <p style="margin-top: 10px; white-space: pre-wrap;">${sub.q3_feedback}</p>
+                        </div>
+                        ` : ''}
+                    `;
+                    
+                    container.appendChild(card);
+                });
+            } catch (error) {
+                container.innerHTML = '<p style="color: #dc3545;">Error loading history</p>';
+            }
         }
 
-        function cleanAnswer(answer) {
-            return answer.replace(/[^0-9-]/g, '').replace(/(?!^)-/g, '');
-        }
+        async function changePassword() {
+            const current = document.getElementById('currentPassword').value;
+            const newPass = document.getElementById('newPassword').value;
+            const confirm = document.getElementById('confirmNewPassword').value;
 
-        function recordViolation(type) {
-            if (!testActive) return;
-            exitCount++;
-            exitLogs.push({time: new Date().toISOString(), type});
-            document.getElementById('violationCount').textContent = exitCount;
-            document.getElementById('warningOverlay').classList.add('show');
-        }
+            if (!current || !newPass || !confirm) {
+                showStatus('profileStatus', 'Please fill in all fields', 'error');
+                return;
+            }
 
-        function hideWarning() {
-            document.getElementById('warningOverlay').classList.remove('show');
-        }
+            if (newPass !== confirm) {
+                showStatus('profileStatus', 'New passwords do not match', 'error');
+                return;
+            }
 
-        function returnToFullscreen() {
-            document.documentElement.requestFullscreen().then(() => hideWarning()).catch(() => alert('Please allow fullscreen'));
-        }
+            if (newPass.length < 6) {
+                showStatus('profileStatus', 'New password must be at least 6 characters', 'error');
+                return;
+            }
 
-        function monitorFullscreen() {
-            document.addEventListener('fullscreenchange', () => {
-                if (!document.fullscreenElement && testActive) recordViolation('exited_fullscreen');
-            });
-            document.addEventListener('visibilitychange', () => {
-                if (document.hidden && testActive) recordViolation('tab_hidden');
-            });
+            showLoading('Updating password...');
+
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'changePassword',
+                        email: currentUser.email,
+                        currentPassword: current,
+                        newPassword: newPass
+                    })
+                });
+
+                const result = await response.json();
+                hideLoading();
+
+                if (result.success) {
+                    showStatus('profileStatus', 'Password updated successfully!', 'success');
+                    document.getElementById('currentPassword').value = '';
+                    document.getElementById('newPassword').value = '';
+                    document.getElementById('confirmNewPassword').value = '';
+                } else {
+                    showStatus('profileStatus', result.error || 'Failed to update password', 'error');
+                }
+            } catch (error) {
+                hideLoading();
+                showStatus('profileStatus', 'Error: ' + error.message, 'error');
+            }
         }
 
         async function getCurrentDay() {
@@ -951,6 +923,77 @@ Keep responses brief and focused on LaTeX code syntax only.`;
             } catch (error) {
                 console.error('Error getting day:', error);
                 return null;
+            }
+        }
+
+        async function startTest() {
+            showLoading(`Loading Day ${currentDay} questions...`);
+            
+            try {
+                const response = await fetch(`${SCRIPT_URL}?action=getQuestions&day=${currentDay}`);
+                questionsData = await response.json();
+                
+                if (questionsData.error) {
+                    hideLoading();
+                    alert('Error loading questions');
+                    return;
+                }
+                
+                document.getElementById('q1Text').textContent = questionsData.q1_text;
+                document.getElementById('q2Text').textContent = questionsData.q2_text;
+                document.getElementById('q3Text').textContent = questionsData.q3_text;
+                
+                hideLoading();
+                
+                try {
+                    await document.documentElement.requestFullscreen();
+                    
+                    document.getElementById('mainPortal').style.display = 'none';
+                    document.getElementById('questionSection').style.display = 'block';
+                    
+                    document.body.classList.add('locked');
+                    testActive = true;
+                    monitorFullscreen();
+                    
+                    startTime = Date.now();
+                    q1StartTime = Date.now();
+                    timerInterval = setInterval(updateTimer, 1000);
+                    updateTimer();
+                    showQuestion(1);
+                } catch (err) {
+                    alert('Fullscreen mode is required. Please allow fullscreen and try again.');
+                }
+                
+            } catch (error) {
+                hideLoading();
+                alert('Error loading questions: ' + error.message);
+            }
+        }
+
+        function showQuestion(num) {
+            ['q1Page', 'q2Page', 'q3Page'].forEach(id => document.getElementById(id).style.display = 'none');
+            document.getElementById(`q${num}Page`).style.display = 'block';
+            document.getElementById('progressIndicator').textContent = `Question ${num} of 3`;
+            document.getElementById('progressIndicator').style.display = 'block';
+            currentQuestion = num;
+        }
+
+        function nextQuestion(from) {
+            const answer = document.getElementById(`q${from}Answer`).value.trim();
+            
+            if (!answer) {
+                showStatus(`q${from}Status`, 'Please provide an answer', 'error');
+                return;
+            }
+            
+            if (from === 1) {
+                q1EndTime = Date.now();
+                q2StartTime = Date.now();
+                showQuestion(2);
+            } else if (from === 2) {
+                q2EndTime = Date.now();
+                q3StartTime = Date.now();
+                showQuestion(3);
             }
         }
 
@@ -975,149 +1018,13 @@ Keep responses brief and focused on LaTeX code syntax only.`;
             }
         }
 
-        function showQuestion(num) {
-            ['q1Page', 'q2Page', 'q3Page'].forEach(id => document.getElementById(id).style.display = 'none');
-            document.getElementById(`q${num}Page`).style.display = 'block';
-            document.getElementById('progressIndicator').textContent = `Question ${num} of 3`;
-            document.getElementById('progressIndicator').style.display = 'block';
-            
-            const aiBtn = document.getElementById('aiToggleBtn');
-            const helpBtn = document.getElementById('latexHelpBtn');
-            
-            if (num === 3) {
-                aiBtn.style.display = 'block';
-                helpBtn.style.display = 'flex';
-            } else {
-                aiBtn.style.display = 'none';
-                helpBtn.style.display = 'none';
-            }
-            
-            currentQuestion = num;
-        }
-
-        function nextQuestion(from) {
-            const answer = document.getElementById(`q${from}Answer`).value.trim();
-            
-            if (!answer) {
-                showStatus(`q${from}Status`, 'Please provide an answer', 'error');
-                return;
-            }
-            
-            if (from === 1) {
-                q1EndTime = Date.now();
-                q2StartTime = Date.now();
-                showQuestion(2);
-            } else if (from === 2) {
-                q2EndTime = Date.now();
-                q3StartTime = Date.now();
-                showQuestion(3);
-            }
-        }
-
-        async function startTest() {
-            const name = document.getElementById('studentName').value.trim();
-            const email = document.getElementById('studentEmail').value.trim();
-            const emailError = document.getElementById('emailError');
-            
-            emailError.textContent = '';
-            
-            if (!name || !email) {
-                showStatus('startStatus', 'Please fill in all fields', 'error');
-                return;
-            }
-            
-            if (!validateEmail(email)) {
-                emailError.textContent = 'Invalid email format';
-                showStatus('startStatus', 'Invalid email', 'error');
-                return;
-            }
-            
-            showLoading('Determining current day...');
-            currentDay = await getCurrentDay();
-            
-            if (!currentDay) {
-                hideLoading();
-                showStatus('startStatus', 'No test is currently available', 'error');
-                return;
-            }
-            
-            showLoading(`Loading Day ${currentDay} questions...`);
-            
-            try {
-                const checkResponse = await fetch(`${SCRIPT_URL}?action=checkSubmission&email=${encodeURIComponent(email)}&day=${currentDay}`);
-                const checkData = await checkResponse.json();
-                
-                if (checkData.exists) {
-                    hideLoading();
-                    showStatus('startStatus', 'You have already submitted this test!', 'error');
-                    return;
-                }
-                
-                const response = await fetch(`${SCRIPT_URL}?action=getQuestions&day=${currentDay}`);
-                questionsData = await response.json();
-                
-                if (questionsData.error) {
-                    hideLoading();
-                    showStatus('startStatus', 'Error: ' + questionsData.error, 'error');
-                    return;
-                }
-                
-                document.getElementById('q1Text').textContent = questionsData.q1_text || 'Question 1 text not available';
-                document.getElementById('q2Text').textContent = questionsData.q2_text || 'Question 2 text not available';
-                document.getElementById('q3Text').textContent = questionsData.q3_text || 'Question 3 text not available';
-                document.getElementById('dayIndicator').textContent = `Day ${currentDay}`;
-                
-                hideLoading();
-                
-                // Remove the original start button before adding the fullscreen button
-                const originalStartBtn = document.querySelector('#studentForm .btn');
-                if (originalStartBtn) {
-                    originalStartBtn.style.display = 'none';
-                }
-                
-                const confirmBtn = document.createElement('button');
-                confirmBtn.className = 'btn';
-                confirmBtn.style.marginTop = '20px';
-                confirmBtn.textContent = 'Enter Fullscreen & Begin Test';
-                confirmBtn.onclick = async function() {
-                    try {
-                        await document.documentElement.requestFullscreen();
-                        confirmBtn.remove();
-                        
-                        document.getElementById('studentForm').style.display = 'none';
-                        document.getElementById('questionSection').style.display = 'block';
-                        
-                        document.body.classList.add('locked');
-                        testActive = true;
-                        monitorFullscreen();
-                        
-                        startTime = Date.now();
-                        q1StartTime = Date.now();
-                        timerInterval = setInterval(updateTimer, 1000);
-                        updateTimer();
-                        showQuestion(1);
-                    } catch (err) {
-                        alert('Fullscreen mode is required. Please allow fullscreen and try again.');
-                    }
-                };
-                
-                const statusEl = document.getElementById('startStatus');
-                statusEl.textContent = 'Questions loaded! Click below to enter fullscreen mode and begin.';
-                statusEl.className = 'status success';
-                statusEl.style.display = 'block';
-                statusEl.parentElement.appendChild(confirmBtn);
-                
-            } catch (error) {
-                hideLoading();
-                showStatus('startStatus', 'Error: ' + error.message, 'error');
-            }
+        function cleanAnswer(answer) {
+            return answer.replace(/[^0-9-]/g, '').replace(/(?!^)-/g, '');
         }
 
         async function submitTest(isForced = false) {
             if (!testActive && !isForced) return;
             
-            const name = document.getElementById('studentName').value.trim();
-            const email = document.getElementById('studentEmail').value.trim();
             const q1Answer = cleanAnswer(document.getElementById('q1Answer').value.trim());
             const q2Answer = cleanAnswer(document.getElementById('q2Answer').value.trim());
             const q3Answer = document.getElementById('latexInput').value.trim();
@@ -1142,8 +1049,8 @@ Keep responses brief and focused on LaTeX code syntax only.`;
             const q2Correct = q2Answer === cleanAnswer(questionsData.q2_answer);
             
             const submission = {
-                studentName: name,
-                studentEmail: email,
+                studentName: currentUser.name,
+                studentEmail: currentUser.email,
                 day: currentDay,
                 q1_answer: q1Answer,
                 q2_answer: q2Answer,
@@ -1174,65 +1081,30 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                 if (result.success) {
                     testActive = false;
                     document.body.classList.remove('locked');
-                    hideWarning();
                     if (document.exitFullscreen) document.exitFullscreen();
                     
                     document.getElementById('questionSection').style.display = 'none';
+                    document.getElementById('mainPortal').style.display = 'block';
                     
-                    document.querySelector('.container').innerHTML = `
-                    <div style="text-align: center; padding: 40px 20px;">
-                        <h1 style="color: #28a745; margin-bottom: 20px;">Test Submitted Successfully!</h1>
-                        <p style="font-size: 18px; color: #666; margin-bottom: 30px;">
-                            Your score will be emailed to you soon.
-                        </p>
-                        <div style="background: #f8f9fa; padding: 30px; border-radius: 8px; border-left: 4px solid #EA5A2F; max-width: 500px; margin: 0 auto;">
-                            <h2 style="margin-bottom: 20px; color: #000;">Your Results</h2>
-                            
-                            <div style="text-align: left; margin-bottom: 15px;">
-                                <strong>Question 1:</strong>
-                                <span class="${q1Correct ? 'correct' : 'incorrect'}" style="font-size: 18px; margin-left: 10px;">
-                                    ${q1Correct ? 'Correct' : 'Incorrect'}
-                                </span>
-                                <div style="color: #666; font-size: 14px; margin-top: 5px;">
-                                    Your answer: ${q1Answer} | Time: ${Math.floor(q1Time / 60)}m ${q1Time % 60}s
+                    document.getElementById('testStatus').innerHTML = `
+                        <div style="text-align: center; padding: 40px;">
+                            <h2 style="color: #28a745; margin-bottom: 20px;">✅ Test Submitted Successfully!</h2>
+                            <p style="font-size: 18px; color: #666; margin-bottom: 30px;">
+                                Your score will be updated shortly.
+                            </p>
+                            <div style="background: #f8f9fa; padding: 30px; border-radius: 8px; max-width: 500px; margin: 0 auto;">
+                                <div style="margin-bottom: 15px;">
+                                    <strong>Q1:</strong> <span class="${q1Correct ? 'correct' : 'incorrect'}">${q1Correct ? '✓ Correct' : '✗ Incorrect'}</span>
+                                </div>
+                                <div style="margin-bottom: 15px;">
+                                    <strong>Q2:</strong> <span class="${q2Correct ? 'correct' : 'incorrect'}">${q2Correct ? '✓ Correct' : '✗ Incorrect'}</span>
+                                </div>
+                                <div>
+                                    <strong>Q3:</strong> Will be graded manually
                                 </div>
                             </div>
-                            
-                            <div style="text-align: left; margin-bottom: 15px;">
-                                <strong>Question 2:</strong>
-                                <span class="${q2Correct ? 'correct' : 'incorrect'}" style="font-size: 18px; margin-left: 10px;">
-                                    ${q2Correct ? 'Correct' : 'Incorrect'}
-                                </span>
-                                <div style="color: #666; font-size: 14px; margin-top: 5px;">
-                                    Your answer: ${q2Answer} | Time: ${Math.floor(q2Time / 60)}m ${q2Time % 60}s
-                                </div>
-                            </div>
-                            
-                            <div style="text-align: left;">
-                                <strong>Question 3:</strong>
-                                <span style="color: #666; font-size: 14px; margin-left: 10px;">Will be graded manually</span>
-                                <div style="color: #666; font-size: 14px; margin-top: 5px;">
-                                    Time: ${Math.floor(q3Time / 60)}m ${q3Time % 60}s
-                                </div>
-                            </div>
-                            
-                            <div style="margin-top: 25px; padding-top: 20px; border-top: 2px solid #E3E3E3;">
-                                <strong>Total Time:</strong>
-                                <span style="color: #000; font-size: 18px; margin-left: 10px;">
-                                    ${Math.floor(totalTime / 60)}m ${totalTime % 60}s
-                                </span>
-                            </div>
-                            
-                            ${exitCount > 0 ? `
-                            <div style="margin-top: 15px; padding: 15px; background: #fff3cd; border-radius: 6px;">
-                                <strong style="color: #856404;">Violations: ${exitCount}</strong>
-                            </div>` : ''}
                         </div>
-                        
-                        <button class="btn" onclick="window.location.reload()" style="max-width: 300px; margin: 30px auto 0;">
-                            Back to Home
-                        </button>
-                    </div>`;
+                    `;
                 } else {
                     showStatus('q3Status', 'Error: ' + (result.error || 'Unknown'), 'error');
                     testActive = true;
@@ -1244,46 +1116,46 @@ Keep responses brief and focused on LaTeX code syntax only.`;
             }
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            ['q1Answer', 'q2Answer'].forEach(id => {
-                const input = document.getElementById(id);
-                if (input) {
-                    input.addEventListener('input', (e) => {
-                        const cleaned = cleanAnswer(e.target.value);
-                        if (e.target.value !== cleaned) e.target.value = cleaned;
-                    });
-                }
+        function recordViolation(type) {
+            if (!testActive) return;
+            exitCount++;
+            exitLogs.push({time: new Date().toISOString(), type});
+            document.getElementById('violationCount').textContent = exitCount;
+            document.getElementById('warningOverlay').classList.add('show');
+        }
+
+        function hideWarning() {
+            document.getElementById('warningOverlay').classList.remove('show');
+        }
+
+        function returnToFullscreen() {
+            document.documentElement.requestFullscreen().then(() => hideWarning()).catch(() => alert('Please allow fullscreen'));
+        }
+
+        function monitorFullscreen() {
+            document.addEventListener('fullscreenchange', () => {
+                if (!document.fullscreenElement && testActive) recordViolation('exited_fullscreen');
             });
-            
-            const latexInput = document.getElementById('latexInput');
-            if (latexInput) {
-                latexInput.addEventListener('input', updateLatexPreview);
-                latexInput.value = `\\documentclass{article}
-\\usepackage{amsmath}
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden && testActive) recordViolation('tab_hidden');
+            });
+        }
 
-\\begin{document}
+        function showStatus(elementId, message, type) {
+            const el = document.getElementById(elementId);
+            el.textContent = message;
+            el.className = 'status ' + type;
+            el.style.display = 'block';
+        }
 
-Write your proof here. 
+        function showLoading(message) {
+            document.getElementById('loadingText').textContent = message;
+            document.getElementById('loadingModal').classList.add('show');
+        }
 
-For inline math, use: $x^2 + y^2 = z^2$
-
-For display math, use double dollar signs:
-$
-\\frac{a}{b} = \\frac{c}{d}
-$
-
-Common symbols:
-- Fractions: $\\frac{numerator}{denominator}$
-- Exponents: $x^2$ or $x^{10}$
-- Subscripts: $x_1$ or $x_{10}$
-- Square root: $\\sqrt{x}$ or $\\sqrt[3]{x}$
-- Summation: $\\sum_{i=1}^{n} i$
-- Integral: $\\int_0^1 f(x) dx$
-
-\\end{document}`;
-                updateLatexPreview();
-            }
-        });
+        function hideLoading() {
+            document.getElementById('loadingModal').classList.remove('show');
+        }
 
         document.addEventListener('keydown', (e) => {
             if (testActive) {
@@ -1317,6 +1189,15 @@ Common symbols:
                 return '';
             }
         });
+
+        const latexInput = document.getElementById('latexInput');
+        if (latexInput) {
+            latexInput.addEventListener('input', () => {
+                const preview = document.getElementById('latexPreview');
+                preview.innerHTML = latexInput.value || 'Your formatted proof will appear here...';
+                if (window.MathJax) MathJax.typesetPromise([preview]).catch(e => console.log(e));
+            });
+        }
     </script>
 </body>
 </html>
