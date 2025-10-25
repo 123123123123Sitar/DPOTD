@@ -4,6 +4,23 @@ const ADMIN_PASSWORD = 'SitarsTheGOAT!';
 let cachedSubmissions = [];
 let isAuthenticated = false;
 
+// Make functions global
+window.checkPassword = checkPassword;
+window.handlePasswordKeyPress = handlePasswordKeyPress;
+window.switchTab = switchTab;
+window.loadQuestions = loadQuestions;
+window.saveQuestions = saveQuestions;
+window.loadSchedule = loadSchedule;
+window.saveSchedule = saveSchedule;
+window.loadSettings = loadSettings;
+window.saveSettings = saveSettings;
+window.loadSubmissions = loadSubmissions;
+window.saveFeedback = saveFeedback;
+window.exportToCSV = exportToCSV;
+window.loadUsers = loadUsers;
+window.addUser = addUser;
+window.deleteUser = deleteUser;
+
 // Password Protection Functions
 function checkPassword() {
     const password = document.getElementById('passwordInput').value;
