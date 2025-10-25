@@ -1,4 +1,4 @@
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzRPyEM0A2oP_zU9GTq_tPintK4rU1e16IvGLgCV-P1G4-dsghsw7B_kkgAuPII56X0/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzpULZX8CaB3bl0CcVtEhUqDGZ9E8ioTcnMps8GBIDPDpoZmexgUWKwMpyqE2vNZk19/exec';
 const ADMIN_PASSWORD = 'SitarsTheGOAT!';
 
 let cachedSubmissions = [];
@@ -89,6 +89,7 @@ async function saveQuestions() {
     
     const day = document.getElementById('questionDay').value;
     const data = {
+        action: 'saveQuestions',
         day: day,
         q1_text: document.getElementById('q1Text').value,
         q1_answer: document.getElementById('q1Answer').value,
@@ -101,7 +102,7 @@ async function saveQuestions() {
     showStatus('questionStatus', 'Saving...', 'info');
 
     try {
-        const response = await fetch(`${SCRIPT_URL}?action=saveQuestions`, {
+        const response = await fetch(SCRIPT_URL, {
             method: 'POST',
             body: JSON.stringify(data)
         });
@@ -142,7 +143,9 @@ async function loadSchedule() {
 async function saveSchedule() {
     if (!isAuthenticated) return;
     
-    const data = {};
+    const data = {
+        action: 'saveSchedule'
+    };
     
     for (let i = 1; i <= 5; i++) {
         const value = document.getElementById(`day${i}`).value;
@@ -155,7 +158,7 @@ async function saveSchedule() {
     showStatus('scheduleStatus', 'Saving...', 'info');
 
     try {
-        const response = await fetch(`${SCRIPT_URL}?action=saveSchedule`, {
+        const response = await fetch(SCRIPT_URL, {
             method: 'POST',
             body: JSON.stringify(data)
         });
@@ -192,6 +195,7 @@ async function saveSettings() {
     if (!isAuthenticated) return;
     
     const data = {
+        action: 'saveSettings',
         'Admin Email': document.getElementById('adminEmail').value,
         'Test Duration': document.getElementById('testDuration').value,
         'Upload Time': document.getElementById('uploadTime').value
@@ -200,7 +204,7 @@ async function saveSettings() {
     showStatus('settingsStatus', 'Saving...', 'info');
 
     try {
-        const response = await fetch(`${SCRIPT_URL}?action=saveSettings`, {
+        const response = await fetch(SCRIPT_URL, {
             method: 'POST',
             body: JSON.stringify(data)
         });
@@ -271,6 +275,27 @@ async function loadSubmissions() {
                 violationDetails += '</ul></div>';
             }
             
+            // Create feedback section
+            const feedbackSection = `
+                <div style="margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #EA5A2F;">
+                    <h4 style="margin-bottom: 15px; color: #EA5A2F;">Question 3 Grading</h4>
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 5px;">Score (out of 10):</label>
+                        <input type="number" id="score_${sub.rowIndex}" min="0" max="10" value="${sub.q3_score || ''}" 
+                               style="width: 100px; padding: 8px; border: 2px solid #E3E3E3; border-radius: 4px;">
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 5px;">Feedback:</label>
+                        <textarea id="feedback_${sub.rowIndex}" rows="4" 
+                                  style="width: 100%; padding: 10px; border: 2px solid #E3E3E3; border-radius: 4px; font-family: inherit;"
+                                  placeholder="Enter detailed feedback for the student...">${sub.q3_feedback || ''}</textarea>
+                    </div>
+                    <button onclick="saveFeedback(${sub.rowIndex})" class="btn" style="width: auto; padding: 10px 20px;">
+                        Save Feedback & Notify Student
+                    </button>
+                </div>
+            `;
+            
             card.innerHTML = `
                 <div class="submission-header">
                     <h3>${sub.studentName}</h3>
@@ -300,7 +325,7 @@ async function loadSubmissions() {
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">Q3 Answer:</span> 
-                        <div style="margin-top: 5px; padding: 10px; background: #f8f9fa; border-radius: 4px; white-space: pre-wrap;">${sub.q3_answer}</div>
+                        <div style="margin-top: 5px; padding: 10px; background: white; border-radius: 4px; white-space: pre-wrap; max-height: 300px; overflow-y: auto;">${sub.q3_answer}</div>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">Total Time:</span> ${formatTime(sub.totalTime)}
@@ -314,6 +339,7 @@ async function loadSubmissions() {
                     ${violationDetails}
                     ${sub.workFileURL ? `<div class="detail-item"><a href="${sub.workFileURL}" target="_blank" class="btn" style="display: inline-block; margin-top: 10px;">View Uploaded Work</a></div>` : ''}
                 </div>
+                ${feedbackSection}
             `;
             
             container.appendChild(card);
@@ -323,6 +349,46 @@ async function loadSubmissions() {
     } catch (error) {
         showStatus('submissionsStatus', 'Error loading submissions: ' + error.message, 'error');
         container.innerHTML = '<p style="color: #dc3545; text-align: center; padding: 40px;">Error loading submissions</p>';
+    }
+}
+
+async function saveFeedback(rowIndex) {
+    const score = document.getElementById(`score_${rowIndex}`).value;
+    const feedback = document.getElementById(`feedback_${rowIndex}`).value;
+    
+    if (!score || !feedback) {
+        alert('Please enter both score and feedback');
+        return;
+    }
+    
+    if (score < 0 || score > 10) {
+        alert('Score must be between 0 and 10');
+        return;
+    }
+    
+    const data = {
+        action: 'updateFeedback',
+        rowIndex: rowIndex,
+        q3_score: score,
+        q3_feedback: feedback
+    };
+    
+    try {
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('✅ Feedback saved and student notified!');
+            loadSubmissions(); // Reload to show updated data
+        } else {
+            alert('Error: ' + (result.error || 'Failed to save feedback'));
+        }
+    } catch (error) {
+        alert('Error saving feedback: ' + error.message);
     }
 }
 
@@ -348,6 +414,8 @@ function exportToCSV() {
         'Q2 Time (s)',
         'Q3 Answer',
         'Q3 Time (s)',
+        'Q3 Score',
+        'Q3 Feedback',
         'Total Time (s)',
         'Exit Count',
         'Violations'
@@ -376,6 +444,8 @@ function exportToCSV() {
             sub.q2_time,
             `"${sub.q3_answer.replace(/"/g, '""')}"`,
             sub.q3_time,
+            sub.q3_score || '',
+            `"${(sub.q3_feedback || '').replace(/"/g, '""')}"`,
             sub.totalTime,
             sub.exitCount,
             `"${violations}"`
