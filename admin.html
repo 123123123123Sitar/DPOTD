@@ -4,19 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>D.PotD Admin Portal</title>
+    <link rel="stylesheet" href="styles.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #E3E3E3;
-            min-height: 100vh;
-        }
-
         /* Login Screen Styles */
         #loginScreen {
             display: flex;
@@ -108,159 +97,13 @@
             transform: translateY(-2px);
         }
 
-        /* Admin Panel */
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Admin Panel - Hidden by default */
         #adminPanel {
             display: none;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 12px;
-            padding: 40px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-        }
-
-        h1 {
-            color: #000;
-            margin-bottom: 10px;
-            font-size: 2.2em;
-        }
-
-        .subtitle {
-            color: #666;
-            margin-bottom: 30px;
-            font-size: 1.1em;
-        }
-
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #E3E3E3;
-            flex-wrap: wrap;
-        }
-
-        .tab {
-            padding: 12px 24px;
-            background: none;
-            border: none;
-            border-bottom: 3px solid transparent;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            color: #666;
-            transition: all 0.3s;
-        }
-
-        .tab.active {
-            color: #EA5A2F;
-            border-bottom-color: #EA5A2F;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #000;
-            font-weight: 600;
-        }
-
-        input, textarea, select {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #E3E3E3;
-            border-radius: 6px;
-            font-size: 16px;
-            font-family: inherit;
-        }
-
-        input:focus, textarea:focus, select:focus {
-            outline: none;
-            border-color: #EA5A2F;
-        }
-
-        textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-
-        .btn {
-            background: #EA5A2F;
-            color: white;
-            padding: 15px 30px;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            background: #d84a1f;
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .status {
-            padding: 15px;
-            border-radius: 6px;
-            margin-top: 20px;
-            display: none;
-        }
-
-        .status.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-            display: block;
-        }
-
-        .status.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-            display: block;
-        }
-
-        .status.info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-            display: block;
-        }
-
-        .question-group {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border-left: 4px solid #EA5A2F;
-        }
-
-        .question-group h3 {
-            margin-bottom: 15px;
-            color: #EA5A2F;
         }
 
         .submission-card {
@@ -329,10 +172,11 @@
             color: #856404;
             font-size: 14px;
         }
-
-        small {
-            color: #666;
-            font-size: 14px;
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
         }
     </style>
 </head>
@@ -463,6 +307,11 @@
                     <input type="number" id="testDuration" value="120">
                 </div>
                 
+                <div class="form-group">
+                    <label>Upload Time After Test (minutes):</label>
+                    <input type="number" id="uploadTime" value="30">
+                </div>
+                
                 <button class="btn" onclick="saveSettings()">Save Settings</button>
                 <div id="settingsStatus" class="status"></div>
             </div>
@@ -484,7 +333,7 @@
                     <div class="form-group">
                         <label>Initial Password:</label>
                         <input type="text" id="newUserPassword" placeholder="Minimum 6 characters">
-                        <small style="display: block; margin-top: 5px;">Student can change this password after logging in</small>
+                        <small style="color: #666; display: block; margin-top: 5px;">Student can change this password after logging in</small>
                     </div>
                     <button class="btn" onclick="addUser()">Add User</button>
                 </div>
