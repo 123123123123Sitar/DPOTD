@@ -300,6 +300,8 @@ function updateLatexPreview(rowIndex) {
         }
         
         let content = input;
+        
+        // Remove LaTeX document structure
         content = content.replace(/\\documentclass\{[^}]+\}/g, '');
         content = content.replace(/\\usepackage\{[^}]+\}/g, '');
         content = content.replace(/\\title\{[^}]*\}/g, '');
@@ -310,14 +312,22 @@ function updateLatexPreview(rowIndex) {
         const docMatch = content.match(/\\begin\{document\}([\s\S]*)\\end\{document\}/);
         if (docMatch) content = docMatch[1].trim();
         
+        // Set the content
         preview.innerHTML = content || '<p style="color: #999;">Write your feedback...</p>';
         
+        // Typeset with MathJax
         if (window.MathJax && window.MathJax.typesetPromise) {
             MathJax.typesetClear([preview]);
-            MathJax.typesetPromise([preview]).catch((err) => {
+            MathJax.typesetPromise([preview]).then(() => {
+                console.log('MathJax rendered successfully');
+            }).catch((err) => {
                 console.error('MathJax error:', err);
                 preview.innerHTML += '<p style="color: #dc3545; font-size: 12px; margin-top: 10px;"><strong>⚠️ LaTeX Error:</strong> Check your syntax</p>';
             });
+        } else {
+            console.warn('MathJax not loaded yet');
+            // Retry after a short delay if MathJax isn't ready
+            setTimeout(() => updateLatexPreview(rowIndex), 1000);
         }
     }, 500);
 }
