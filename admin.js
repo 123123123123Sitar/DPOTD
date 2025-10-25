@@ -1,8 +1,46 @@
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzpULZX8CaB3bl0CcVtEhUqDGZ9E8ioTcnMps8GBIDPDpoZmexgUWKwMpyqE2vNZk19/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzRPyEM0A2oP_zU9GTq_tPintK4rU1e16IvGLgCV-P1G4-dsghsw7B_kkgAuPII56X0/exec';
 const ADMIN_PASSWORD = 'SitarsTheGOAT!';
 
 let cachedSubmissions = [];
 let isAuthenticated = false;
+
+// IMPORTANT: Add this HTML to your admin.html after the Settings tab and before Submissions tab:
+/*
+<!-- Users Tab -->
+<div id="users" class="tab-content">
+    <h2 style="margin-bottom: 20px;">User Management</h2>
+    
+    <div style="background: #f8f9fa; padding: 30px; border-radius: 8px; margin-bottom: 30px; border-left: 4px solid #EA5A2F;">
+        <h3 style="margin-bottom: 20px;">Add New User</h3>
+        <div class="form-group">
+            <label>Full Name:</label>
+            <input type="text" id="newUserName" placeholder="John Doe">
+        </div>
+        <div class="form-group">
+            <label>Email:</label>
+            <input type="email" id="newUserEmail" placeholder="student@example.com">
+        </div>
+        <div class="form-group">
+            <label>Password:</label>
+            <input type="text" id="newUserPassword" placeholder="Minimum 6 characters">
+            <small style="color: #666; display: block; margin-top: 5px;">Student can change this password after logging in</small>
+        </div>
+        <button class="btn" onclick="addUser()">Add User</button>
+    </div>
+    
+    <h3 style="margin-bottom: 20px;">Registered Users</h3>
+    <div class="btn-group">
+        <button class="btn" onclick="loadUsers()">Refresh Users</button>
+    </div>
+    <div id="usersContainer"></div>
+    <div id="usersStatus" class="status"></div>
+</div>
+*/
+
+// Also update the tabs section in admin.html to include:
+/*
+<button class="tab" onclick="switchTab('users')">Users</button>
+*/
 
 // Password Protection Functions
 function checkPassword() {
@@ -47,6 +85,7 @@ function switchTab(tabName) {
     if (tabName === 'schedule') loadSchedule();
     if (tabName === 'settings') loadSettings();
     if (tabName === 'submissions') loadSubmissions();
+    if (tabName === 'users') loadUsers();
 }
 
 // Questions Management
