@@ -4,23 +4,6 @@ const ADMIN_PASSWORD = 'SitarsTheGOAT!';
 let cachedSubmissions = [];
 let isAuthenticated = false;
 
-// Make functions global
-window.checkPassword = checkPassword;
-window.handlePasswordKeyPress = handlePasswordKeyPress;
-window.switchTab = switchTab;
-window.loadQuestions = loadQuestions;
-window.saveQuestions = saveQuestions;
-window.loadSchedule = loadSchedule;
-window.saveSchedule = saveSchedule;
-window.loadSettings = loadSettings;
-window.saveSettings = saveSettings;
-window.loadSubmissions = loadSubmissions;
-window.saveFeedback = saveFeedback;
-window.exportToCSV = exportToCSV;
-window.loadUsers = loadUsers;
-window.addUser = addUser;
-window.deleteUser = deleteUser;
-
 // Password Protection Functions
 function checkPassword() {
     const password = document.getElementById('passwordInput').value;
@@ -484,6 +467,149 @@ function exportToCSV() {
     a.click();
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
+}
+
+// User Management
+async function loadUsers() {
+    if (!isAuthenticated) return;
+    
+    const container = document.getElementById('usersContainer');
+    container.innerHTML = '<p style="color: #666;">Loading users...</p>';
+
+    try {
+        const response = await fetch(`${SCRIPT_URL}?action=getUsers`);
+        const users = await response.json();
+        
+        if (users.error) {
+            showStatus('usersStatus', 'Error: ' + users.error, 'error');
+            return;
+        }
+
+        if (users.length === 0) {
+            container.innerHTML = '<p style="text-align: center; color: #666;">No users registered yet.</p>';
+            return;
+        }
+
+        container.innerHTML = '';
+        
+        users.forEach(user => {
+            const card = document.createElement('div');
+            card.className = 'submission-card';
+            
+            const createdDate = new Date(user.created).toLocaleString();
+            
+            card.innerHTML = `
+                <div class="submission-header">
+                    <h3>${user.name}</h3>
+                    <button onclick="deleteUser('${user.email}')" class="btn" 
+                            style="width: auto; padding: 8px 16px; background: #dc3545; font-size: 14px;">
+                        Delete User
+                    </button>
+                </div>
+                <div class="submission-details">
+                    <div class="detail-item">
+                        <span class="detail-label">Email:</span> ${user.email}
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Registered:</span> ${createdDate}
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(card);
+        });
+        
+        showStatus('usersStatus', `Loaded ${users.length} user(s)`, 'success');
+    } catch (error) {
+        showStatus('usersStatus', 'Error loading users: ' + error.message, 'error');
+        container.innerHTML = '<p style="color: #dc3545; text-align: center; padding: 40px;">Error loading users</p>';
+    }
+}
+
+async function addUser() {
+    const name = document.getElementById('newUserName').value.trim();
+    const email = document.getElementById('newUserEmail').value.trim();
+    const password = document.getElementById('newUserPassword').value;
+    
+    console.log('addUser called', {name, email, password}); // Debug log
+    
+    if (!name || !email || !password) {
+        showStatus('usersStatus', 'Please fill in all fields', 'error');
+        return;
+    }
+    
+    if (password.length < 6) {
+        showStatus('usersStatus', 'Password must be at least 6 characters', 'error');
+        return;
+    }
+    
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        showStatus('usersStatus', 'Invalid email format', 'error');
+        return;
+    }
+    
+    showStatus('usersStatus', 'Adding user...', 'info');
+    
+    try {
+        console.log('Sending request to:', SCRIPT_URL); // Debug log
+        
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'text/plain'
+            },
+            body: JSON.stringify({
+                action: 'adminAddUser',
+                name: name,
+                email: email,
+                password: password
+            })
+        });
+        
+        console.log('Response received:', response); // Debug log
+        const result = await response.json();
+        console.log('Result:', result); // Debug log
+        
+        if (result.success) {
+            showStatus('usersStatus', '✅ User added successfully!', 'success');
+            document.getElementById('newUserName').value = '';
+            document.getElementById('newUserEmail').value = '';
+            document.getElementById('newUserPassword').value = '';
+            loadUsers();
+        } else {
+            showStatus('usersStatus', 'Error: ' + (result.error || 'Failed to add user'), 'error');
+        }
+    } catch (error) {
+        console.error('Error in addUser:', error); // Debug log
+        showStatus('usersStatus', 'Error: ' + error.message, 'error');
+    }
+}
+
+async function deleteUser(email) {
+    if (!confirm(`Are you sure you want to delete the user with email: ${email}?\n\nThis will also delete all their test submissions!`)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'deleteUser',
+                email: email
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showStatus('usersStatus', '✅ User deleted successfully!', 'success');
+            loadUsers();
+        } else {
+            showStatus('usersStatus', 'Error: ' + (result.error || 'Failed to delete user'), 'error');
+        }
+    } catch (error) {
+        showStatus('usersStatus', 'Error: ' + error.message, 'error');
+    }
 }
 
 // Initialize on page load
