@@ -177,6 +177,62 @@ async function saveQuestions() {
         const result = await response.json();
         
         if (result.success) {
+            showStatus('questionStatus', '✅ Questions saved successfully!', 'success');
+        } else {
+            showStatus('questionStatus', 'Error: ' + (result.error || 'Unknown error'), 'error');
+        }
+    } catch (error) {
+        showStatus('questionStatus', 'Error saving: ' + error.message, 'error');
+    }
+}
+
+// Schedule Management
+async function loadSchedule() {
+    if (!isAuthenticated) return;
+    
+    try {
+        const response = await fetch(`${SCRIPT_URL}?action=getSchedule`);
+        const data = await response.json();
+        
+        for (let i = 1; i <= 5; i++) {
+            const value = data[`day${i}`];
+            if (value) {
+                const date = new Date(value);
+                const formatted = date.toISOString().slice(0, 16);
+                document.getElementById(`day${i}`).value = formatted;
+            }
+        }
+    } catch (error) {
+        showStatus('scheduleStatus', 'Error loading schedule: ' + error.message, 'error');
+    }
+}
+
+async function saveSchedule() {
+    if (!isAuthenticated) return;
+    
+    const data = {
+        action: 'saveSchedule'
+    };
+    
+    for (let i = 1; i <= 5; i++) {
+        const value = document.getElementById(`day${i}`).value;
+        if (value) {
+            const date = new Date(value);
+            data[`day${i}`] = date.toISOString().replace('T', ' ').slice(0, 19);
+        }
+    }
+
+    showStatus('scheduleStatus', 'Saving...', 'info');
+
+    try {
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
             showStatus('scheduleStatus', '✅ Schedule saved successfully!', 'success');
         } else {
             showStatus('scheduleStatus', 'Error: ' + (result.error || 'Unknown error'), 'error');
@@ -667,60 +723,4 @@ window.addEventListener('load', () => {
         alert('⚠️ Please update the SCRIPT_URL in admin.js with your Google Apps Script deployment URL');
     }
     document.getElementById('passwordInput').focus();
-});.stringify(data)
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            showStatus('questionStatus', '✅ Questions saved successfully!', 'success');
-        } else {
-            showStatus('questionStatus', 'Error: ' + (result.error || 'Unknown error'), 'error');
-        }
-    } catch (error) {
-        showStatus('questionStatus', 'Error saving: ' + error.message, 'error');
-    }
-}
-
-// Schedule Management
-async function loadSchedule() {
-    if (!isAuthenticated) return;
-    
-    try {
-        const response = await fetch(`${SCRIPT_URL}?action=getSchedule`);
-        const data = await response.json();
-        
-        for (let i = 1; i <= 5; i++) {
-            const value = data[`day${i}`];
-            if (value) {
-                const date = new Date(value);
-                const formatted = date.toISOString().slice(0, 16);
-                document.getElementById(`day${i}`).value = formatted;
-            }
-        }
-    } catch (error) {
-        showStatus('scheduleStatus', 'Error loading schedule: ' + error.message, 'error');
-    }
-}
-
-async function saveSchedule() {
-    if (!isAuthenticated) return;
-    
-    const data = {
-        action: 'saveSchedule'
-    };
-    
-    for (let i = 1; i <= 5; i++) {
-        const value = document.getElementById(`day${i}`).value;
-        if (value) {
-            const date = new Date(value);
-            data[`day${i}`] = date.toISOString().replace('T', ' ').slice(0, 19);
-        }
-    }
-
-    showStatus('scheduleStatus', 'Saving...', 'info');
-
-    try {
-        const response = await fetch(SCRIPT_URL, {
-            method: 'POST',
-            body: JSON
+});
