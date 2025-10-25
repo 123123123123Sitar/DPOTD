@@ -1,4 +1,4 @@
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxm3uztRSMD9dAcj-OiksxfZXfNeMT_pigUDHRwh0YbkXPo60g49c_YZamgMXq1FU-4/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx4lqC4-jgTndV6NpyuwCVfL-yKb1ptzgHBkPtAuHwuruG-hUaO9dvej_MwgzM2CrrW/exec';
 
 // Global state variables
 let startTime;
