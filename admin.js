@@ -3,6 +3,7 @@ const ADMIN_PASSWORD = 'SitarsTheGOAT!';
 
 let cachedSubmissions = [];
 let isAuthenticated = false;
+let latexUpdateTimers = {};
 
 // Password Protection Functions
 function checkPassword() {
@@ -50,6 +51,39 @@ function switchTab(tabName) {
     if (tabName === 'users') loadUsers();
 }
 
+// Image Upload Handler
+function handleImageUpload(questionNum) {
+    const input = document.getElementById(`q${questionNum}Image`);
+    const preview = document.getElementById(`q${questionNum}ImagePreview`);
+    const dataField = document.getElementById(`q${questionNum}ImageData`);
+    
+    const file = input.files[0];
+    if (!file) return;
+    
+    if (!file.type.startsWith('image/')) {
+        alert('Please select an image file');
+        input.value = '';
+        return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const base64 = e.target.result;
+        dataField.value = base64;
+        preview.innerHTML = `
+            <img src="${base64}" alt="Question ${questionNum} Image">
+            <button onclick="removeImage(${questionNum})" style="margin-top: 10px; padding: 5px 10px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">Remove Image</button>
+        `;
+    };
+    reader.readAsDataURL(file);
+}
+
+function removeImage(questionNum) {
+    document.getElementById(`q${questionNum}Image`).value = '';
+    document.getElementById(`q${questionNum}ImageData`).value = '';
+    document.getElementById(`q${questionNum}ImagePreview`).innerHTML = '';
+}
+
 // Questions Management
 async function loadQuestions() {
     if (!isAuthenticated) return;
@@ -68,17 +102,46 @@ async function loadQuestions() {
         if (data.error) {
             document.getElementById('q1Text').value = '';
             document.getElementById('q1Answer').value = '';
+            document.getElementById('q1ImageData').value = '';
+            document.getElementById('q1ImagePreview').innerHTML = '';
             document.getElementById('q2Text').value = '';
             document.getElementById('q2Answer').value = '';
+            document.getElementById('q2ImageData').value = '';
+            document.getElementById('q2ImagePreview').innerHTML = '';
             document.getElementById('q3Text').value = '';
             document.getElementById('q3Answer').value = '';
+            document.getElementById('q3ImageData').value = '';
+            document.getElementById('q3ImagePreview').innerHTML = '';
         } else {
             document.getElementById('q1Text').value = data.q1_text || '';
             document.getElementById('q1Answer').value = data.q1_answer || '';
+            if (data.q1_image) {
+                document.getElementById('q1ImageData').value = data.q1_image;
+                document.getElementById('q1ImagePreview').innerHTML = `
+                    <img src="${data.q1_image}" alt="Question 1 Image">
+                    <button onclick="removeImage(1)" style="margin-top: 10px; padding: 5px 10px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">Remove Image</button>
+                `;
+            }
+            
             document.getElementById('q2Text').value = data.q2_text || '';
             document.getElementById('q2Answer').value = data.q2_answer || '';
+            if (data.q2_image) {
+                document.getElementById('q2ImageData').value = data.q2_image;
+                document.getElementById('q2ImagePreview').innerHTML = `
+                    <img src="${data.q2_image}" alt="Question 2 Image">
+                    <button onclick="removeImage(2)" style="margin-top: 10px; padding: 5px 10px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">Remove Image</button>
+                `;
+            }
+            
             document.getElementById('q3Text').value = data.q3_text || '';
             document.getElementById('q3Answer').value = data.q3_answer || '';
+            if (data.q3_image) {
+                document.getElementById('q3ImageData').value = data.q3_image;
+                document.getElementById('q3ImagePreview').innerHTML = `
+                    <img src="${data.q3_image}" alt="Question 3 Image">
+                    <button onclick="removeImage(3)" style="margin-top: 10px; padding: 5px 10px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">Remove Image</button>
+                `;
+            }
         }
     } catch (error) {
         showStatus('questionStatus', 'Error loading questions: ' + error.message, 'error');
@@ -94,69 +157,16 @@ async function saveQuestions() {
         day: day,
         q1_text: document.getElementById('q1Text').value,
         q1_answer: document.getElementById('q1Answer').value,
+        q1_image: document.getElementById('q1ImageData').value || '',
         q2_text: document.getElementById('q2Text').value,
         q2_answer: document.getElementById('q2Answer').value,
+        q2_image: document.getElementById('q2ImageData').value || '',
         q3_text: document.getElementById('q3Text').value,
-        q3_answer: document.getElementById('q3Answer').value
+        q3_answer: document.getElementById('q3Answer').value,
+        q3_image: document.getElementById('q3ImageData').value || ''
     };
 
     showStatus('questionStatus', 'Saving...', 'info');
-
-    try {
-        const response = await fetch(SCRIPT_URL, {
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            showStatus('questionStatus', '✅ Questions saved successfully!', 'success');
-        } else {
-            showStatus('questionStatus', 'Error: ' + (result.error || 'Unknown error'), 'error');
-        }
-    } catch (error) {
-        showStatus('questionStatus', 'Error saving: ' + error.message, 'error');
-    }
-}
-
-// Schedule Management
-async function loadSchedule() {
-    if (!isAuthenticated) return;
-    
-    try {
-        const response = await fetch(`${SCRIPT_URL}?action=getSchedule`);
-        const data = await response.json();
-        
-        for (let i = 1; i <= 5; i++) {
-            const value = data[`day${i}`];
-            if (value) {
-                const date = new Date(value);
-                const formatted = date.toISOString().slice(0, 16);
-                document.getElementById(`day${i}`).value = formatted;
-            }
-        }
-    } catch (error) {
-        showStatus('scheduleStatus', 'Error loading schedule: ' + error.message, 'error');
-    }
-}
-
-async function saveSchedule() {
-    if (!isAuthenticated) return;
-    
-    const data = {
-        action: 'saveSchedule'
-    };
-    
-    for (let i = 1; i <= 5; i++) {
-        const value = document.getElementById(`day${i}`).value;
-        if (value) {
-            const date = new Date(value);
-            data[`day${i}`] = date.toISOString().replace('T', ' ').slice(0, 19);
-        }
-    }
-
-    showStatus('scheduleStatus', 'Saving...', 'info');
 
     try {
         const response = await fetch(SCRIPT_URL, {
@@ -186,7 +196,6 @@ async function loadSettings() {
         
         document.getElementById('adminEmail').value = data['Admin Email'] || '';
         document.getElementById('testDuration').value = data['Test Duration'] || 120;
-        document.getElementById('uploadTime').value = data['Upload Time'] || 30;
     } catch (error) {
         showStatus('settingsStatus', 'Error loading settings: ' + error.message, 'error');
     }
@@ -198,8 +207,7 @@ async function saveSettings() {
     const data = {
         action: 'saveSettings',
         'Admin Email': document.getElementById('adminEmail').value,
-        'Test Duration': document.getElementById('testDuration').value,
-        'Upload Time': document.getElementById('uploadTime').value
+        'Test Duration': document.getElementById('testDuration').value
     };
 
     showStatus('settingsStatus', 'Saving...', 'info');
@@ -220,6 +228,42 @@ async function saveSettings() {
     } catch (error) {
         showStatus('settingsStatus', 'Error saving: ' + error.message, 'error');
     }
+}
+
+// LaTeX Preview Update
+function updateLatexPreview(rowIndex) {
+    if (latexUpdateTimers[rowIndex]) clearTimeout(latexUpdateTimers[rowIndex]);
+    
+    latexUpdateTimers[rowIndex] = setTimeout(() => {
+        const input = document.getElementById(`feedback_latex_${rowIndex}`).value;
+        const preview = document.getElementById(`feedback_preview_${rowIndex}`);
+        
+        if (!input.trim()) {
+            preview.innerHTML = '<p style="color: #999;">Your formatted feedback will appear here...</p>';
+            return;
+        }
+        
+        let content = input;
+        content = content.replace(/\\documentclass\{[^}]+\}/g, '');
+        content = content.replace(/\\usepackage\{[^}]+\}/g, '');
+        content = content.replace(/\\title\{[^}]*\}/g, '');
+        content = content.replace(/\\author\{[^}]*\}/g, '');
+        content = content.replace(/\\date\{[^}]*\}/g, '');
+        content = content.replace(/\\maketitle/g, '');
+        
+        const docMatch = content.match(/\\begin\{document\}([\s\S]*)\\end\{document\}/);
+        if (docMatch) content = docMatch[1].trim();
+        
+        preview.innerHTML = content || '<p style="color: #999;">Write your feedback...</p>';
+        
+        if (window.MathJax && window.MathJax.typesetPromise) {
+            MathJax.typesetClear([preview]);
+            MathJax.typesetPromise([preview]).catch((err) => {
+                console.error('MathJax error:', err);
+                preview.innerHTML += '<p style="color: #dc3545; font-size: 12px; margin-top: 10px;"><strong>⚠️ LaTeX Error:</strong> Check your syntax</p>';
+            });
+        }
+    }, 500);
 }
 
 // Submissions Management
@@ -276,7 +320,7 @@ async function loadSubmissions() {
                 violationDetails += '</ul></div>';
             }
             
-            // Create feedback section
+            // Create feedback section with LaTeX editor
             const feedbackSection = `
                 <div style="margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #EA5A2F;">
                     <h4 style="margin-bottom: 15px; color: #EA5A2F;">Question 3 Grading</h4>
@@ -286,10 +330,18 @@ async function loadSubmissions() {
                                style="width: 100px; padding: 8px; border: 2px solid #E3E3E3; border-radius: 4px;">
                     </div>
                     <div style="margin-bottom: 15px;">
-                        <label style="display: block; font-weight: 600; margin-bottom: 5px;">Feedback:</label>
-                        <textarea id="feedback_${sub.rowIndex}" rows="4" 
-                                  style="width: 100%; padding: 10px; border: 2px solid #E3E3E3; border-radius: 4px; font-family: inherit;"
-                                  placeholder="Enter detailed feedback for the student...">${sub.q3_feedback || ''}</textarea>
+                        <label style="display: block; font-weight: 600; margin-bottom: 10px;">Feedback (LaTeX Supported):</label>
+                        <div class="latex-editor-container">
+                            <div class="latex-input-section">
+                                <h4>LaTeX Code</h4>
+                                <textarea id="feedback_latex_${sub.rowIndex}" oninput="updateLatexPreview(${sub.rowIndex})"
+                                          placeholder="Write your feedback using LaTeX here...">${sub.q3_feedback || ''}</textarea>
+                            </div>
+                            <div class="latex-preview-section">
+                                <h4>Live Preview</h4>
+                                <div id="feedback_preview_${sub.rowIndex}" class="preview-content">Your formatted feedback will appear here...</div>
+                            </div>
+                        </div>
                     </div>
                     <button onclick="saveFeedback(${sub.rowIndex})" class="btn" style="width: auto; padding: 10px 20px;">
                         Save Feedback & Notify Student
@@ -338,12 +390,16 @@ async function loadSubmissions() {
                         </span>
                     </div>
                     ${violationDetails}
-                    ${sub.workFileURL ? `<div class="detail-item"><a href="${sub.workFileURL}" target="_blank" class="btn" style="display: inline-block; margin-top: 10px;">View Uploaded Work</a></div>` : ''}
                 </div>
                 ${feedbackSection}
             `;
             
             container.appendChild(card);
+            
+            // Trigger initial preview render
+            if (sub.q3_feedback) {
+                setTimeout(() => updateLatexPreview(sub.rowIndex), 100);
+            }
         });
         
         showStatus('submissionsStatus', `Loaded ${submissions.length} submission(s)`, 'success');
@@ -355,7 +411,7 @@ async function loadSubmissions() {
 
 async function saveFeedback(rowIndex) {
     const score = document.getElementById(`score_${rowIndex}`).value;
-    const feedback = document.getElementById(`feedback_${rowIndex}`).value;
+    const feedback = document.getElementById(`feedback_latex_${rowIndex}`).value;
     
     if (!score || !feedback) {
         alert('Please enter both score and feedback');
@@ -384,7 +440,7 @@ async function saveFeedback(rowIndex) {
         
         if (result.success) {
             alert('✅ Feedback saved and student notified!');
-            loadSubmissions(); // Reload to show updated data
+            loadSubmissions();
         } else {
             alert('Error: ' + (result.error || 'Failed to save feedback'));
         }
@@ -531,8 +587,6 @@ async function addUser() {
     const email = document.getElementById('newUserEmail').value.trim();
     const password = document.getElementById('newUserPassword').value;
     
-    console.log('addUser called', {name, email, password}); // Debug log
-    
     if (!name || !email || !password) {
         showStatus('usersStatus', 'Please fill in all fields', 'error');
         return;
@@ -551,8 +605,6 @@ async function addUser() {
     showStatus('usersStatus', 'Adding user...', 'info');
     
     try {
-        console.log('Sending request to:', SCRIPT_URL); // Debug log
-        
         const response = await fetch(SCRIPT_URL, {
             method: 'POST',
             headers: {
@@ -566,9 +618,7 @@ async function addUser() {
             })
         });
         
-        console.log('Response received:', response); // Debug log
         const result = await response.json();
-        console.log('Result:', result); // Debug log
         
         if (result.success) {
             showStatus('usersStatus', '✅ User added successfully!', 'success');
@@ -580,7 +630,6 @@ async function addUser() {
             showStatus('usersStatus', 'Error: ' + (result.error || 'Failed to add user'), 'error');
         }
     } catch (error) {
-        console.error('Error in addUser:', error); // Debug log
         showStatus('usersStatus', 'Error: ' + error.message, 'error');
     }
 }
@@ -618,4 +667,60 @@ window.addEventListener('load', () => {
         alert('⚠️ Please update the SCRIPT_URL in admin.js with your Google Apps Script deployment URL');
     }
     document.getElementById('passwordInput').focus();
-});
+});.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showStatus('questionStatus', '✅ Questions saved successfully!', 'success');
+        } else {
+            showStatus('questionStatus', 'Error: ' + (result.error || 'Unknown error'), 'error');
+        }
+    } catch (error) {
+        showStatus('questionStatus', 'Error saving: ' + error.message, 'error');
+    }
+}
+
+// Schedule Management
+async function loadSchedule() {
+    if (!isAuthenticated) return;
+    
+    try {
+        const response = await fetch(`${SCRIPT_URL}?action=getSchedule`);
+        const data = await response.json();
+        
+        for (let i = 1; i <= 5; i++) {
+            const value = data[`day${i}`];
+            if (value) {
+                const date = new Date(value);
+                const formatted = date.toISOString().slice(0, 16);
+                document.getElementById(`day${i}`).value = formatted;
+            }
+        }
+    } catch (error) {
+        showStatus('scheduleStatus', 'Error loading schedule: ' + error.message, 'error');
+    }
+}
+
+async function saveSchedule() {
+    if (!isAuthenticated) return;
+    
+    const data = {
+        action: 'saveSchedule'
+    };
+    
+    for (let i = 1; i <= 5; i++) {
+        const value = document.getElementById(`day${i}`).value;
+        if (value) {
+            const date = new Date(value);
+            data[`day${i}`] = date.toISOString().replace('T', ' ').slice(0, 19);
+        }
+    }
+
+    showStatus('scheduleStatus', 'Saving...', 'info');
+
+    try {
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON
