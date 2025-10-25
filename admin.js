@@ -1,4 +1,4 @@
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxyvyxctLv5Zz1HO41oZsZiSKifp0mV7fWZrFy4kthtIRQpshc2KJbgrRlUSnttMi333Q/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyGaOdYIwixdsGcYCqrqPG_G8O75M8eg2KURcXUstmKM_MA-R76bxTZTGHcj-cFVqKBmg/exec';
 const ADMIN_PASSWORD = 'SitarsTheGOAT!';
 
 let cachedSubmissions = [];
