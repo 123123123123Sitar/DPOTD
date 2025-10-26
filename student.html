@@ -380,46 +380,135 @@
             display: none;
         }
 
-        .latex-help-btn {
+        .ai-helper {
             position: fixed;
             top: 20px;
             right: 20px;
+            width: 350px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border: 2px solid #E3E3E3;
+            z-index: 10001;
+            display: none;
+        }
+
+        .ai-helper.show {
+            display: block;
+        }
+
+        .ai-header {
+            background: #EA5A2F;
+            color: white;
+            padding: 15px;
+            border-radius: 10px 10px 0 0;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .ai-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0;
+            width: 25px;
+            height: 25px;
+        }
+
+        .ai-chat-container {
+            height: 400px;
+            overflow-y: auto;
+            padding: 15px;
+            background: #f8f9fa;
+        }
+
+        .ai-message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            max-width: 90%;
+        }
+
+        .ai-message.user {
+            background: #EA5A2F;
+            color: white;
+            margin-left: auto;
+        }
+
+        .ai-message.assistant {
+            background: white;
+            border: 1px solid #E3E3E3;
+        }
+
+        .ai-input-container {
+            padding: 15px;
+            border-top: 2px solid #E3E3E3;
+        }
+
+        .ai-input-container input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #E3E3E3;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .ai-toggle-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #EA5A2F;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 10000;
+            display: none;
+        }
+
+        .latex-help-btn {
+            position: fixed;
+            top: 20px;
+            right: 180px;
             background: #4A90E2;
             color: white;
-            width: 40px;
-            height: 40px;
+            width: 32px;
+            height: 32px;
             border: none;
             border-radius: 50%;
             font-weight: bold;
-            font-size: 20px;
+            font-size: 18px;
+            line-height: 1;
             cursor: pointer;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             z-index: 10000;
             display: none;
             align-items: center;
             justify-content: center;
+            padding: 0;
         }
 
         .latex-help-btn:hover {
             background: #3A7BC8;
-            transform: scale(1.1);
-            transition: all 0.3s ease;
-        }
-
-        body.locked .latex-help-btn {
-            display: flex;
         }
 
         .latex-help-dropdown {
             position: fixed;
-            top: 70px;
-            right: 20px;
+            top: 65px;
+            right: 180px;
             width: 400px;
-            max-height: 80vh;
+            max-height: 500px;
             overflow-y: auto;
             background: white;
             border-radius: 8px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
             z-index: 10001;
             display: none;
             padding: 20px;
@@ -436,10 +525,6 @@
             font-size: 18px;
             border-bottom: 2px solid #E3E3E3;
             padding-bottom: 10px;
-            position: sticky;
-            top: 0;
-            background: white;
-            z-index: 1;
         }
 
         .latex-help-section {
@@ -671,31 +756,12 @@
         LaTeX Helper
     </button>
 
-    <button class="latex-help-btn" id="latexHelpBtn" onclick="toggleLatexHelp()">
+    <button class="latex-help-btn" id="latexHelpBtn" onmouseenter="showLatexHelp()" onmouseleave="hideLatexHelp()">
         ?
     </button>
 
-    <div class="ai-helper" id="aiHelper">
-        <div class="ai-header">
-            <span>LaTeX Syntax Helper</span>
-            <button class="ai-close" onclick="toggleAIHelper()">×</button>
-        </div>
-        <div class="ai-chat-container" id="aiChatContainer"></div>
-        <div class="ai-input-container">
-            <input type="text" id="aiInput" placeholder="Ask about LaTeX syntax..." onkeypress="handleAIEnter(event)">
-        </div>
-    </div>
-
-    <div class="latex-help-dropdown" id="latexHelpDropdown">
-        <h3>📚 LaTeX Quick Reference</h3>
-        
-        <div class="latex-help-section">
-            <h4>Required Document Structure</h4>
-            <p>All LaTeX documents must have:</p>
-            <p><code>\documentclass{article}</code></p>
-            <p><code>\begin{document}</code></p>
-            <p><code>\end{document}</code></p>
-        </div>
+    <div class="latex-help-dropdown" id="latexHelpDropdown" onmouseenter="showLatexHelp()" onmouseleave="hideLatexHelp()">
+        <h3>Basic LaTeX Syntax</h3>
         
         <div class="latex-help-section">
             <h4>Inline Math</h4>
@@ -741,6 +807,36 @@
         <div class="latex-help-section">
             <h4>Parentheses (Auto-sizing)</h4>
             <p><code>\left( \frac{a}{b} \right)</code></p>
+        </div>
+    </div>
+
+    <div class="ai-helper" id="aiHelper">
+        <div class="ai-header">
+            <span>LaTeX Helper</span>
+            <button class="ai-close" onclick="toggleAIHelper()">×</button>
+        </div>
+        <div class="ai-chat-container" id="aiChatContainer">
+            <div class="ai-message assistant">
+                <strong>LaTeX Helper:</strong> I can ONLY help with LaTeX syntax and formatting.
+                <br><br>
+                <strong style="color: #dc3545;">I CANNOT:</strong>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                    <li>Solve math problems</li>
+                    <li>Provide answers or hints</li>
+                    <li>Explain math concepts</li>
+                    <li>Calculate anything</li>
+                </ul>
+                <strong style="color: #28a745;">I CAN help with:</strong>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                    <li>"How do I write a fraction?"</li>
+                    <li>"What's the syntax for square roots?"</li>
+                    <li>"How do I make subscripts?"</li>
+                    <li>"How do I write Greek letters?"</li>
+                </ul>
+            </div>
+        </div>
+        <div class="ai-input-container">
+            <input type="text" id="aiInput" placeholder="Ask about LaTeX syntax..." onkeypress="handleAIEnter(event)">
         </div>
     </div>
 
@@ -883,6 +979,7 @@
     
     <script>
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzYLsErhEpiTnSbPgNc_1TgmM85-feNNp87oHiX9x6iYPscjfPOLYtAYOdVlACffWJupw/exec';
+        const GEMINI_API_KEY = 'AIzaSyAG0HmsIkxuESxsq0sYNPRANTfqHdIk6Tk';
         
         let currentUser = null;
         let startTime, timerInterval, questionsData;
@@ -893,7 +990,6 @@
         const TEST_DURATION = 120 * 60 * 1000;
         let latexUpdateTimer = null;
 
-        // Check if user is logged in on page load
         window.addEventListener('load', () => {
             const storedUser = localStorage.getItem('dpotdUser');
             if (storedUser) {
@@ -902,7 +998,6 @@
             }
         });
 
-        // Utility Functions
         function showStatus(elementId, message, type) {
             const el = document.getElementById(elementId);
             el.textContent = message;
@@ -929,7 +1024,6 @@
             }
         }
 
-        // LaTeX Preview Update
         function updateLatexPreview() {
             if (latexUpdateTimer) clearTimeout(latexUpdateTimer);
             
@@ -965,9 +1059,21 @@
             }, 500);
         }
 
-        // AI Helper Functions
         function toggleAIHelper() {
             document.getElementById('aiHelper').classList.toggle('show');
+        }
+
+        let latexHelpTimeout;
+        
+        function showLatexHelp() {
+            clearTimeout(latexHelpTimeout);
+            document.getElementById('latexHelpDropdown').classList.add('show');
+        }
+        
+        function hideLatexHelp() {
+            latexHelpTimeout = setTimeout(() => {
+                document.getElementById('latexHelpDropdown').classList.remove('show');
+            }, 300);
         }
 
         function handleAIEnter(event) {
@@ -1066,22 +1172,6 @@ Keep responses brief and focused on LaTeX code syntax only.`;
             container.scrollTop = container.scrollHeight;
         }
 
-        // LaTeX Help Functions
-        function toggleLatexHelp() {
-            const dropdown = document.getElementById('latexHelpDropdown');
-            dropdown.classList.toggle('show');
-            console.log('LaTeX help toggled');
-        }
-        
-        function showLatexHelp() {
-            document.getElementById('latexHelpDropdown').classList.add('show');
-        }
-        
-        function hideLatexHelp() {
-            document.getElementById('latexHelpDropdown').classList.remove('show');
-        }
-
-        // Auth Functions
         function switchMainTab(tab) {
             document.querySelectorAll('#mainPortal .tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('#mainPortal .tab-content').forEach(c => c.classList.remove('active'));
@@ -1119,7 +1209,6 @@ Keep responses brief and focused on LaTeX code syntax only.`;
             } catch (error) {
                 hideLoading();
                 showStatus('loginStatus', 'Error: ' + error.message, 'error');
-                console.error('Login error:', error);
             }
         }
 
@@ -1190,43 +1279,28 @@ Keep responses brief and focused on LaTeX code syntax only.`;
             }
         }
 
-        // Test Management Functions
         async function getCurrentDay() {
             try {
-                console.log('Getting current day...');
                 const response = await fetch(`${SCRIPT_URL}?action=getSchedule`);
                 const schedule = await response.json();
                 
-                console.log('Schedule received:', schedule);
-                
                 const now = new Date();
-                console.log('Current time:', now);
                 
                 for (let i = 1; i <= 5; i++) {
                     const dayStart = schedule[`day${i}`];
-                    if (!dayStart) {
-                        console.log(`Day ${i} not scheduled`);
-                        continue;
-                    }
+                    if (!dayStart) continue;
                     
                     const scheduledDate = new Date(dayStart);
-                    console.log(`Day ${i} scheduled for:`, scheduledDate);
-                    
                     scheduledDate.setHours(0, 0, 0, 0);
                     
                     const dayEnd = new Date(scheduledDate);
                     dayEnd.setHours(23, 59, 59, 999);
                     
-                    console.log(`Day ${i} window: ${scheduledDate} to ${dayEnd}`);
-                    console.log(`Current time in range? ${now >= scheduledDate && now <= dayEnd}`);
-                    
                     if (now >= scheduledDate && now <= dayEnd) {
-                        console.log(`Matched Day ${i}`);
                         return i;
                     }
                 }
                 
-                console.log('No day matched');
                 return null;
             } catch (error) {
                 console.error('Error getting day:', error);
@@ -1239,19 +1313,15 @@ Keep responses brief and focused on LaTeX code syntax only.`;
             container.innerHTML = '<p style="color: #666;">Checking for today\'s test...</p>';
 
             try {
-                console.log('Checking for today\'s test...');
                 currentDay = await getCurrentDay();
-                console.log('Current day result:', currentDay);
 
                 if (!currentDay) {
                     container.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">No test available today. Tests are only available from 12:00 AM to 11:59 PM on scheduled days.<br><br>Current time: ' + new Date().toLocaleString() + '</p>';
                     return;
                 }
 
-                console.log('Checking if submission exists for day', currentDay);
                 const checkResponse = await fetch(`${SCRIPT_URL}?action=checkSubmission&email=${encodeURIComponent(currentUser.email)}&day=${currentDay}`);
                 const checkData = await checkResponse.json();
-                console.log('Check submission response:', checkData);
 
                 if (checkData.exists) {
                     container.innerHTML = `
@@ -1279,7 +1349,6 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                     `;
                 }
             } catch (error) {
-                console.error('Error in checkTodayTest:', error);
                 container.innerHTML = '<p style="color: #dc3545; text-align: center;">Error loading test status: ' + error.message + '</p>';
             }
         }
@@ -1384,7 +1453,6 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                     }
                 });
             } catch (error) {
-                console.error('Error loading history:', error);
                 container.innerHTML = '<p style="color: #dc3545;">Error loading history</p>';
             }
         }
@@ -1393,27 +1461,19 @@ Keep responses brief and focused on LaTeX code syntax only.`;
             showLoading(`Loading Day ${currentDay} questions...`);
             
             try {
-                console.log(`Fetching questions for day ${currentDay}`);
                 const response = await fetch(`${SCRIPT_URL}?action=getQuestions&day=${currentDay}`);
-                console.log('Response status:', response.status);
-                
                 const responseText = await response.text();
-                console.log('Raw response:', responseText);
-                
                 questionsData = JSON.parse(responseText);
-                console.log('Parsed questions data:', questionsData);
                 
                 if (questionsData.error) {
                     hideLoading();
                     alert('Error loading questions: ' + questionsData.error);
-                    console.error('Questions data error:', questionsData.error);
                     return;
                 }
                 
                 if (!questionsData.q1_text || !questionsData.q2_text || !questionsData.q3_text) {
                     hideLoading();
                     alert('Questions for Day ' + currentDay + ' are not set up yet. Please contact your administrator.');
-                    console.error('Missing question text');
                     return;
                 }
                 
@@ -1472,14 +1532,12 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                     updateTimer();
                     showQuestion(1);
                 } catch (err) {
-                    console.error('Fullscreen error:', err);
                     alert('Fullscreen mode is required. Please allow fullscreen and try again.');
                 }
                 
             } catch (error) {
                 hideLoading();
-                console.error('Error loading questions:', error);
-                alert('Error loading questions: ' + error.message + '. Please check console for details.');
+                alert('Error loading questions: ' + error.message);
             }
         }
 
@@ -1495,13 +1553,9 @@ Keep responses brief and focused on LaTeX code syntax only.`;
             if (num === 3) {
                 aiBtn.style.display = 'block';
                 helpBtn.style.display = 'flex';
-                console.log('LaTeX help button and AI helper shown');
             } else {
                 aiBtn.style.display = 'none';
                 helpBtn.style.display = 'none';
-                // Hide both helpers if they're open
-                document.getElementById('aiHelper').classList.remove('show');
-                document.getElementById('latexHelpDropdown').classList.remove('show');
             }
             
             currentQuestion = num;
@@ -1607,12 +1661,6 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                     document.body.classList.remove('locked');
                     if (document.exitFullscreen) document.exitFullscreen();
                     
-                    // Hide both helpers
-                    document.getElementById('aiHelper').classList.remove('show');
-                    document.getElementById('aiToggleBtn').style.display = 'none';
-                    document.getElementById('latexHelpBtn').style.display = 'none';
-                    document.getElementById('latexHelpDropdown').classList.remove('show');
-                    
                     document.getElementById('questionSection').style.display = 'none';
                     document.getElementById('mainPortal').style.display = 'block';
                     
@@ -1654,7 +1702,6 @@ Keep responses brief and focused on LaTeX code syntax only.`;
             }
         }
 
-        // Security Functions
         function recordViolation(type) {
             if (!testActive) return;
             exitCount++;
@@ -1680,7 +1727,6 @@ Keep responses brief and focused on LaTeX code syntax only.`;
             });
         }
 
-        // Event Listeners
         document.addEventListener('DOMContentLoaded', function() {
             ['q1Answer', 'q2Answer'].forEach(id => {
                 const input = document.getElementById(id);
