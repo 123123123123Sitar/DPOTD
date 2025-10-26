@@ -26,7 +26,7 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             background: #E3E3E3;
             min-height: 100vh;
             padding: 20px;
@@ -94,6 +94,10 @@
             transition: border-color 0.3s;
             background: #fff;
             color: #000;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        textarea {
             font-family: 'Courier New', monospace;
         }
 
@@ -586,7 +590,7 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.8);
-            z-index: 9999;
+            z-index: 99999;
             justify-content: center;
             align-items: center;
         }
@@ -651,6 +655,74 @@
             font-size: 14px;
         }
 
+        .confirmation-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 100000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .confirmation-modal.show {
+            display: flex;
+        }
+        
+        .confirmation-content {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+        
+        .confirmation-content h2 {
+            color: #EA5A2F;
+            margin-bottom: 20px;
+        }
+        
+        .confirmation-content ul {
+            text-align: left;
+            margin: 20px 0;
+            padding-left: 30px;
+            line-height: 1.8;
+        }
+        
+        .confirmation-content ul li {
+            margin: 10px 0;
+        }
+        
+        .confirmation-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .confirm-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        .confirm-btn.start {
+            background: #28a745;
+            color: white;
+        }
+        
+        .confirm-btn.cancel {
+            background: #dc3545;
+            color: white;
+        }
+
         @media (max-width: 1200px) {
             .latex-editor-container {
                 grid-template-columns: 1fr;
@@ -663,6 +735,29 @@
         <div class="loading-content">
             <div class="spinner"></div>
             <p id="loadingText">Loading...</p>
+        </div>
+    </div>
+
+    <div class="confirmation-modal" id="confirmationModal">
+        <div class="confirmation-content">
+            <h2>⚠️ Test Rules & Confirmation</h2>
+            <p style="font-size: 16px; margin-bottom: 15px;"><strong>Please read carefully before starting:</strong></p>
+            <ul>
+                <li><strong>Time Limit:</strong> 2 hours (120 minutes) for all 3 questions</li>
+                <li><strong>Fullscreen Required:</strong> You must stay in fullscreen mode</li>
+                <li><strong>No Tab Switching:</strong> Leaving the test page will be recorded</li>
+                <li><strong>Question Values:</strong> Q1 and Q2 are worth 5 points each, Q3 is worth 10 points</li>
+                <li><strong>Auto-Submit:</strong> Test will auto-submit when time expires</li>
+                <li><strong>LaTeX Help:</strong> LaTeX syntax helper available for Q3</li>
+                <li><strong>No Pausing:</strong> Once started, the timer cannot be paused</li>
+            </ul>
+            <p style="color: #dc3545; font-weight: 600; margin-top: 20px;">
+                ⚠️ Violations (tab switching, exiting fullscreen) will be recorded and may affect your score!
+            </p>
+            <div class="confirmation-buttons">
+                <button class="confirm-btn cancel" onclick="cancelTest()">Cancel</button>
+                <button class="confirm-btn start" onclick="confirmStart()">I Understand - Start Test</button>
+            </div>
         </div>
     </div>
 
@@ -687,6 +782,14 @@
         <h3>Basic LaTeX Syntax</h3>
         
         <div class="latex-help-section">
+            <h4>Required Document Structure</h4>
+            <p>All LaTeX documents must have:</p>
+            <p><code>\documentclass{article}</code></p>
+            <p><code>\begin{document}</code></p>
+            <p><code>\end{document}</code></p>
+        </div>
+        
+        <div class="latex-help-section">
             <h4>Inline Math</h4>
             <p>Wrap math in single dollar signs: <code>$x^2 + y^2 = z^2$</code></p>
         </div>
@@ -694,7 +797,7 @@
         <div class="latex-help-section">
             <h4>Display Math (Centered)</h4>
             <p>Use double dollar signs:</p>
-            <p><code>$$\frac{a}{b} = \frac{c}{d}$$</code></p>
+            <p><code>$\frac{a}{b} = \frac{c}{d}$</code></p>
         </div>
         
         <div class="latex-help-section">
@@ -730,36 +833,6 @@
         <div class="latex-help-section">
             <h4>Parentheses (Auto-sizing)</h4>
             <p><code>\left( \frac{a}{b} \right)</code></p>
-        </div>
-    </div>
-
-    <div class="ai-helper" id="aiHelper">
-        <div class="ai-header">
-            <span>LaTeX Helper</span>
-            <button class="ai-close" onclick="toggleAIHelper()">×</button>
-        </div>
-        <div class="ai-chat-container" id="aiChatContainer">
-            <div class="ai-message assistant">
-                <strong>LaTeX Helper:</strong> I can ONLY help with LaTeX syntax and formatting.
-                <br><br>
-                <strong style="color: #dc3545;">I CANNOT:</strong>
-                <ul style="margin: 10px 0; padding-left: 20px;">
-                    <li>Solve math problems</li>
-                    <li>Provide answers or hints</li>
-                    <li>Explain math concepts</li>
-                    <li>Calculate anything</li>
-                </ul>
-                <strong style="color: #28a745;">I CAN help with:</strong>
-                <ul style="margin: 10px 0; padding-left: 20px;">
-                    <li>"How do I write a fraction?"</li>
-                    <li>"What's the syntax for square roots?"</li>
-                    <li>"How do I make subscripts?"</li>
-                    <li>"How do I write Greek letters?"</li>
-                </ul>
-            </div>
-        </div>
-        <div class="ai-input-container">
-            <input type="text" id="aiInput" placeholder="Ask about LaTeX syntax..." onkeypress="handleAIEnter(event)">
         </div>
     </div>
 
@@ -843,20 +916,20 @@
         <!-- Test Section -->
         <div id="questionSection" class="question-section">
             <div class="timer" id="timer">Time Remaining: 2:00:00</div>
-            <div class="progress-indicator" id="progressIndicator">Question 1 of 3</div>
+            <div class="progress-indicator" id="progressIndicator">Day 1 - Question 1 of 3</div>
             
             <div style="text-align: center; margin-bottom: 30px;">
-                <div class="day-indicator" id="dayIndicator">Day -</div>
-                <div style="margin-top: 15px; font-size: 14px; color: #666;">
-                    <span style="margin-right: 15px;">2 hours total</span>
-                    <span style="margin-right: 15px;">3 questions</span>
-                    <span>Do not leave this page</span>
+                <div style="font-size: 2.5em; font-weight: bold; color: #EA5A2F; margin-bottom: 10px;" id="testTitle">D.PotD Day 1</div>
+                <div style="font-size: 16px; color: #666; display: flex; justify-content: center; gap: 25px; flex-wrap: wrap;">
+                    <span>⏱️ 2 hours</span>
+                    <span>📝 3 questions</span>
+                    <span>⚠️ Don't leave this page</span>
                 </div>
             </div>
 
             <div id="q1Page" style="display: none;">
                 <div class="question-box">
-                    <h2>Question 1</h2>
+                    <h2>Question 1 (5 Points)</h2>
                     <p id="q1Text"></p>
                     <img id="q1Image" class="question-image" style="display: none;">
                     <input type="text" id="q1Answer" placeholder="Your answer (numbers only)">
@@ -867,7 +940,7 @@
 
             <div id="q2Page" style="display: none;">
                 <div class="question-box">
-                    <h2>Question 2</h2>
+                    <h2>Question 2 (5 Points)</h2>
                     <p id="q2Text"></p>
                     <img id="q2Image" class="question-image" style="display: none;">
                     <input type="text" id="q2Answer" placeholder="Your answer (numbers only)">
@@ -878,7 +951,7 @@
 
             <div id="q3Page" style="display: none;">
                 <div class="question-box">
-                    <h2>Question 3 (Proof/Explanation)</h2>
+                    <h2>Question 3 (10 Points - Proof/Explanation)</h2>
                     <p id="q3Text"></p>
                     <img id="q3Image" class="question-image" style="display: none;">
                 </div>
@@ -1212,8 +1285,14 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                     const dayStart = schedule[`day${i}`] ? new Date(schedule[`day${i}`]) : null;
                     const nextDay = schedule[`day${i + 1}`] ? new Date(schedule[`day${i + 1}`]) : null;
                     
-                    if (dayStart && now >= dayStart && (!nextDay || now < nextDay)) {
-                        return i;
+                    if (dayStart) {
+                        dayStart.setHours(0, 0, 0, 0);
+                        const dayEnd = new Date(dayStart);
+                        dayEnd.setHours(23, 59, 59, 999);
+                        
+                        if (now >= dayStart && now <= dayEnd) {
+                            return i;
+                        }
                     }
                 }
                 return null;
@@ -1231,7 +1310,7 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                 currentDay = await getCurrentDay();
 
                 if (!currentDay) {
-                    container.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">No test available today. Check back later!</p>';
+                    container.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">No test available today. Tests are only available from 12:00 AM to 11:59 PM on scheduled days.</p>';
                     return;
                 }
 
@@ -1257,8 +1336,8 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                             <p style="font-size: 18px; color: #666; margin-bottom: 30px;">
                                 Ready to take today's test?
                             </p>
-                            <button class="btn" onclick="startTest()" style="max-width: 400px; margin: 0 auto;">
-                                Start Test (2 hours, 3 questions)
+                            <button class="btn" onclick="showConfirmation()" style="max-width: 400px; margin: 0 auto;">
+                                Start Test (2 hours, 3 questions, 20 points total)
                             </button>
                         </div>
                     `;
@@ -1266,6 +1345,19 @@ Keep responses brief and focused on LaTeX code syntax only.`;
             } catch (error) {
                 container.innerHTML = '<p style="color: #dc3545; text-align: center;">Error loading test status</p>';
             }
+        }
+
+        function showConfirmation() {
+            document.getElementById('confirmationModal').classList.add('show');
+        }
+
+        function cancelTest() {
+            document.getElementById('confirmationModal').classList.remove('show');
+        }
+
+        function confirmStart() {
+            document.getElementById('confirmationModal').classList.remove('show');
+            startTest();
         }
 
         async function loadHistory() {
@@ -1288,7 +1380,11 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                     
                     const timestamp = new Date(sub.timestamp).toLocaleString();
                     
-                    // Process feedback to render LaTeX
+                    const q1Points = sub.q1_correct ? 5 : 0;
+                    const q2Points = sub.q2_correct ? 5 : 0;
+                    const q3Points = sub.q3_score || 0;
+                    const totalPoints = q1Points + q2Points + parseInt(q3Points);
+                    
                     let feedbackHTML = '';
                     if (sub.q3_feedback) {
                         let feedbackContent = sub.q3_feedback;
@@ -1305,7 +1401,7 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                         feedbackHTML = `
                         <div class="feedback-box">
                             <h4>📝 Q3 Feedback</h4>
-                            <div id="feedback_${sub.rowIndex}" style="line-height: 1.6;">${feedbackContent}</div>
+                            <div id="feedback_${sub.rowIndex || Math.random()}" style="line-height: 1.6;">${feedbackContent}</div>
                         </div>
                         `;
                     }
@@ -1315,19 +1411,22 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                             <h3>Day ${sub.day}</h3>
                             <span style="color: #666; font-size: 14px;">${timestamp}</span>
                         </div>
+                        <div style="background: #EA5A2F; color: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: center;">
+                            <strong style="font-size: 24px;">Total Score: ${totalPoints}/20</strong>
+                        </div>
                         <div class="score-details">
                             <div class="score-item">
                                 <strong>Q1:</strong> <span class="${sub.q1_correct ? 'correct' : 'incorrect'}">
-                                    ${sub.q1_correct ? '✓ Correct' : '✗ Incorrect'}
+                                    ${sub.q1_correct ? '✓ Correct (+5 pts)' : '✗ Incorrect (0 pts)'}
                                 </span>
                             </div>
                             <div class="score-item">
                                 <strong>Q2:</strong> <span class="${sub.q2_correct ? 'correct' : 'incorrect'}">
-                                    ${sub.q2_correct ? '✓ Correct' : '✗ Incorrect'}
+                                    ${sub.q2_correct ? '✓ Correct (+5 pts)' : '✗ Incorrect (0 pts)'}
                                 </span>
                             </div>
                             <div class="score-item">
-                                <strong>Q3 Score:</strong> ${sub.q3_score !== undefined ? sub.q3_score + '/10' : 'Pending'}
+                                <strong>Q3 Score:</strong> ${sub.q3_score !== undefined && sub.q3_score !== '' ? sub.q3_score + '/10 (+' + sub.q3_score + ' pts)' : 'Pending'}
                             </div>
                             <div class="score-item">
                                 <strong>Time:</strong> ${Math.floor(sub.totalTime / 60)}m ${sub.totalTime % 60}s
@@ -1338,10 +1437,9 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                     
                     container.appendChild(card);
                     
-                    // Render LaTeX in feedback
                     if (sub.q3_feedback && window.MathJax) {
                         setTimeout(() => {
-                            const feedbackDiv = document.getElementById(`feedback_${sub.rowIndex}`);
+                            const feedbackDiv = card.querySelector(`[id^="feedback_"]`);
                             if (feedbackDiv) {
                                 MathJax.typesetPromise([feedbackDiv]).catch(e => console.log(e));
                             }
@@ -1384,7 +1482,7 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                     document.getElementById('q3Image').style.display = 'block';
                 }
                 
-                document.getElementById('dayIndicator').textContent = `Day ${currentDay}`;
+                document.getElementById('testTitle').textContent = `D.PotD Day ${currentDay}`;
                 
                 hideLoading();
                 
@@ -1416,7 +1514,7 @@ Keep responses brief and focused on LaTeX code syntax only.`;
         function showQuestion(num) {
             ['q1Page', 'q2Page', 'q3Page'].forEach(id => document.getElementById(id).style.display = 'none');
             document.getElementById(`q${num}Page`).style.display = 'block';
-            document.getElementById('progressIndicator').textContent = `Question ${num} of 3`;
+            document.getElementById('progressIndicator').textContent = `Day ${currentDay} - Question ${num} of 3`;
             document.getElementById('progressIndicator').style.display = 'block';
             
             const aiBtn = document.getElementById('aiToggleBtn');
@@ -1428,6 +1526,8 @@ Keep responses brief and focused on LaTeX code syntax only.`;
             } else {
                 aiBtn.style.display = 'none';
                 helpBtn.style.display = 'none';
+                // Hide AI helper if it's open
+                document.getElementById('aiHelper').classList.remove('show');
             }
             
             currentQuestion = num;
@@ -1533,24 +1633,37 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                     document.body.classList.remove('locked');
                     if (document.exitFullscreen) document.exitFullscreen();
                     
+                    // Hide AI helper
+                    document.getElementById('aiHelper').classList.remove('show');
+                    document.getElementById('aiToggleBtn').style.display = 'none';
+                    document.getElementById('latexHelpBtn').style.display = 'none';
+                    
                     document.getElementById('questionSection').style.display = 'none';
                     document.getElementById('mainPortal').style.display = 'block';
+                    
+                    const q1Points = q1Correct ? 5 : 0;
+                    const q2Points = q2Correct ? 5 : 0;
+                    const currentTotal = q1Points + q2Points;
                     
                     document.getElementById('testStatus').innerHTML = `
                         <div style="text-align: center; padding: 40px;">
                             <h2 style="color: #28a745; margin-bottom: 20px;">✅ Test Submitted Successfully!</h2>
                             <p style="font-size: 18px; color: #666; margin-bottom: 30px;">
-                                Your score will be updated shortly.
+                                Your responses have been recorded and will be graded shortly.
                             </p>
                             <div style="background: #f8f9fa; padding: 30px; border-radius: 8px; max-width: 500px; margin: 0 auto;">
-                                <div style="margin-bottom: 15px;">
-                                    <strong>Q1:</strong> <span class="${q1Correct ? 'correct' : 'incorrect'}">${q1Correct ? '✓ Correct' : '✗ Incorrect'}</span>
+                                <div style="background: #EA5A2F; color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                                    <strong style="font-size: 20px;">Current Score: ${currentTotal}/20</strong>
+                                    <p style="margin-top: 5px; font-size: 14px;">Q3 will be graded manually</p>
                                 </div>
-                                <div style="margin-bottom: 15px;">
-                                    <strong>Q2:</strong> <span class="${q2Correct ? 'correct' : 'incorrect'}">${q2Correct ? '✓ Correct' : '✗ Incorrect'}</span>
+                                <div style="margin-bottom: 15px; text-align: left;">
+                                    <strong>Q1 (5 points):</strong> <span class="${q1Correct ? 'correct' : 'incorrect'}">${q1Correct ? '✓ Correct (+5 pts)' : '✗ Incorrect (0 pts)'}</span>
                                 </div>
-                                <div>
-                                    <strong>Q3:</strong> Will be graded manually
+                                <div style="margin-bottom: 15px; text-align: left;">
+                                    <strong>Q2 (5 points):</strong> <span class="${q2Correct ? 'correct' : 'incorrect'}">${q2Correct ? '✓ Correct (+5 pts)' : '✗ Incorrect (0 pts)'}</span>
+                                </div>
+                                <div style="text-align: left;">
+                                    <strong>Q3 (10 points):</strong> Will be graded manually
                                 </div>
                             </div>
                         </div>
