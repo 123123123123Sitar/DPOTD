@@ -380,119 +380,22 @@
             display: none;
         }
 
-        .ai-helper {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            width: 350px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            border: 2px solid #E3E3E3;
-            z-index: 10001;
-            display: none;
-        }
-
-        .ai-helper.show {
-            display: block;
-        }
-
-        .ai-header {
-            background: #EA5A2F;
-            color: white;
-            padding: 15px;
-            border-radius: 10px 10px 0 0;
-            font-weight: 600;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .ai-close {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 20px;
-            cursor: pointer;
-            padding: 0;
-            width: 25px;
-            height: 25px;
-        }
-
-        .ai-chat-container {
-            height: 400px;
-            overflow-y: auto;
-            padding: 15px;
-            background: #f8f9fa;
-        }
-
-        .ai-message {
-            margin-bottom: 15px;
-            padding: 10px;
-            border-radius: 8px;
-            max-width: 90%;
-        }
-
-        .ai-message.user {
-            background: #EA5A2F;
-            color: white;
-            margin-left: auto;
-        }
-
-        .ai-message.assistant {
-            background: white;
-            border: 1px solid #E3E3E3;
-        }
-
-        .ai-input-container {
-            padding: 15px;
-            border-top: 2px solid #E3E3E3;
-        }
-
-        .ai-input-container input {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #E3E3E3;
-            border-radius: 6px;
-            font-size: 14px;
-        }
-
-        .ai-toggle-btn {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #EA5A2F;
-            color: white;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            z-index: 10000;
-            display: none;
-        }
-
         .latex-help-btn {
             position: fixed;
             top: 20px;
-            right: 180px;
+            right: 20px;
             background: #4A90E2;
             color: white;
-            width: 32px;
-            height: 32px;
+            width: 40px;
+            height: 40px;
             border: none;
             border-radius: 50%;
             font-weight: bold;
-            font-size: 18px;
-            line-height: 1;
+            font-size: 20px;
             cursor: pointer;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             z-index: 10000;
             display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 0;
         }
 
         .latex-help-btn:hover {
@@ -501,8 +404,8 @@
 
         .latex-help-dropdown {
             position: fixed;
-            top: 65px;
-            right: 180px;
+            top: 70px;
+            right: 20px;
             width: 400px;
             max-height: 500px;
             overflow-y: auto;
@@ -622,39 +525,6 @@
             100% { transform: rotate(360deg); }
         }
 
-        .error-message {
-            color: #dc3545;
-            font-size: 14px;
-            display: block;
-            margin-top: 5px;
-        }
-
-        .day-indicator {
-            background: #EA5A2F;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 25px;
-            font-weight: bold;
-            font-size: 18px;
-            display: inline-block;
-            margin-bottom: 20px;
-        }
-
-        body.locked::after {
-            content: 'TEST IN PROGRESS - DO NOT LEAVE THIS PAGE';
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: #000;
-            color: white;
-            padding: 12px;
-            text-align: center;
-            font-weight: 600;
-            z-index: 9999;
-            font-size: 14px;
-        }
-
         .confirmation-modal {
             display: none;
             position: fixed;
@@ -723,6 +593,21 @@
             color: white;
         }
 
+        body.locked::after {
+            content: 'TEST IN PROGRESS - DO NOT LEAVE THIS PAGE';
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #000;
+            color: white;
+            padding: 12px;
+            text-align: center;
+            font-weight: 600;
+            z-index: 9999;
+            font-size: 14px;
+        }
+
         @media (max-width: 1200px) {
             .latex-editor-container {
                 grid-template-columns: 1fr;
@@ -770,10 +655,6 @@
         </button>
     </div>
 
-    <button class="ai-toggle-btn" id="aiToggleBtn" onclick="toggleAIHelper()">
-        LaTeX Helper
-    </button>
-
     <button class="latex-help-btn" id="latexHelpBtn" onmouseenter="showLatexHelp()" onmouseleave="hideLatexHelp()">
         ?
     </button>
@@ -797,7 +678,7 @@
         <div class="latex-help-section">
             <h4>Display Math (Centered)</h4>
             <p>Use double dollar signs:</p>
-            <p><code>$\frac{a}{b} = \frac{c}{d}$</code></p>
+            <p><code>$$\frac{a}{b} = \frac{c}{d}$$</code></p>
         </div>
         
         <div class="latex-help-section">
@@ -845,11 +726,11 @@
             <div id="loginForm">
                 <div class="form-group">
                     <label>Email:</label>
-                    <input type="email" id="loginEmail">
+                    <input type="email" id="loginEmail" onkeypress="handleLoginEnter(event)">
                 </div>
                 <div class="form-group">
                     <label>Password:</label>
-                    <input type="password" id="loginPassword">
+                    <input type="password" id="loginPassword" onkeypress="handleLoginEnter(event)">
                 </div>
                 <button class="btn" onclick="login()">Login</button>
                 <div id="loginStatus" class="status"></div>
@@ -975,7 +856,6 @@
     
     <script>
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzYLsErhEpiTnSbPgNc_1TgmM85-feNNp87oHiX9x6iYPscjfPOLYtAYOdVlACffWJupw/exec';
-        const GEMINI_API_KEY = 'AIzaSyAG0HmsIkxuESxsq0sYNPRANTfqHdIk6Tk';
         
         let currentUser = null;
         let startTime, timerInterval, questionsData;
@@ -994,6 +874,33 @@
                 showMainPortal();
             }
         });
+
+        // Utility Functions
+        function showStatus(elementId, message, type) {
+            const el = document.getElementById(elementId);
+            el.textContent = message;
+            el.className = 'status ' + type;
+            el.style.display = 'block';
+        }
+
+        function showLoading(message) {
+            document.getElementById('loadingText').textContent = message;
+            document.getElementById('loadingModal').classList.add('show');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingModal').classList.remove('show');
+        }
+
+        function cleanAnswer(answer) {
+            return answer.replace(/[^0-9-]/g, '').replace(/(?!^)-/g, '');
+        }
+
+        function handleLoginEnter(event) {
+            if (event.key === 'Enter') {
+                login();
+            }
+        }
 
         // LaTeX Preview Update
         function updateLatexPreview() {
@@ -1031,11 +938,7 @@
             }, 500);
         }
 
-        // AI Helper Functions
-        function toggleAIHelper() {
-            document.getElementById('aiHelper').classList.toggle('show');
-        }
-
+        // LaTeX Help Functions
         let latexHelpTimeout;
         
         function showLatexHelp() {
@@ -1047,123 +950,6 @@
             latexHelpTimeout = setTimeout(() => {
                 document.getElementById('latexHelpDropdown').classList.remove('show');
             }, 300);
-        }
-
-        function handleAIEnter(event) {
-            if (event.key === 'Enter') sendAIMessage();
-        }
-
-        async function sendAIMessage() {
-            const input = document.getElementById('aiInput');
-            const message = input.value.trim();
-            if (!message) return;
-            
-            addAIMessage(message, 'user');
-            input.value = '';
-            
-            const lowerMessage = message.toLowerCase();
-            
-            const problemSolvingPhrases = [
-                'solve', 'calculate', 'compute', 'what is', 'how much is', 
-                'find the answer', 'find the solution', 'the answer to',
-                'result of', 'evaluate', 'simplify'
-            ];
-            
-            const syntaxPhrases = [
-                'how do i write', 'how to write', 'syntax for', 'latex code',
-                'in latex', 'using latex', 'format', 'display'
-            ];
-            
-            const isSyntaxQuestion = syntaxPhrases.some(phrase => lowerMessage.includes(phrase));
-            const isProblemSolving = problemSolvingPhrases.some(phrase => lowerMessage.includes(phrase));
-            
-            if (isProblemSolving && !isSyntaxQuestion) {
-                addAIMessage('I cannot help solve math problems or provide answers. I can ONLY help with LaTeX syntax questions like:\n\n"How do I write a fraction?"\n"How do I make superscripts?"\n"How do I write Greek letters?"\n"What\'s the syntax for square roots?"', 'assistant');
-                return;
-            }
-            
-            const systemPrompt = `You are a STRICT LaTeX syntax helper. You can ONLY answer questions about how to write LaTeX code.
-
-ALLOWED:
-- Explain LaTeX syntax and commands (e.g., "use \\frac{a}{b} for fractions")
-- Show how to format/convert mathematical expressions into LaTeX code
-- When user says "format this" or "convert this", they mean convert it to LaTeX syntax
-- Explain LaTeX symbols and structures
-- Help convert mathematical notation into proper LaTeX code
-
-FORBIDDEN:
-- Solve ANY math problems
-- Provide numerical answers to calculations
-- Give hints about problem solutions
-- Explain mathematical concepts or theory
-- Calculate or evaluate expressions
-
-If asked to solve something, respond: "I can only help with LaTeX syntax, not solving problems."
-
-When helping with formatting/conversion, ONLY show the LaTeX code syntax, do not solve or simplify the math.
-
-Keep responses brief and focused on LaTeX code syntax only.`;
-
-            try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_API_KEY}`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        contents: [{parts: [{text: `${systemPrompt}\n\nUser: ${message}`}]}],
-                        generationConfig: {temperature: 0.4, maxOutputTokens: 200}
-                    })
-                });
-                
-                if (!response.ok) throw new Error(`API Error: ${response.status}`);
-                
-                const data = await response.json();
-                const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sorry, no response';
-                
-                addAIMessage(aiResponse, 'assistant');
-            } catch (error) {
-                addAIMessage(`Error: ${error.message}`, 'assistant');
-            }
-        }
-
-        function addAIMessage(message, type) {
-            const container = document.getElementById('aiChatContainer');
-            const div = document.createElement('div');
-            div.className = `ai-message ${type}`;
-            
-            if (type === 'assistant') {
-                let processed = message
-                    .replace(/```([^`]+)```/g, '<pre style="background:#2d2d2d;color:#f8f8f2;padding:10px;border-radius:4px;overflow-x:auto;margin:10px 0">$1</pre>')
-                    .replace(/`([^`]+)`/g, '<code style="background:#f4f4f4;padding:2px 6px;border-radius:3px;color:#e83e8c">$1</code>');
-                div.innerHTML = `<strong>LaTeX Helper:</strong> ${processed}`;
-                container.appendChild(div);
-                if (window.MathJax) MathJax.typesetPromise([div]).catch(e => console.log(e));
-            } else {
-                div.textContent = message;
-                container.appendChild(div);
-            }
-            
-            container.scrollTop = container.scrollHeight;
-        }
-
-        // Utility Functions
-        function showStatus(elementId, message, type) {
-            const el = document.getElementById(elementId);
-            el.textContent = message;
-            el.className = 'status ' + type;
-            el.style.display = 'block';
-        }
-
-        function showLoading(message) {
-            document.getElementById('loadingText').textContent = message;
-            document.getElementById('loadingModal').classList.add('show');
-        }
-
-        function hideLoading() {
-            document.getElementById('loadingModal').classList.remove('show');
-        }
-
-        function cleanAnswer(answer) {
-            return answer.replace(/[^0-9-]/g, '').replace(/(?!^)-/g, '');
         }
 
         // Auth Functions
@@ -1204,6 +990,7 @@ Keep responses brief and focused on LaTeX code syntax only.`;
             } catch (error) {
                 hideLoading();
                 showStatus('loginStatus', 'Error: ' + error.message, 'error');
+                console.error('Login error:', error);
             }
         }
 
@@ -1277,24 +1064,40 @@ Keep responses brief and focused on LaTeX code syntax only.`;
         // Test Management Functions
         async function getCurrentDay() {
             try {
+                console.log('Getting current day...');
                 const response = await fetch(`${SCRIPT_URL}?action=getSchedule`);
                 const schedule = await response.json();
+                
+                console.log('Schedule received:', schedule);
+                
                 const now = new Date();
+                console.log('Current time:', now);
                 
                 for (let i = 1; i <= 5; i++) {
-                    const dayStart = schedule[`day${i}`] ? new Date(schedule[`day${i}`]) : null;
-                    const nextDay = schedule[`day${i + 1}`] ? new Date(schedule[`day${i + 1}`]) : null;
+                    const dayStart = schedule[`day${i}`];
+                    if (!dayStart) {
+                        console.log(`Day ${i} not scheduled`);
+                        continue;
+                    }
                     
-                    if (dayStart) {
-                        dayStart.setHours(0, 0, 0, 0);
-                        const dayEnd = new Date(dayStart);
-                        dayEnd.setHours(23, 59, 59, 999);
-                        
-                        if (now >= dayStart && now <= dayEnd) {
-                            return i;
-                        }
+                    const scheduledDate = new Date(dayStart);
+                    console.log(`Day ${i} scheduled for:`, scheduledDate);
+                    
+                    scheduledDate.setHours(0, 0, 0, 0);
+                    
+                    const dayEnd = new Date(scheduledDate);
+                    dayEnd.setHours(23, 59, 59, 999);
+                    
+                    console.log(`Day ${i} window: ${scheduledDate} to ${dayEnd}`);
+                    console.log(`Current time in range? ${now >= scheduledDate && now <= dayEnd}`);
+                    
+                    if (now >= scheduledDate && now <= dayEnd) {
+                        console.log(`Matched Day ${i}`);
+                        return i;
                     }
                 }
+                
+                console.log('No day matched');
                 return null;
             } catch (error) {
                 console.error('Error getting day:', error);
@@ -1307,15 +1110,19 @@ Keep responses brief and focused on LaTeX code syntax only.`;
             container.innerHTML = '<p style="color: #666;">Checking for today\'s test...</p>';
 
             try {
+                console.log('Checking for today\'s test...');
                 currentDay = await getCurrentDay();
+                console.log('Current day result:', currentDay);
 
                 if (!currentDay) {
-                    container.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">No test available today. Tests are only available from 12:00 AM to 11:59 PM on scheduled days.</p>';
+                    container.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">No test available today. Tests are only available from 12:00 AM to 11:59 PM on scheduled days.<br><br>Current time: ' + new Date().toLocaleString() + '</p>';
                     return;
                 }
 
+                console.log('Checking if submission exists for day', currentDay);
                 const checkResponse = await fetch(`${SCRIPT_URL}?action=checkSubmission&email=${encodeURIComponent(currentUser.email)}&day=${currentDay}`);
                 const checkData = await checkResponse.json();
+                console.log('Check submission response:', checkData);
 
                 if (checkData.exists) {
                     container.innerHTML = `
@@ -1343,7 +1150,8 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                     `;
                 }
             } catch (error) {
-                container.innerHTML = '<p style="color: #dc3545; text-align: center;">Error loading test status</p>';
+                console.error('Error in checkTodayTest:', error);
+                container.innerHTML = '<p style="color: #dc3545; text-align: center;">Error loading test status: ' + error.message + '</p>';
             }
         }
 
@@ -1447,6 +1255,7 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                     }
                 });
             } catch (error) {
+                console.error('Error loading history:', error);
                 container.innerHTML = '<p style="color: #dc3545;">Error loading history</p>';
             }
         }
@@ -1455,12 +1264,27 @@ Keep responses brief and focused on LaTeX code syntax only.`;
             showLoading(`Loading Day ${currentDay} questions...`);
             
             try {
+                console.log(`Fetching questions for day ${currentDay}`);
                 const response = await fetch(`${SCRIPT_URL}?action=getQuestions&day=${currentDay}`);
-                questionsData = await response.json();
+                console.log('Response status:', response.status);
+                
+                const responseText = await response.text();
+                console.log('Raw response:', responseText);
+                
+                questionsData = JSON.parse(responseText);
+                console.log('Parsed questions data:', questionsData);
                 
                 if (questionsData.error) {
                     hideLoading();
-                    alert('Error loading questions');
+                    alert('Error loading questions: ' + questionsData.error);
+                    console.error('Questions data error:', questionsData.error);
+                    return;
+                }
+                
+                if (!questionsData.q1_text || !questionsData.q2_text || !questionsData.q3_text) {
+                    hideLoading();
+                    alert('Questions for Day ' + currentDay + ' are not set up yet. Please contact your administrator.');
+                    console.error('Missing question text');
                     return;
                 }
                 
@@ -1468,18 +1292,35 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                 document.getElementById('q2Text').textContent = questionsData.q2_text;
                 document.getElementById('q3Text').textContent = questionsData.q3_text;
                 
-                // Load images if they exist
-                if (questionsData.q1_image) {
+                if (window.MathJax) {
+                    setTimeout(() => {
+                        MathJax.typesetPromise([
+                            document.getElementById('q1Text'),
+                            document.getElementById('q2Text'),
+                            document.getElementById('q3Text')
+                        ]).catch(e => console.log('MathJax error:', e));
+                    }, 100);
+                }
+                
+                if (questionsData.q1_image && questionsData.q1_image.trim() !== '') {
                     document.getElementById('q1Image').src = questionsData.q1_image;
                     document.getElementById('q1Image').style.display = 'block';
+                } else {
+                    document.getElementById('q1Image').style.display = 'none';
                 }
-                if (questionsData.q2_image) {
+                
+                if (questionsData.q2_image && questionsData.q2_image.trim() !== '') {
                     document.getElementById('q2Image').src = questionsData.q2_image;
                     document.getElementById('q2Image').style.display = 'block';
+                } else {
+                    document.getElementById('q2Image').style.display = 'none';
                 }
-                if (questionsData.q3_image) {
+                
+                if (questionsData.q3_image && questionsData.q3_image.trim() !== '') {
                     document.getElementById('q3Image').src = questionsData.q3_image;
                     document.getElementById('q3Image').style.display = 'block';
+                } else {
+                    document.getElementById('q3Image').style.display = 'none';
                 }
                 
                 document.getElementById('testTitle').textContent = `D.PotD Day ${currentDay}`;
@@ -1502,12 +1343,14 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                     updateTimer();
                     showQuestion(1);
                 } catch (err) {
+                    console.error('Fullscreen error:', err);
                     alert('Fullscreen mode is required. Please allow fullscreen and try again.');
                 }
                 
             } catch (error) {
                 hideLoading();
-                alert('Error loading questions: ' + error.message);
+                console.error('Error loading questions:', error);
+                alert('Error loading questions: ' + error.message + '. Please check console for details.');
             }
         }
 
@@ -1517,17 +1360,12 @@ Keep responses brief and focused on LaTeX code syntax only.`;
             document.getElementById('progressIndicator').textContent = `Day ${currentDay} - Question ${num} of 3`;
             document.getElementById('progressIndicator').style.display = 'block';
             
-            const aiBtn = document.getElementById('aiToggleBtn');
             const helpBtn = document.getElementById('latexHelpBtn');
             
             if (num === 3) {
-                aiBtn.style.display = 'block';
-                helpBtn.style.display = 'flex';
+                helpBtn.style.display = 'block';
             } else {
-                aiBtn.style.display = 'none';
                 helpBtn.style.display = 'none';
-                // Hide AI helper if it's open
-                document.getElementById('aiHelper').classList.remove('show');
             }
             
             currentQuestion = num;
@@ -1633,9 +1471,6 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                     document.body.classList.remove('locked');
                     if (document.exitFullscreen) document.exitFullscreen();
                     
-                    // Hide AI helper
-                    document.getElementById('aiHelper').classList.remove('show');
-                    document.getElementById('aiToggleBtn').style.display = 'none';
                     document.getElementById('latexHelpBtn').style.display = 'none';
                     
                     document.getElementById('questionSection').style.display = 'none';
