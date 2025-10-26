@@ -1,4 +1,4 @@
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwQfHxYKj8FomQ5YvuJYEwU2kNZwcmSW0THdJaeZkVJtMz89mRUEYSxCn_k8ydmy27p/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzZNauHD8X_z1NSOGN7Au-pMOZ-mBlzUCHGXjE1KOk5J60yTplhtCfVp7H_u6iSW0IPTg/exec';
 const ADMIN_USERNAME = 'meipetersgoat';
 const ADMIN_PASSWORD = 'SitarsTheGOAT!';
 
