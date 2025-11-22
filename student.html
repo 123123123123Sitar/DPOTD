@@ -1276,6 +1276,13 @@ Keep responses brief and focused on LaTeX code syntax only.`;
             
             // Save violation immediately
             saveTestState();
+            
+            // Auto-revert to fullscreen after 3 seconds
+            setTimeout(() => {
+                if (testActive && !document.fullscreenElement) {
+                    returnToFullscreen();
+                }
+            }, 3000);
         }
 
         function hideWarning() {
@@ -1288,10 +1295,16 @@ Keep responses brief and focused on LaTeX code syntax only.`;
 
         function monitorFullscreen() {
             document.addEventListener('fullscreenchange', () => {
-                if (!document.fullscreenElement && testActive) recordViolation('exited_fullscreen');
+                if (!document.fullscreenElement && testActive) {
+                    recordViolation('exited_fullscreen');
+                }
             });
             document.addEventListener('visibilitychange', () => {
-                if (document.hidden && testActive) recordViolation('tab_hidden');
+                if (document.hidden && testActive) {
+                    recordViolation('tab_hidden');
+                    // Try to bring window back to focus
+                    window.focus();
+                }
             });
         }
 
