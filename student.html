@@ -815,10 +815,10 @@
                 <li><strong>Time Limit:</strong> 2 hours (120 minutes) for all 3 questions</li>
                 <li><strong>Questions:</strong> 2 integer answers worth 5 points each and 1 proof question worth 10 points</li>
                 <li>A latex syntax helper will be available for Q3</li>
-                <li>Fullscreen mode is required. Any tab switching will be recorded.</li>
+                <li>Fullscreen mode will activate automatically. Any tab switching will be recorded.</li>
                 <li>Once the test starts, the timer cannot be paused. The test will auto-submit when time expires</li>
                 <li><strong>IMPORTANT:</strong> If you accidentally close the tab, you can resume where you left off, but a violation will be recorded</li>
-                <li>If you encounter any issues, please notify us at <span style="color: #EA5A2F;">dtechmathclub@gmail.com</span> and we will work to resolve your issue.</li>
+                <li>If you encounter any issues, please notify us at <span style="color: #EA5A2F;">dtechmathclub@gmail.com</span></li>
             </ul>
             <p style="color: #dc3545; font-weight: 600; margin-top: 20px;">
                 WARNING: Violations (tab switching, exiting fullscreen) will be recorded and may affect your score!
@@ -1118,9 +1118,7 @@
         }
 
         function handleLoginEnter(event) {
-            if (event.key === 'Enter') {
-                login();
-            }
+            if (event.key === 'Enter') login();
         }
 
         function updateLatexPreview() {
@@ -1188,47 +1186,18 @@
             input.value = '';
             
             const lowerMessage = message.toLowerCase();
-            
-            const problemSolvingPhrases = [
-                'solve', 'calculate', 'compute', 'what is', 'how much is', 
-                'find the answer', 'find the solution', 'the answer to',
-                'result of', 'evaluate', 'simplify'
-            ];
-            
-            const syntaxPhrases = [
-                'how do i write', 'how to write', 'syntax for', 'latex code',
-                'in latex', 'using latex', 'format', 'display'
-            ];
+            const problemSolvingPhrases = ['solve', 'calculate', 'compute', 'what is', 'how much is', 'find the answer', 'find the solution', 'the answer to', 'result of', 'evaluate', 'simplify'];
+            const syntaxPhrases = ['how do i write', 'how to write', 'syntax for', 'latex code', 'in latex', 'using latex', 'format', 'display'];
             
             const isSyntaxQuestion = syntaxPhrases.some(phrase => lowerMessage.includes(phrase));
             const isProblemSolving = problemSolvingPhrases.some(phrase => lowerMessage.includes(phrase));
             
             if (isProblemSolving && !isSyntaxQuestion) {
-                addAIMessage('I cannot help solve math problems or provide answers. I can ONLY help with LaTeX syntax questions like:\n\n"How do I write a fraction?"\n"How do I make superscripts?"\n"How do I write Greek letters?"\n"What\'s the syntax for square roots?"', 'assistant');
+                addAIMessage('I cannot help solve math problems or provide answers. I can ONLY help with LaTeX syntax questions.', 'assistant');
                 return;
             }
             
-            const systemPrompt = `You are a STRICT LaTeX syntax helper. You can ONLY answer questions about how to write LaTeX code.
-
-ALLOWED:
-- Explain LaTeX syntax and commands (e.g., "use \\frac{a}{b} for fractions")
-- Show how to format/convert mathematical expressions into LaTeX code
-- When user says "format this" or "convert this", they mean convert it to LaTeX syntax
-- Explain LaTeX symbols and structures
-- Help convert mathematical notation into proper LaTeX code
-
-FORBIDDEN:
-- Solve ANY math problems
-- Provide numerical answers to calculations
-- Give hints about problem solutions
-- Explain mathematical concepts or theory
-- Calculate or evaluate expressions
-
-If asked to solve something, respond: "I can only help with LaTeX syntax, not solving problems."
-
-When helping with formatting/conversion, ONLY show the LaTeX code syntax, do not solve or simplify the math.
-
-Keep responses brief and focused on LaTeX code syntax only.`;
+            const systemPrompt = `You are a STRICT LaTeX syntax helper. You can ONLY answer questions about how to write LaTeX code. FORBIDDEN: Solve ANY math problems, provide numerical answers, give hints, explain mathematical concepts. Keep responses brief and focused on LaTeX code syntax only.`;
 
             try {
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_API_KEY}`, {
@@ -1241,10 +1210,8 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                 });
                 
                 if (!response.ok) throw new Error(`API Error: ${response.status}`);
-                
                 const data = await response.json();
                 const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sorry, no response';
-                
                 addAIMessage(aiResponse, 'assistant');
             } catch (error) {
                 addAIMessage(`Error: ${error.message}`, 'assistant');
@@ -1267,17 +1234,14 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                 div.textContent = message;
                 container.appendChild(div);
             }
-            
             container.scrollTop = container.scrollHeight;
         }
 
         function switchMainTab(tab) {
             document.querySelectorAll('#mainPortal .tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('#mainPortal .tab-content').forEach(c => c.classList.remove('active'));
-            
             event.target.classList.add('active');
             document.getElementById(tab + 'Tab').classList.add('active');
-
             if (tab === 'today') checkTodayTest();
             if (tab === 'history') loadHistory();
         }
@@ -1285,19 +1249,15 @@ Keep responses brief and focused on LaTeX code syntax only.`;
         async function login() {
             const email = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPassword').value;
-
             if (!email || !password) {
                 showStatus('loginStatus', 'Please enter email and password', 'error');
                 return;
             }
-
             showLoading('Logging in...');
-
             try {
                 const response = await fetch(`${SCRIPT_URL}?action=login&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`);
                 const result = await response.json();
                 hideLoading();
-
                 if (result.success) {
                     currentUser = { name: result.name, email: result.email };
                     localStorage.setItem('dpotdUser', JSON.stringify(currentUser));
@@ -1332,24 +1292,19 @@ Keep responses brief and focused on LaTeX code syntax only.`;
             const current = document.getElementById('currentPassword').value;
             const newPass = document.getElementById('newPassword').value;
             const confirm = document.getElementById('confirmNewPassword').value;
-
             if (!current || !newPass || !confirm) {
                 showStatus('profileStatus', 'Please fill in all fields', 'error');
                 return;
             }
-
             if (newPass !== confirm) {
                 showStatus('profileStatus', 'New passwords do not match', 'error');
                 return;
             }
-
             if (newPass.length < 6) {
                 showStatus('profileStatus', 'New password must be at least 6 characters', 'error');
                 return;
             }
-
             showLoading('Updating password...');
-
             try {
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
@@ -1360,10 +1315,8 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                         newPassword: newPass
                     })
                 });
-
                 const result = await response.json();
                 hideLoading();
-
                 if (result.success) {
                     showStatus('profileStatus', 'Password updated successfully!', 'success');
                     document.getElementById('currentPassword').value = '';
@@ -1382,24 +1335,16 @@ Keep responses brief and focused on LaTeX code syntax only.`;
             try {
                 const response = await fetch(`${SCRIPT_URL}?action=getSchedule`);
                 const schedule = await response.json();
-                
                 const now = new Date();
-                
                 for (let i = 1; i <= 5; i++) {
                     const dayStart = schedule[`day${i}`];
                     if (!dayStart) continue;
-                    
                     const scheduledDate = new Date(dayStart);
                     scheduledDate.setHours(0, 0, 0, 0);
-                    
                     const dayEnd = new Date(scheduledDate);
                     dayEnd.setHours(23, 59, 59, 999);
-                    
-                    if (now >= scheduledDate && now <= dayEnd) {
-                        return i;
-                    }
+                    if (now >= scheduledDate && now <= dayEnd) return i;
                 }
-                
                 return null;
             } catch (error) {
                 console.error('Error getting day:', error);
@@ -1410,72 +1355,34 @@ Keep responses brief and focused on LaTeX code syntax only.`;
         async function checkTodayTest() {
             const container = document.getElementById('testStatus');
             container.innerHTML = '<p style="color: #666;">Checking for today\'s test...</p>';
-
             try {
                 currentDay = await getCurrentDay();
-
                 if (!currentDay) {
                     container.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">No test available today. Tests are only available from 12:00 AM to 11:59 PM on scheduled days.<br><br>Current time: ' + new Date().toLocaleString() + '</p>';
                     return;
                 }
-
-                // Check if there's an active test
                 const activeResponse = await fetch(`${SCRIPT_URL}?action=getActiveTest&email=${encodeURIComponent(currentUser.email)}&day=${currentDay}`);
                 const activeData = await activeResponse.json();
-
                 if (activeData.exists) {
-                    // Show resume option
                     const timeRemaining = new Date(activeData.endTime).getTime() - Date.now();
                     const minutesRemaining = Math.floor(timeRemaining / 60000);
-                    
                     container.innerHTML = `
                         <div class="resume-test-banner">
                             <h3>⚠️ You Have an Active Test!</h3>
-                            <p style="font-size: 16px;">
-                                You started Day ${currentDay}'s test but didn't complete it.
-                            </p>
-                            <p style="font-size: 16px; margin-bottom: 20px;">
-                                <strong>Time Remaining:</strong> ${minutesRemaining} minutes
-                            </p>
-                            <p style="color: #dc3545; font-weight: 600; margin-bottom: 20px;">
-                                A violation has been recorded for closing the tab.
-                            </p>
-                            <button class="btn" onclick="resumeTest()" style="max-width: 400px; margin: 0 auto; background: #ffc107; color: #000;">
-                                Resume Test (Violation Already Recorded)
-                            </button>
+                            <p style="font-size: 16px;">You started Day ${currentDay}'s test but didn't complete it.</p>
+                            <p style="font-size: 16px; margin-bottom: 20px;"><strong>Time Remaining:</strong> ${minutesRemaining} minutes</p>
+                            <p style="color: #dc3545; font-weight: 600; margin-bottom: 20px;">A violation has been recorded for closing the tab.</p>
+                            <button class="btn" onclick="resumeTest()" style="max-width: 400px; margin: 0 auto; background: #ffc107; color: #000;">Resume Test (Violation Already Recorded)</button>
                         </div>
                     `;
                     return;
                 }
-
-                // Check if already submitted
                 const checkResponse = await fetch(`${SCRIPT_URL}?action=checkSubmission&email=${encodeURIComponent(currentUser.email)}&day=${currentDay}`);
                 const checkData = await checkResponse.json();
-
                 if (checkData.exists) {
-                    container.innerHTML = `
-                        <div style="text-align: center; padding: 40px;">
-                            <h2 style="color: #28a745; margin-bottom: 20px;">Test Already Submitted</h2>
-                            <p style="font-size: 18px; color: #666; margin-bottom: 20px;">
-                                You have already submitted Day ${currentDay}'s test.
-                            </p>
-                            <p style="color: #666;">
-                                Check your Score History tab to see your results and feedback.
-                            </p>
-                        </div>
-                    `;
+                    container.innerHTML = `<div style="text-align: center; padding: 40px;"><h2 style="color: #28a745; margin-bottom: 20px;">Test Already Submitted</h2><p style="font-size: 18px; color: #666; margin-bottom: 20px;">You have already submitted Day ${currentDay}'s test.</p><p style="color: #666;">Check your Score History tab to see your results and feedback.</p></div>`;
                 } else {
-                    container.innerHTML = `
-                        <div style="text-align: center; padding: 40px;">
-                            <h2 style="color: #EA5A2F; margin-bottom: 20px;">Day ${currentDay} Test Available!</h2>
-                            <p style="font-size: 18px; color: #666; margin-bottom: 30px;">
-                                Ready to take today's test?
-                            </p>
-                            <button class="btn" onclick="showConfirmation()" style="max-width: 400px; margin: 0 auto;">
-                                Start Test (2 hours, 3 questions, 20 points total)
-                            </button>
-                        </div>
-                    `;
+                    container.innerHTML = `<div style="text-align: center; padding: 40px;"><h2 style="color: #EA5A2F; margin-bottom: 20px;">Day ${currentDay} Test Available!</h2><p style="font-size: 18px; color: #666; margin-bottom: 30px;">Ready to take today's test?</p><button class="btn" onclick="showConfirmation()" style="max-width: 400px; margin: 0 auto;">Start Test (2 hours, 3 questions, 20 points total)</button></div>`;
                 }
             } catch (error) {
                 container.innerHTML = '<p style="color: #dc3545; text-align: center;">Error loading test status: ' + error.message + '</p>';
@@ -1484,44 +1391,30 @@ Keep responses brief and focused on LaTeX code syntax only.`;
 
         async function resumeTest() {
             showLoading('Resuming your test...');
-            
             try {
                 const response = await fetch(`${SCRIPT_URL}?action=getActiveTest&email=${encodeURIComponent(currentUser.email)}&day=${currentDay}`);
                 const activeTest = await response.json();
-                
                 if (!activeTest.exists) {
                     hideLoading();
                     alert('Active test not found. Please contact your administrator.');
                     checkTodayTest();
                     return;
                 }
-
-                // Load questions
                 const questionsResponse = await fetch(`${SCRIPT_URL}?action=getQuestions&day=${currentDay}`);
                 questionsData = await questionsResponse.json();
-                
                 if (questionsData.error) {
                     hideLoading();
                     alert('Error loading questions: ' + questionsData.error);
                     return;
                 }
-
-                // Set up questions
                 document.getElementById('q1Text').textContent = questionsData.q1_text;
                 document.getElementById('q2Text').textContent = questionsData.q2_text;
                 document.getElementById('q3Text').textContent = questionsData.q3_text;
-                
                 if (window.MathJax) {
                     setTimeout(() => {
-                        MathJax.typesetPromise([
-                            document.getElementById('q1Text'),
-                            document.getElementById('q2Text'),
-                            document.getElementById('q3Text')
-                        ]).catch(e => console.log('MathJax error:', e));
+                        MathJax.typesetPromise([document.getElementById('q1Text'), document.getElementById('q2Text'), document.getElementById('q3Text')]).catch(e => console.log('MathJax error:', e));
                     }, 100);
                 }
-
-                // Set up images
                 if (questionsData.q1_image && questionsData.q1_image.trim() !== '') {
                     document.getElementById('q1Image').src = questionsData.q1_image;
                     document.getElementById('q1Image').style.display = 'block';
@@ -1534,44 +1427,16 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                     document.getElementById('q3Image').src = questionsData.q3_image;
                     document.getElementById('q3Image').style.display = 'block';
                 }
-
-                // Restore previous answers
                 document.getElementById('q1Answer').value = activeTest.q1Answer || '';
                 document.getElementById('q2Answer').value = activeTest.q2Answer || '';
                 document.getElementById('latexInput').value = activeTest.q3Answer || '';
                 updateLatexPreview();
-
-                // Restore state
                 startTime = new Date(activeTest.startTime).getTime();
                 exitCount = activeTest.exitCount;
                 exitLogs = activeTest.exitLogs || [];
-                
                 document.getElementById('testTitle').textContent = `D.PotD Day ${currentDay}`;
-                
                 hideLoading();
-                
-                try {
-                    await document.documentElement.requestFullscreen();
-                    
-                    document.getElementById('mainPortal').style.display = 'none';
-                    document.getElementById('questionSection').style.display = 'block';
-                    document.getElementById('navigationBar').style.display = 'block';
-                    
-                    document.body.classList.add('locked');
-                    testActive = true;
-                    monitorFullscreen();
-                    
-                    timerInterval = setInterval(updateTimer, 1000);
-                    updateTimer();
-                    
-                    // Start auto-save
-                    startAutoSave();
-                    
-                    showQuestion(activeTest.currentQuestion || 1);
-                } catch (err) {
-                    alert('Fullscreen mode is required. Please allow fullscreen and try again.');
-                }
-                
+                await enterFullscreenAndStart(activeTest.currentQuestion || 1);
             } catch (error) {
                 hideLoading();
                 alert('Error resuming test: ' + error.message);
@@ -1594,86 +1459,46 @@ Keep responses brief and focused on LaTeX code syntax only.`;
         async function loadHistory() {
             const container = document.getElementById('historyContainer');
             container.innerHTML = '<p style="color: #666;">Loading your scores...</p>';
-
             try {
                 const response = await fetch(`${SCRIPT_URL}?action=getUserSubmissions&email=${encodeURIComponent(currentUser.email)}`);
                 const submissions = await response.json();
-
                 if (!submissions || submissions.length === 0) {
                     container.innerHTML = '<p style="text-align: center; color: #666;">No submissions yet. Take your first test!</p>';
                     return;
                 }
-
                 container.innerHTML = '';
                 submissions.reverse().forEach(sub => {
                     const card = document.createElement('div');
                     card.className = 'score-card';
-                    
                     const timestamp = new Date(sub.timestamp).toLocaleString();
-                    
                     const q1Points = sub.q1_correct ? 5 : 0;
                     const q2Points = sub.q2_correct ? 5 : 0;
                     const q3Points = sub.q3_score || 0;
                     const totalPoints = q1Points + q2Points + parseInt(q3Points);
-                    
                     let feedbackHTML = '';
                     if (sub.q3_feedback) {
                         let feedbackContent = sub.q3_feedback;
-                        feedbackContent = feedbackContent.replace(/\\documentclass\{[^}]+\}/g, '');
-                        feedbackContent = feedbackContent.replace(/\\usepackage\{[^}]+\}/g, '');
-                        feedbackContent = feedbackContent.replace(/\\title\{[^}]*\}/g, '');
-                        feedbackContent = feedbackContent.replace(/\\author\{[^}]*\}/g, '');
-                        feedbackContent = feedbackContent.replace(/\\date\{[^}]*\}/g, '');
-                        feedbackContent = feedbackContent.replace(/\\maketitle/g, '');
-                        
+                        feedbackContent = feedbackContent.replace(/\\documentclass\{[^}]+\}/g, '').replace(/\\usepackage\{[^}]+\}/g, '').replace(/\\title\{[^}]*\}/g, '').replace(/\\author\{[^}]*\}/g, '').replace(/\\date\{[^}]*\}/g, '').replace(/\\maketitle/g, '');
                         const docMatch = feedbackContent.match(/\\begin\{document\}([\s\S]*)\\end\{document\}/);
                         if (docMatch) feedbackContent = docMatch[1].trim();
-                        
-                        feedbackHTML = `
-                        <div class="feedback-box">
-                            <h4>Q3 Feedback</h4>
-                            <div id="feedback_${sub.rowIndex || Math.random()}" style="line-height: 1.6;">${feedbackContent}</div>
-                        </div>
-                        `;
+                        feedbackHTML = `<div class="feedback-box"><h4>Q3 Feedback</h4><div id="feedback_${sub.rowIndex || Math.random()}" style="line-height: 1.6;">${feedbackContent}</div></div>`;
                     }
-                    
                     card.innerHTML = `
-                        <div class="score-header">
-                            <h3>Day ${sub.day}</h3>
-                            <span style="color: #666; font-size: 14px;">${timestamp}</span>
-                        </div>
-                        <div style="background: #EA5A2F; color: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: center;">
-                            <strong style="font-size: 24px;">Total Score: ${totalPoints}/20</strong>
-                        </div>
+                        <div class="score-header"><h3>Day ${sub.day}</h3><span style="color: #666; font-size: 14px;">${timestamp}</span></div>
+                        <div style="background: #EA5A2F; color: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: center;"><strong style="font-size: 24px;">Total Score: ${totalPoints}/20</strong></div>
                         <div class="score-details">
-                            <div class="score-item">
-                                <strong>Q1:</strong> <span class="${sub.q1_correct ? 'correct' : 'incorrect'}">
-                                    ${sub.q1_correct ? 'Correct (+5 pts)' : 'Incorrect (0 pts)'}
-                                </span>
-                            </div>
-                            <div class="score-item">
-                                <strong>Q2:</strong> <span class="${sub.q2_correct ? 'correct' : 'incorrect'}">
-                                    ${sub.q2_correct ? 'Correct (+5 pts)' : 'Incorrect (0 pts)'}
-                                </span>
-                            </div>
-                            <div class="score-item">
-                                <strong>Q3 Score:</strong> ${sub.q3_score !== undefined && sub.q3_score !== '' ? sub.q3_score + '/10 (+' + sub.q3_score + ' pts)' : 'Pending'}
-                            </div>
-                            <div class="score-item">
-                                <strong>Time:</strong> ${Math.floor(sub.totalTime / 60)}m ${sub.totalTime % 60}s
-                            </div>
+                            <div class="score-item"><strong>Q1:</strong> <span class="${sub.q1_correct ? 'correct' : 'incorrect'}">${sub.q1_correct ? 'Correct (+5 pts)' : 'Incorrect (0 pts)'}</span></div>
+                            <div class="score-item"><strong>Q2:</strong> <span class="${sub.q2_correct ? 'correct' : 'incorrect'}">${sub.q2_correct ? 'Correct (+5 pts)' : 'Incorrect (0 pts)'}</span></div>
+                            <div class="score-item"><strong>Q3 Score:</strong> ${sub.q3_score !== undefined && sub.q3_score !== '' ? sub.q3_score + '/10 (+' + sub.q3_score + ' pts)' : 'Pending'}</div>
+                            <div class="score-item"><strong>Time:</strong> ${Math.floor(sub.totalTime / 60)}m ${sub.totalTime % 60}s</div>
                         </div>
                         ${feedbackHTML}
                     `;
-                    
                     container.appendChild(card);
-                    
                     if (sub.q3_feedback && window.MathJax) {
                         setTimeout(() => {
                             const feedbackDiv = card.querySelector(`[id^="feedback_"]`);
-                            if (feedbackDiv) {
-                                MathJax.typesetPromise([feedbackDiv]).catch(e => console.log(e));
-                            }
+                            if (feedbackDiv) MathJax.typesetPromise([feedbackDiv]).catch(e => console.log(e));
                         }, 100);
                     }
                 });
@@ -1684,65 +1509,49 @@ Keep responses brief and focused on LaTeX code syntax only.`;
 
         async function startTest() {
             showLoading(`Loading Day ${currentDay} questions...`);
-            
             try {
                 const response = await fetch(`${SCRIPT_URL}?action=getQuestions&day=${currentDay}`);
                 const responseText = await response.text();
                 questionsData = JSON.parse(responseText);
-                
                 if (questionsData.error) {
                     hideLoading();
                     alert('Error loading questions: ' + questionsData.error);
                     return;
                 }
-                
                 if (!questionsData.q1_text || !questionsData.q2_text || !questionsData.q3_text) {
                     hideLoading();
                     alert('Questions for Day ' + currentDay + ' are not set up yet. Please contact your administrator.');
                     return;
                 }
-                
                 document.getElementById('q1Text').textContent = questionsData.q1_text;
                 document.getElementById('q2Text').textContent = questionsData.q2_text;
                 document.getElementById('q3Text').textContent = questionsData.q3_text;
-                
                 if (window.MathJax) {
                     setTimeout(() => {
-                        MathJax.typesetPromise([
-                            document.getElementById('q1Text'),
-                            document.getElementById('q2Text'),
-                            document.getElementById('q3Text')
-                        ]).catch(e => console.log('MathJax error:', e));
+                        MathJax.typesetPromise([document.getElementById('q1Text'), document.getElementById('q2Text'), document.getElementById('q3Text')]).catch(e => console.log('MathJax error:', e));
                     }, 100);
                 }
-                
                 if (questionsData.q1_image && questionsData.q1_image.trim() !== '') {
                     document.getElementById('q1Image').src = questionsData.q1_image;
                     document.getElementById('q1Image').style.display = 'block';
                 } else {
                     document.getElementById('q1Image').style.display = 'none';
                 }
-                
                 if (questionsData.q2_image && questionsData.q2_image.trim() !== '') {
                     document.getElementById('q2Image').src = questionsData.q2_image;
                     document.getElementById('q2Image').style.display = 'block';
                 } else {
                     document.getElementById('q2Image').style.display = 'none';
                 }
-                
                 if (questionsData.q3_image && questionsData.q3_image.trim() !== '') {
                     document.getElementById('q3Image').src = questionsData.q3_image;
                     document.getElementById('q3Image').style.display = 'block';
                 } else {
                     document.getElementById('q3Image').style.display = 'none';
                 }
-                
                 document.getElementById('testTitle').textContent = `D.PotD Day ${currentDay}`;
-                
-                // Create active test record
                 startTime = Date.now();
                 const endTime = startTime + TEST_DURATION;
-                
                 await fetch(SCRIPT_URL, {
                     method: 'POST',
                     body: JSON.stringify({
@@ -1753,43 +1562,48 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                         endTime: new Date(endTime).toISOString()
                     })
                 });
-                
                 hideLoading();
-                
-                try {
-                    await document.documentElement.requestFullscreen();
-                    
-                    document.getElementById('mainPortal').style.display = 'none';
-                    document.getElementById('questionSection').style.display = 'block';
-                    document.getElementById('navigationBar').style.display = 'block';
-                    
-                    document.body.classList.add('locked');
-                    testActive = true;
-                    monitorFullscreen();
-                    
-                    q1StartTime = Date.now();
-                    timerInterval = setInterval(updateTimer, 1000);
-                    updateTimer();
-                    
-                    // Start auto-save
-                    startAutoSave();
-                    
-                    showQuestion(1);
-                } catch (err) {
-                    alert('Fullscreen mode is required. Please allow fullscreen and try again.');
-                }
-                
+                await enterFullscreenAndStart(1);
             } catch (error) {
                 hideLoading();
                 alert('Error loading questions: ' + error.message);
             }
         }
 
+        async function enterFullscreenAndStart(questionNum) {
+            try {
+                await document.documentElement.requestFullscreen();
+                document.getElementById('mainPortal').style.display = 'none';
+                document.getElementById('questionSection').style.display = 'block';
+                document.getElementById('navigationBar').style.display = 'block';
+                document.body.classList.add('locked');
+                testActive = true;
+                monitorFullscreen();
+                q1StartTime = Date.now();
+                timerInterval = setInterval(updateTimer, 1000);
+                updateTimer();
+                startAutoSave();
+                showQuestion(questionNum);
+            } catch (err) {
+                console.error('Fullscreen error:', err);
+                alert('Fullscreen mode is required but was denied. The test will now start - please do not leave fullscreen.');
+                document.getElementById('mainPortal').style.display = 'none';
+                document.getElementById('questionSection').style.display = 'block';
+                document.getElementById('navigationBar').style.display = 'block';
+                document.body.classList.add('locked');
+                testActive = true;
+                monitorFullscreen();
+                q1StartTime = Date.now();
+                timerInterval = setInterval(updateTimer, 1000);
+                updateTimer();
+                startAutoSave();
+                showQuestion(questionNum);
+            }
+        }
+
         function startAutoSave() {
-            // Auto-save every 30 seconds
             autoSaveInterval = setInterval(async () => {
                 if (!testActive) return;
-                
                 try {
                     await fetch(SCRIPT_URL, {
                         method: 'POST',
@@ -1816,22 +1630,18 @@ Keep responses brief and focused on LaTeX code syntax only.`;
             document.getElementById(`q${num}Page`).style.display = 'block';
             document.getElementById('progressIndicator').textContent = `Day ${currentDay} - Question ${num} of 3`;
             document.getElementById('progressIndicator').style.display = 'block';
-            
             ['navBtn1', 'navBtn2', 'navBtn3'].forEach(id => {
                 const btn = document.getElementById(id);
                 btn.style.background = 'white';
                 btn.style.borderColor = '#E3E3E3';
                 btn.style.color = '#000';
             });
-            
             const activeBtn = document.getElementById(`navBtn${num}`);
             activeBtn.style.background = '#EA5A2F';
             activeBtn.style.borderColor = '#EA5A2F';
             activeBtn.style.color = 'white';
-            
             const nextBtn = document.getElementById('nextBtn');
             const submitBtn = document.getElementById('submitBtn');
-            
             if (num === 3) {
                 nextBtn.style.display = 'none';
                 submitBtn.style.display = 'block';
@@ -1839,10 +1649,8 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                 nextBtn.style.display = 'block';
                 submitBtn.style.display = 'none';
             }
-            
             const aiBtn = document.getElementById('aiToggleBtn');
             const helpBtn = document.getElementById('latexHelpBtn');
-            
             if (num === 3) {
                 aiBtn.style.display = 'block';
                 helpBtn.style.display = 'flex';
@@ -1850,31 +1658,24 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                 aiBtn.style.display = 'none';
                 helpBtn.style.display = 'none';
             }
-            
             currentQuestion = num;
         }
 
         function nextQuestion() {
-            if (currentQuestion < 3) {
-                showQuestion(currentQuestion + 1);
-            }
+            if (currentQuestion < 3) showQuestion(currentQuestion + 1);
         }
 
         function updateTimer() {
             if (!startTime) return;
-            
             const elapsed = Date.now() - startTime;
             const remaining = Math.max(0, TEST_DURATION - elapsed);
-            
             const hours = Math.floor(remaining / 3600000);
             const minutes = Math.floor((remaining % 3600000) / 60000);
             const seconds = Math.floor((remaining % 60000) / 1000);
-            
             const timer = document.getElementById('timer');
             timer.textContent = `Time Remaining: ${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
             timer.style.display = 'block';
             timer.style.color = remaining < 600000 ? '#ff6b6b' : '#000';
-            
             if (remaining <= 0) {
                 clearInterval(timerInterval);
                 submitTest(true);
@@ -1883,31 +1684,24 @@ Keep responses brief and focused on LaTeX code syntax only.`;
 
         async function submitTest(isForced = false) {
             if (!testActive && !isForced) return;
-            
             const q1Answer = cleanAnswer(document.getElementById('q1Answer').value.trim());
             const q2Answer = cleanAnswer(document.getElementById('q2Answer').value.trim());
             const q3Answer = document.getElementById('latexInput').value.trim();
-            
             if (!isForced && (!q1Answer || !q2Answer || !q3Answer)) {
-                showStatus('q3Status', 'Please answer all questions', 'error');
+                alert('Please answer all questions before submitting.');
                 return;
             }
-            
             testActive = false;
             clearInterval(timerInterval);
             if (autoSaveInterval) clearInterval(autoSaveInterval);
-            
             const endTime = Date.now();
             q3EndTime = endTime;
-            
             const q1Time = q1EndTime ? Math.floor((q1EndTime - q1StartTime) / 1000) : 0;
             const q2Time = q2EndTime && q2StartTime ? Math.floor((q2EndTime - q2StartTime) / 1000) : 0;
             const q3Time = q3StartTime ? Math.floor((q3EndTime - q3StartTime) / 1000) : 0;
             const totalTime = Math.floor((endTime - startTime) / 1000);
-            
             const q1Correct = q1Answer === cleanAnswer(questionsData.q1_answer);
             const q2Correct = q2Answer === cleanAnswer(questionsData.q2_answer);
-            
             const submission = {
                 action: 'submitTest',
                 studentName: currentUser.name,
@@ -1925,26 +1719,16 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                 exitCount: exitCount,
                 exitLogs: JSON.stringify(exitLogs)
             };
-            
             showLoading(isForced ? 'Auto-submitting...' : 'Submitting...');
-            
             try {
-                console.log('Submitting test with data:', submission);
-                
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify(submission)
                 });
-                
                 const resultText = await response.text();
-                console.log('Response text:', resultText);
-                
                 const result = JSON.parse(resultText);
-                console.log('Parsed result:', result);
-                
                 if (result.success) {
-                    // Delete active test
                     await fetch(SCRIPT_URL, {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
@@ -1954,25 +1738,19 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                             day: currentDay
                         })
                     });
-                    
                     hideLoading();
                     testActive = false;
                     document.body.classList.remove('locked');
                     if (document.exitFullscreen) document.exitFullscreen();
-                    
                     document.getElementById('questionSection').style.display = 'none';
                     document.getElementById('mainPortal').style.display = 'block';
-                    
                     const q1Points = q1Correct ? 5 : 0;
                     const q2Points = q2Correct ? 5 : 0;
                     const currentTotal = q1Points + q2Points;
-                    
                     document.getElementById('testStatus').innerHTML = `
                         <div style="text-align: center; padding: 40px;">
                             <h2 style="color: #28a745; margin-bottom: 20px;">Test Submitted Successfully!</h2>
-                            <p style="font-size: 18px; color: #666; margin-bottom: 30px;">
-                                Your responses have been recorded and will be graded shortly.
-                            </p>
+                            <p style="font-size: 18px; color: #666; margin-bottom: 30px;">Your responses have been recorded and will be graded shortly.</p>
                             <div style="background: #f8f9fa; padding: 30px; border-radius: 8px; max-width: 500px; margin: 0 auto;">
                                 <div style="background: #EA5A2F; color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
                                     <strong style="font-size: 20px;">Current Score: ${currentTotal}/20</strong>
@@ -1993,13 +1771,11 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                 } else {
                     hideLoading();
                     alert('Submission error: ' + (result.error || 'Unknown error. Please contact your administrator.'));
-                    console.error('Submission failed:', result);
                     testActive = true;
                 }
             } catch (error) {
                 hideLoading();
                 alert('Error submitting test: ' + error.message + '\n\nPlease contact your administrator.');
-                console.error('Submission error:', error);
                 testActive = true;
             }
         }
@@ -2039,7 +1815,6 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                     });
                 }
             });
-            
             const latexInput = document.getElementById('latexInput');
             if (latexInput) {
                 latexInput.addEventListener('input', updateLatexPreview);
@@ -2078,7 +1853,6 @@ Common symbols:
                     (e.ctrlKey || e.metaKey) && e.keyCode === 85,
                     e.keyCode === 27
                 ];
-                
                 if (blocked.some(x => x)) {
                     e.preventDefault();
                     recordViolation('keyboard_blocked');
