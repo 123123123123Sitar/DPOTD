@@ -791,15 +791,15 @@
     <div class="confirmation-modal" id="confirmationModal">
         <div class="confirmation-content">
             <h2>Test Rules & Confirmation</h2>
-            <p style="font-size: 16px; margin-bottom: 15px;"><strong>Please read carefully before starting:</strong></p>
+            <p style="font-size: 16px; margin-bottom: 15px;">Please read carefully before starting:</p>
             <ul>
-                <li><strong>Time Limit:</strong> 2 hours (120 minutes) for all 3 questions</li>
-                <li><strong>Fullscreen Required:</strong> You must stay in fullscreen mode</li>
-                <li><strong>No Tab Switching:</strong> Leaving the test page will be recorded</li>
-                <li><strong>Question Values:</strong> Q1 and Q2 are worth 5 points each, Q3 is worth 10 points</li>
-                <li><strong>Auto-Submit:</strong> Test will auto-submit when time expires</li>
-                <li><strong>LaTeX Help:</strong> LaTeX syntax helper available for Q3</li>
-                <li><strong>No Pausing:</strong> Once started, the timer cannot be paused</li>
+                <li>Time Limit: 2 hours (120 minutes) for all 3 questions</li>
+                <li>Fullscreen Required: You must stay in fullscreen mode</li>
+                <li>No Tab Switching: Leaving the test page will be recorded</li>
+                <li>Question Values: Q1 and Q2 are worth 5 points each, Q3 is worth 10 points</li>
+                <li>Auto-Submit: Test will auto-submit when time expires</li>
+                <li>LaTeX Help: LaTeX syntax helper available for Q3</li>
+                <li>No Pausing: Once started, the timer cannot be paused</li>
             </ul>
             <p style="color: #dc3545; font-weight: 600; margin-top: 20px;">
                 WARNING: Violations (tab switching, exiting fullscreen) will be recorded and may affect your score!
@@ -992,10 +992,16 @@
             
             <div style="text-align: center; margin-bottom: 30px;">
                 <div style="font-size: 2.5em; font-weight: bold; color: #EA5A2F; margin-bottom: 10px;" id="testTitle">D.PotD Day 1</div>
-                <div style="font-size: 16px; color: #666; display: flex; justify-content: center; gap: 25px; flex-wrap: wrap;">
-                    <span>2 hours</span>
-                    <span>3 questions</span>
-                    <span>Don't leave this page</span>
+            </div>
+
+            <div id="navigationBar" style="display: none; background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
+                <div style="display: flex; gap: 10px; justify-content: center; align-items: center; flex-wrap: wrap;">
+                    <button class="question-nav-btn" onclick="showQuestion(1)" id="navBtn1" style="padding: 10px 20px; border: 2px solid #E3E3E3; background: white; border-radius: 6px; cursor: pointer; font-weight: 600;">1</button>
+                    <button class="question-nav-btn" onclick="showQuestion(2)" id="navBtn2" style="padding: 10px 20px; border: 2px solid #E3E3E3; background: white; border-radius: 6px; cursor: pointer; font-weight: 600;">2</button>
+                    <button class="question-nav-btn" onclick="showQuestion(3)" id="navBtn3" style="padding: 10px 20px; border: 2px solid #E3E3E3; background: white; border-radius: 6px; cursor: pointer; font-weight: 600;">3</button>
+                    <div style="width: 2px; height: 30px; background: #E3E3E3; margin: 0 10px;"></div>
+                    <button class="btn" onclick="nextQuestion()" id="nextBtn" style="width: auto; padding: 10px 30px; margin: 0;">Next</button>
+                    <button class="btn" onclick="submitTest()" id="submitBtn" style="width: auto; padding: 10px 30px; margin: 0; background: #28a745;">Submit Test</button>
                 </div>
             </div>
 
@@ -1006,7 +1012,6 @@
                     <img id="q1Image" class="question-image" style="display: none;">
                     <input type="text" id="q1Answer" placeholder="Your answer (numbers only)">
                 </div>
-                <button class="btn" onclick="nextQuestion(1)">Next Question</button>
                 <div id="q1Status" class="status"></div>
             </div>
 
@@ -1017,7 +1022,6 @@
                     <img id="q2Image" class="question-image" style="display: none;">
                     <input type="text" id="q2Answer" placeholder="Your answer (numbers only)">
                 </div>
-                <button class="btn" onclick="nextQuestion(2)">Next Question</button>
                 <div id="q2Status" class="status"></div>
             </div>
 
@@ -1039,7 +1043,6 @@
                     </div>
                 </div>
                 
-                <button class="btn" onclick="submitTest()" style="margin-top: 20px;">Submit Test</button>
                 <div id="q3Status" class="status"></div>
             </div>
         </div>
@@ -1598,6 +1601,7 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                     
                     document.getElementById('mainPortal').style.display = 'none';
                     document.getElementById('questionSection').style.display = 'block';
+                    document.getElementById('navigationBar').style.display = 'block';
                     
                     document.body.classList.add('locked');
                     testActive = true;
@@ -1624,6 +1628,31 @@ Keep responses brief and focused on LaTeX code syntax only.`;
             document.getElementById('progressIndicator').textContent = `Day ${currentDay} - Question ${num} of 3`;
             document.getElementById('progressIndicator').style.display = 'block';
             
+            // Update navigation button styles
+            ['navBtn1', 'navBtn2', 'navBtn3'].forEach(id => {
+                const btn = document.getElementById(id);
+                btn.style.background = 'white';
+                btn.style.borderColor = '#E3E3E3';
+                btn.style.color = '#000';
+            });
+            
+            const activeBtn = document.getElementById(`navBtn${num}`);
+            activeBtn.style.background = '#EA5A2F';
+            activeBtn.style.borderColor = '#EA5A2F';
+            activeBtn.style.color = 'white';
+            
+            // Show/hide Next and Submit buttons
+            const nextBtn = document.getElementById('nextBtn');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            if (num === 3) {
+                nextBtn.style.display = 'none';
+                submitBtn.style.display = 'block';
+            } else {
+                nextBtn.style.display = 'block';
+                submitBtn.style.display = 'none';
+            }
+            
             const aiBtn = document.getElementById('aiToggleBtn');
             const helpBtn = document.getElementById('latexHelpBtn');
             
@@ -1638,22 +1667,9 @@ Keep responses brief and focused on LaTeX code syntax only.`;
             currentQuestion = num;
         }
 
-        function nextQuestion(from) {
-            const answer = document.getElementById(`q${from}Answer`).value.trim();
-            
-            if (!answer) {
-                showStatus(`q${from}Status`, 'Please provide an answer', 'error');
-                return;
-            }
-            
-            if (from === 1) {
-                q1EndTime = Date.now();
-                q2StartTime = Date.now();
-                showQuestion(2);
-            } else if (from === 2) {
-                q2EndTime = Date.now();
-                q3StartTime = Date.now();
-                showQuestion(3);
+        function nextQuestion() {
+            if (currentQuestion < 3) {
+                showQuestion(currentQuestion + 1);
             }
         }
 
