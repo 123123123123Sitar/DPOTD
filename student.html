@@ -1909,6 +1909,7 @@ Keep responses brief and focused on LaTeX code syntax only.`;
             const q2Correct = q2Answer === cleanAnswer(questionsData.q2_answer);
             
             const submission = {
+                action: 'submitTest',
                 studentName: currentUser.name,
                 studentEmail: currentUser.email,
                 day: currentDay,
@@ -1928,18 +1929,25 @@ Keep responses brief and focused on LaTeX code syntax only.`;
             showLoading(isForced ? 'Auto-submitting...' : 'Submitting...');
             
             try {
+                console.log('Submitting test with data:', submission);
+                
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    headers: {'Content-Type': 'text/plain'},
+                    headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify(submission)
                 });
                 
-                const result = JSON.parse(await response.text());
+                const resultText = await response.text();
+                console.log('Response text:', resultText);
+                
+                const result = JSON.parse(resultText);
+                console.log('Parsed result:', result);
                 
                 if (result.success) {
                     // Delete active test
                     await fetch(SCRIPT_URL, {
                         method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({
                             action: 'deleteActiveTest',
                             email: currentUser.email,
@@ -1984,12 +1992,14 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                     `;
                 } else {
                     hideLoading();
-                    showStatus('q3Status', 'Error: ' + (result.error || 'Unknown'), 'error');
+                    alert('Submission error: ' + (result.error || 'Unknown error. Please contact your administrator.'));
+                    console.error('Submission failed:', result);
                     testActive = true;
                 }
             } catch (error) {
                 hideLoading();
-                showStatus('q3Status', 'Error: ' + error.message, 'error');
+                alert('Error submitting test: ' + error.message + '\n\nPlease contact your administrator.');
+                console.error('Submission error:', error);
                 testActive = true;
             }
         }
