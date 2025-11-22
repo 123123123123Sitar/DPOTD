@@ -67,7 +67,19 @@
         #latexPreview { min-height: calc(100% - 40px); padding: 10px; background: #fafafa; border: 1px solid #ddd; border-radius: 4px; overflow-y: auto; }
         .timer { position: fixed; top: 20px; left: 20px; background: white; padding: 15px 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); font-size: 18px; font-weight: 600; color: #000; z-index: 10000; border: 2px solid #E3E3E3; display: none; }
         .progress-indicator { position: fixed; top: 80px; left: 20px; background: white; padding: 15px 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); font-size: 16px; font-weight: 600; color: #EA5A2F; z-index: 10000; border: 2px solid #E3E3E3; display: none; }
+        
+        .ai-helper { position: fixed; top: 20px; right: 20px; width: 350px; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 2px solid #E3E3E3; z-index: 10001; display: none; }
+        .ai-helper.show { display: block; }
+        .ai-header { background: #EA5A2F; color: white; padding: 15px; border-radius: 10px 10px 0 0; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+        .ai-close { background: none; border: none; color: white; font-size: 20px; cursor: pointer; padding: 0; width: 25px; height: 25px; }
+        .ai-chat-container { height: 400px; overflow-y: auto; padding: 15px; background: #f8f9fa; }
+        .ai-message { margin-bottom: 15px; padding: 10px; border-radius: 8px; max-width: 90%; }
+        .ai-message.user { background: #EA5A2F; color: white; margin-left: auto; }
+        .ai-message.assistant { background: white; border: 1px solid #E3E3E3; }
+        .ai-input-container { padding: 15px; border-top: 2px solid #E3E3E3; }
+        .ai-input-container input { width: 100%; padding: 10px; border: 2px solid #E3E3E3; border-radius: 6px; font-size: 14px; }
         .ai-toggle-btn { position: fixed; top: 20px; right: 20px; background: #EA5A2F; color: white; padding: 12px 20px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 10000; display: none; }
+        
         .latex-help-btn { position: fixed; top: 20px; right: 180px; background: #4A90E2; color: white; width: 32px; height: 32px; border: none; border-radius: 50%; font-weight: bold; font-size: 18px; line-height: 1; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 10000; display: none; align-items: center; justify-content: center; padding: 0; }
         .latex-help-btn:hover { background: #3A7BC8; }
         .latex-help-dropdown { position: fixed; top: 65px; right: 180px; width: 400px; max-height: 500px; overflow-y: auto; background: white; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); z-index: 10001; display: none; padding: 20px; border: 2px solid #4A90E2; }
@@ -77,6 +89,7 @@
         .latex-help-section h4 { color: #000; font-size: 14px; margin-bottom: 8px; }
         .latex-help-section code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-family: 'Courier New', monospace; font-size: 13px; color: #e83e8c; }
         .latex-help-section p { font-size: 13px; color: #666; margin: 5px 0; line-height: 1.6; }
+        
         .warning-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(234, 90, 47, 0.95); z-index: 99999; color: white; justify-content: center; align-items: center; flex-direction: column; font-size: 24px; font-weight: 600; text-align: center; padding: 20px; }
         .warning-overlay.show { display: flex; }
         .warning-count { font-size: 48px; color: #000; margin: 20px 0; }
@@ -120,7 +133,7 @@
             <ul>
                 <li><strong>Time Limit:</strong> 2 hours (120 minutes) for all 3 questions</li>
                 <li><strong>Questions:</strong> 2 integer answers worth 5 points each and 1 proof question worth 10 points</li>
-                <li>A latex syntax helper will be available for Q3</li>
+                <li>A LaTeX helper will be available for Q3</li>
                 <li>Fullscreen mode is required. Any tab switching will be recorded.</li>
                 <li><strong style="color: #EA5A2F;">Once the test starts, the timer cannot be paused. Closing the tab will record a violation and the timer continues running.</strong></li>
                 <li>The test will auto-submit when time expires</li>
@@ -187,6 +200,36 @@
         <div class="latex-help-section">
             <h4>Parentheses (Auto-sizing)</h4>
             <p><code>\left( \frac{a}{b} \right)</code></p>
+        </div>
+    </div>
+
+    <div class="ai-helper" id="aiHelper">
+        <div class="ai-header">
+            <span>LaTeX Helper</span>
+            <button class="ai-close" onclick="toggleAIHelper()">×</button>
+        </div>
+        <div class="ai-chat-container" id="aiChatContainer">
+            <div class="ai-message assistant">
+                <strong>LaTeX Helper:</strong> I can ONLY help with LaTeX syntax and formatting.
+                <br><br>
+                <strong style="color: #dc3545;">I CANNOT:</strong>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                    <li>Solve math problems</li>
+                    <li>Provide answers or hints</li>
+                    <li>Explain math concepts</li>
+                    <li>Calculate anything</li>
+                </ul>
+                <strong style="color: #28a745;">I CAN help with:</strong>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                    <li>"How do I write a fraction?"</li>
+                    <li>"What's the syntax for square roots?"</li>
+                    <li>"How do I make subscripts?"</li>
+                    <li>"How do I write Greek letters?"</li>
+                </ul>
+            </div>
+        </div>
+        <div class="ai-input-container">
+            <input type="text" id="aiInput" placeholder="Ask about LaTeX syntax..." onkeypress="handleAIEnter(event)">
         </div>
     </div>
 
@@ -337,7 +380,8 @@
     </div>
     
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzYLsErhEpiTnSbPgNc_1TgmM85-feNNp87oHiX9x6iYPscjfPOLYtAYOdVlACffWJupw/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxoZ5WWL9WMQsxtNDih0mmEkPS-J_kt_9tprygr_0n-4g69urc16yz5XwLt6CoQmF394g/exec';
+        const GEMINI_API_KEY = 'AIzaSyAG0HmsIkxuESxsq0sYNPRANTfqHdIk6Tk';
         
         let currentUser = null;
         let startTime, timerInterval, questionsData;
@@ -417,7 +461,7 @@
         }
 
         function toggleAIHelper() {
-            alert('LaTeX Helper feature has been removed to prevent cheating. Please use the ? button for syntax help.');
+            document.getElementById('aiHelper').classList.toggle('show');
         }
 
         let latexHelpTimeout;
@@ -431,6 +475,102 @@
             latexHelpTimeout = setTimeout(() => {
                 document.getElementById('latexHelpDropdown').classList.remove('show');
             }, 300);
+        }
+
+        function handleAIEnter(event) {
+            if (event.key === 'Enter') sendAIMessage();
+        }
+
+        async function sendAIMessage() {
+            const input = document.getElementById('aiInput');
+            const message = input.value.trim();
+            if (!message) return;
+            
+            addAIMessage(message, 'user');
+            input.value = '';
+            
+            const lowerMessage = message.toLowerCase();
+            
+            const problemSolvingPhrases = [
+                'solve', 'calculate', 'compute', 'what is', 'how much is', 
+                'find the answer', 'find the solution', 'the answer to',
+                'result of', 'evaluate', 'simplify'
+            ];
+            
+            const syntaxPhrases = [
+                'how do i write', 'how to write', 'syntax for', 'latex code',
+                'in latex', 'using latex', 'format', 'display'
+            ];
+            
+            const isSyntaxQuestion = syntaxPhrases.some(phrase => lowerMessage.includes(phrase));
+            const isProblemSolving = problemSolvingPhrases.some(phrase => lowerMessage.includes(phrase));
+            
+            if (isProblemSolving && !isSyntaxQuestion) {
+                addAIMessage('I cannot help solve math problems or provide answers. I can ONLY help with LaTeX syntax questions like:\n\n"How do I write a fraction?"\n"How do I make superscripts?"\n"How do I write Greek letters?"\n"What\'s the syntax for square roots?"', 'assistant');
+                return;
+            }
+            
+            const systemPrompt = `You are a STRICT LaTeX syntax helper. You can ONLY answer questions about how to write LaTeX code.
+
+ALLOWED:
+- Explain LaTeX syntax and commands (e.g., "use \\frac{a}{b} for fractions")
+- Show how to format/convert mathematical expressions into LaTeX code
+- When user says "format this" or "convert this", they mean convert it to LaTeX syntax
+- Explain LaTeX symbols and structures
+- Help convert mathematical notation into proper LaTeX code
+
+FORBIDDEN:
+- Solve ANY math problems
+- Provide numerical answers to calculations
+- Give hints about problem solutions
+- Explain mathematical concepts or theory
+- Calculate or evaluate expressions
+
+If asked to solve something, respond: "I can only help with LaTeX syntax, not solving problems."
+
+When helping with formatting/conversion, ONLY show the LaTeX code syntax, do not solve or simplify the math.
+
+Keep responses brief and focused on LaTeX code syntax only.`;
+
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_API_KEY}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        contents: [{parts: [{text: `${systemPrompt}\n\nUser: ${message}`}]}],
+                        generationConfig: {temperature: 0.4, maxOutputTokens: 200}
+                    })
+                });
+                
+                if (!response.ok) throw new Error(`API Error: ${response.status}`);
+                
+                const data = await response.json();
+                const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sorry, no response';
+                
+                addAIMessage(aiResponse, 'assistant');
+            } catch (error) {
+                addAIMessage(`Error: ${error.message}`, 'assistant');
+            }
+        }
+
+        function addAIMessage(message, type) {
+            const container = document.getElementById('aiChatContainer');
+            const div = document.createElement('div');
+            div.className = `ai-message ${type}`;
+            
+            if (type === 'assistant') {
+                let processed = message
+                    .replace(/```([^`]+)```/g, '<pre style="background:#2d2d2d;color:#f8f8f2;padding:10px;border-radius:4px;overflow-x:auto;margin:10px 0">$1</pre>')
+                    .replace(/`([^`]+)`/g, '<code style="background:#f4f4f4;padding:2px 6px;border-radius:3px;color:#e83e8c">$1</code>');
+                div.innerHTML = `<strong>LaTeX Helper:</strong> ${processed}`;
+                container.appendChild(div);
+                if (window.MathJax) MathJax.typesetPromise([div]).catch(e => console.log(e));
+            } else {
+                div.textContent = message;
+                container.appendChild(div);
+            }
+            
+            container.scrollTop = container.scrollHeight;
         }
 
         function switchMainTab(tab) {
@@ -971,11 +1111,14 @@
                 submitBtn.style.display = 'none';
             }
             
+            const aiBtn = document.getElementById('aiToggleBtn');
             const helpBtn = document.getElementById('latexHelpBtn');
             
             if (num === 3) {
+                aiBtn.style.display = 'block';
                 helpBtn.style.display = 'flex';
             } else {
+                aiBtn.style.display = 'none';
                 helpBtn.style.display = 'none';
             }
             
