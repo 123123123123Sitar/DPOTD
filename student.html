@@ -19,765 +19,90 @@
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: #E3E3E3;
-            min-height: 100vh;
-            padding: 20px 20px 80px 20px;
-        }
-
-        body.locked {
-            padding: 0 0 120px 0;
-            overflow: hidden;
-            position: fixed;
-            width: 100%;
-            height: 100%;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 12px;
-            padding: 40px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-            border: 2px solid #E3E3E3;
-        }
-
-        body.locked .container {
-            max-width: 100%;
-            height: calc(100vh - 120px);
-            border-radius: 0;
-            overflow-y: auto;
-            padding: 80px 40px 40px;
-            margin: 0;
-        }
-
-        h1 {
-            color: #000;
-            margin-bottom: 10px;
-            text-align: center;
-            font-size: 2.2em;
-            font-weight: 700;
-        }
-
-        .subtitle {
-            text-align: center;
-            color: #666;
-            margin-bottom: 30px;
-            font-size: 1.1em;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #000;
-            font-weight: 600;
-        }
-
-        input, textarea, select {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #E3E3E3;
-            border-radius: 6px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-            background: #fff;
-            color: #000;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-        }
-
-        textarea {
-            font-family: 'Courier New', monospace;
-        }
-
-        input:focus, textarea:focus, select:focus {
-            outline: none;
-            border-color: #EA5A2F;
-            box-shadow: 0 0 0 3px rgba(234, 90, 47, 0.1);
-        }
-
-        .btn {
-            background: #EA5A2F;
-            color: white;
-            padding: 15px 30px;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-            transition: all 0.3s ease;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            background: #d84a1f;
-        }
-
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-            background: #E3E3E3;
-            color: #666;
-        }
-
-        .status {
-            padding: 15px;
-            border-radius: 6px;
-            margin-top: 20px;
-            display: none;
-        }
-
-        .status.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-            display: block;
-        }
-
-        .status.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-            display: block;
-        }
-
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #E3E3E3;
-        }
-
-        .tab {
-            padding: 12px 24px;
-            background: none;
-            border: none;
-            border-bottom: 3px solid transparent;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            color: #666;
-            transition: all 0.3s;
-        }
-
-        .tab.active {
-            color: #EA5A2F;
-            border-bottom-color: #EA5A2F;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .score-card {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            border-left: 4px solid #EA5A2F;
-        }
-
-        .score-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .score-details {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .score-item {
-            padding: 8px;
-            background: white;
-            border-radius: 4px;
-        }
-
-        .correct {
-            color: #28a745;
-            font-weight: bold;
-        }
-
-        .incorrect {
-            color: #dc3545;
-            font-weight: bold;
-        }
-
-        .feedback-box {
-            background: #fff;
-            border: 2px solid #EA5A2F;
-            border-radius: 6px;
-            padding: 20px;
-            margin-top: 15px;
-        }
-
-        .feedback-box h4 {
-            color: #EA5A2F;
-            margin-bottom: 15px;
-        }
-
-        .profile-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            background: #EA5A2F;
-            color: white;
-            border-radius: 8px 8px 0 0;
-            margin: -40px -40px 20px -40px;
-        }
-
-        .profile-name {
-            font-size: 18px;
-            font-weight: 600;
-        }
-
-        .logout-btn {
-            background: rgba(255,255,255,0.2);
-            color: white;
-            padding: 8px 16px;
-            border: 1px solid white;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .logout-btn:hover {
-            background: rgba(255,255,255,0.3);
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        .question-section {
-            display: none;
-        }
-
-        .question-box {
-            background: #f8f9fa;
-            padding: 30px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border-left: 4px solid #EA5A2F;
-            min-height: 200px;
-        }
-
-        .question-box h2 {
-            color: #000;
-            margin-bottom: 20px;
-            font-size: 1.8em;
-        }
-
-        .question-box p {
-            color: #333;
-            font-size: 1.1em;
-            line-height: 1.6;
-            margin-bottom: 25px;
-        }
-
-        .question-image {
-            max-width: 100%;
-            height: auto;
-            border-radius: 8px;
-            margin: 20px 0;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            display: block;
-        }
-
-        .latex-editor-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-top: 20px;
-        }
-
-        .latex-input-section, .latex-preview-section {
-            background: #fff;
-            border: 2px solid #E3E3E3;
-            border-radius: 8px;
-            padding: 15px;
-            height: 500px;
-            overflow-y: auto;
-        }
-
-        .latex-input-section h3, .latex-preview-section h3 {
-            color: #EA5A2F;
-            margin-bottom: 10px;
-            font-size: 16px;
-        }
-
-        #latexInput {
-            width: 100%;
-            height: calc(100% - 40px);
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            padding: 10px;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            resize: none;
-        }
-
-        #latexPreview {
-            min-height: calc(100% - 40px);
-            padding: 10px;
-            background: #fafafa;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            overflow-y: auto;
-        }
-
-        .timer {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            background: white;
-            padding: 15px 25px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            font-size: 18px;
-            font-weight: 600;
-            color: #000;
-            z-index: 10000;
-            border: 2px solid #E3E3E3;
-            display: none;
-        }
-
-        .progress-indicator {
-            position: fixed;
-            top: 80px;
-            left: 20px;
-            background: white;
-            padding: 15px 25px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            font-size: 16px;
-            font-weight: 600;
-            color: #EA5A2F;
-            z-index: 10000;
-            border: 2px solid #E3E3E3;
-            display: none;
-        }
-
-        .ai-helper {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            width: 350px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            border: 2px solid #E3E3E3;
-            z-index: 10001;
-            display: none;
-        }
-
-        .ai-helper.show {
-            display: block;
-        }
-
-        .ai-header {
-            background: #EA5A2F;
-            color: white;
-            padding: 15px;
-            border-radius: 10px 10px 0 0;
-            font-weight: 600;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .ai-close {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 20px;
-            cursor: pointer;
-            padding: 0;
-            width: 25px;
-            height: 25px;
-        }
-
-        .ai-chat-container {
-            height: 400px;
-            overflow-y: auto;
-            padding: 15px;
-            background: #f8f9fa;
-        }
-
-        .ai-message {
-            margin-bottom: 15px;
-            padding: 10px;
-            border-radius: 8px;
-            max-width: 90%;
-        }
-
-        .ai-message.user {
-            background: #EA5A2F;
-            color: white;
-            margin-left: auto;
-        }
-
-        .ai-message.assistant {
-            background: white;
-            border: 1px solid #E3E3E3;
-        }
-
-        .ai-input-container {
-            padding: 15px;
-            border-top: 2px solid #E3E3E3;
-        }
-
-        .ai-input-container input {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #E3E3E3;
-            border-radius: 6px;
-            font-size: 14px;
-        }
-
-        .ai-toggle-btn {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #EA5A2F;
-            color: white;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            z-index: 10000;
-            display: none;
-        }
-
-        .latex-help-btn {
-            position: fixed;
-            top: 20px;
-            right: 180px;
-            background: #4A90E2;
-            color: white;
-            width: 32px;
-            height: 32px;
-            border: none;
-            border-radius: 50%;
-            font-weight: bold;
-            font-size: 18px;
-            line-height: 1;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            z-index: 10000;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 0;
-        }
-
-        .latex-help-btn:hover {
-            background: #3A7BC8;
-        }
-
-        .latex-help-dropdown {
-            position: fixed;
-            top: 65px;
-            right: 180px;
-            width: 400px;
-            max-height: 500px;
-            overflow-y: auto;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-            z-index: 10001;
-            display: none;
-            padding: 20px;
-            border: 2px solid #4A90E2;
-        }
-
-        .latex-help-dropdown.show {
-            display: block;
-        }
-
-        .latex-help-dropdown h3 {
-            color: #4A90E2;
-            margin-bottom: 15px;
-            font-size: 18px;
-            border-bottom: 2px solid #E3E3E3;
-            padding-bottom: 10px;
-        }
-
-        .latex-help-section {
-            margin-bottom: 20px;
-        }
-
-        .latex-help-section h4 {
-            color: #000;
-            font-size: 14px;
-            margin-bottom: 8px;
-        }
-
-        .latex-help-section code {
-            background: #f4f4f4;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-            color: #e83e8c;
-        }
-
-        .latex-help-section p {
-            font-size: 13px;
-            color: #666;
-            margin: 5px 0;
-            line-height: 1.6;
-        }
-
-        .warning-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(234, 90, 47, 0.95);
-            z-index: 99999;
-            color: white;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            font-size: 24px;
-            font-weight: 600;
-            text-align: center;
-            padding: 20px;
-        }
-
-        .warning-overlay.show {
-            display: flex;
-        }
-
-        .warning-count {
-            font-size: 48px;
-            color: #000;
-            margin: 20px 0;
-        }
-
-        .loading-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 99999;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .loading-modal.show {
-            display: flex;
-        }
-        
-        .loading-content {
-            background: white;
-            padding: 40px 60px;
-            border-radius: 15px;
-            text-align: center;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-        }
-        
-        .spinner {
-            width: 60px;
-            height: 60px;
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #EA5A2F;
-            border-radius: 50%;
-            margin: 0 auto 20px;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .confirmation-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            z-index: 100000;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .confirmation-modal.show {
-            display: flex;
-        }
-        
-        .confirmation-content {
-            background: white;
-            padding: 40px;
-            border-radius: 15px;
-            max-width: 600px;
-            width: 90%;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-        }
-        
-        .confirmation-content h2 {
-            color: #EA5A2F;
-            margin-bottom: 20px;
-        }
-        
-        .confirmation-content ul {
-            text-align: left;
-            margin: 20px 0;
-            padding-left: 30px;
-            line-height: 1.8;
-        }
-        
-        .confirmation-content ul li {
-            margin: 10px 0;
-        }
-        
-        .confirmation-buttons {
-            display: flex;
-            gap: 15px;
-            margin-top: 30px;
-        }
-        
-        .confirm-btn {
-            flex: 1;
-            padding: 15px;
-            border: none;
-            border-radius: 6px;
-            font-weight: 600;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        
-        .confirm-btn.start {
-            background: #28a745;
-            color: white;
-        }
-        
-        .confirm-btn.cancel {
-            background: #dc3545;
-            color: white;
-        }
-
-        body.locked::after {
-            content: 'TEST IN PROGRESS - DO NOT LEAVE THIS PAGE';
-            position: fixed;
-            bottom: 60px;
-            left: 0;
-            right: 0;
-            background: #000;
-            color: white;
-            padding: 12px;
-            text-align: center;
-            font-weight: 600;
-            z-index: 9999;
-            font-size: 14px;
-        }
-
-        .sponsor-footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: white;
-            border-top: 2px solid #E3E3E3;
-            padding: 15px 20px;
-            z-index: 9998;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 20px;
-            flex-wrap: wrap;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
-        }
-
-        .sponsor-label {
-            font-size: 11px;
-            color: #666;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-right: 10px;
-        }
-
-        .sponsor-logos {
-            display: flex;
-            align-items: center;
-            gap: 30px;
-            flex-wrap: wrap;
-        }
-
-        .sponsor-logo {
-            height: 48px;
-            width: auto;
-            object-fit: contain;
-            opacity: 0.8;
-            transition: opacity 0.3s;
-        }
-
-        .sponsor-logo:hover {
-            opacity: 1;
-        }
-
-        @media (max-width: 1200px) {
-            .latex-editor-container {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .sponsor-footer {
-                padding: 12px 15px;
-                gap: 15px;
-            }
-
-            .sponsor-label {
-                font-size: 10px;
-                width: 100%;
-                text-align: center;
-                margin: 0 0 5px 0;
-            }
-
-            .sponsor-logos {
-                gap: 20px;
-                justify-content: center;
-            }
-
-            .sponsor-logo {
-                height: 40px;
-            }
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background: #E3E3E3; min-height: 100vh; padding: 20px 20px 80px 20px; }
+        body.locked { padding: 0 0 120px 0; overflow: hidden; position: fixed; width: 100%; height: 100%; }
+        .container { max-width: 800px; margin: 0 auto; background: white; border-radius: 12px; padding: 40px; box-shadow: 0 8px 32px rgba(0,0,0,0.1); border: 2px solid #E3E3E3; }
+        body.locked .container { max-width: 100%; height: calc(100vh - 120px); border-radius: 0; overflow-y: auto; padding: 80px 40px 40px; margin: 0; }
+        h1 { color: #000; margin-bottom: 10px; text-align: center; font-size: 2.2em; font-weight: 700; }
+        .subtitle { text-align: center; color: #666; margin-bottom: 30px; font-size: 1.1em; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; color: #000; font-weight: 600; }
+        input, textarea, select { width: 100%; padding: 12px; border: 2px solid #E3E3E3; border-radius: 6px; font-size: 16px; transition: border-color 0.3s; background: #fff; color: #000; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
+        textarea { font-family: 'Courier New', monospace; }
+        input:focus, textarea:focus, select:focus { outline: none; border-color: #EA5A2F; box-shadow: 0 0 0 3px rgba(234, 90, 47, 0.1); }
+        .btn { background: #EA5A2F; color: white; padding: 15px 30px; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer; width: 100%; transition: all 0.3s ease; }
+        .btn:hover { transform: translateY(-2px); background: #d84a1f; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; background: #E3E3E3; color: #666; }
+        .status { padding: 15px; border-radius: 6px; margin-top: 20px; display: none; }
+        .status.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; display: block; }
+        .status.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; display: block; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 30px; border-bottom: 2px solid #E3E3E3; }
+        .tab { padding: 12px 24px; background: none; border: none; border-bottom: 3px solid transparent; cursor: pointer; font-size: 16px; font-weight: 600; color: #666; transition: all 0.3s; }
+        .tab.active { color: #EA5A2F; border-bottom-color: #EA5A2F; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .score-card { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #EA5A2F; }
+        .score-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 15px; border-bottom: 2px solid #e9ecef; }
+        .score-details { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 10px; }
+        .score-item { padding: 8px; background: white; border-radius: 4px; }
+        .correct { color: #28a745; font-weight: bold; }
+        .incorrect { color: #dc3545; font-weight: bold; }
+        .feedback-box { background: #fff; border: 2px solid #EA5A2F; border-radius: 6px; padding: 20px; margin-top: 15px; }
+        .feedback-box h4 { color: #EA5A2F; margin-bottom: 15px; }
+        .profile-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: #EA5A2F; color: white; border-radius: 8px 8px 0 0; margin: -40px -40px 20px -40px; }
+        .profile-name { font-size: 18px; font-weight: 600; }
+        .logout-btn { background: rgba(255,255,255,0.2); color: white; padding: 8px 16px; border: 1px solid white; border-radius: 4px; cursor: pointer; font-size: 14px; }
+        .logout-btn:hover { background: rgba(255,255,255,0.3); }
+        .hidden { display: none !important; }
+        .question-section { display: none; }
+        .question-box { background: #f8f9fa; padding: 30px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #EA5A2F; min-height: 200px; }
+        .question-box h2 { color: #000; margin-bottom: 20px; font-size: 1.8em; }
+        .question-box p { color: #333; font-size: 1.1em; line-height: 1.6; margin-bottom: 25px; }
+        .question-image { max-width: 100%; height: auto; border-radius: 8px; margin: 20px 0; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: block; }
+        .latex-editor-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+        .latex-input-section, .latex-preview-section { background: #fff; border: 2px solid #E3E3E3; border-radius: 8px; padding: 15px; height: 500px; overflow-y: auto; }
+        .latex-input-section h3, .latex-preview-section h3 { color: #EA5A2F; margin-bottom: 10px; font-size: 16px; }
+        #latexInput { width: 100%; height: calc(100% - 40px); border: 1px solid #ddd; border-radius: 4px; padding: 10px; font-family: 'Courier New', monospace; font-size: 14px; resize: none; }
+        #latexPreview { min-height: calc(100% - 40px); padding: 10px; background: #fafafa; border: 1px solid #ddd; border-radius: 4px; overflow-y: auto; }
+        .timer { position: fixed; top: 20px; left: 20px; background: white; padding: 15px 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); font-size: 18px; font-weight: 600; color: #000; z-index: 10000; border: 2px solid #E3E3E3; display: none; }
+        .progress-indicator { position: fixed; top: 80px; left: 20px; background: white; padding: 15px 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); font-size: 16px; font-weight: 600; color: #EA5A2F; z-index: 10000; border: 2px solid #E3E3E3; display: none; }
+        .ai-toggle-btn { position: fixed; top: 20px; right: 20px; background: #EA5A2F; color: white; padding: 12px 20px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 10000; display: none; }
+        .latex-help-btn { position: fixed; top: 20px; right: 180px; background: #4A90E2; color: white; width: 32px; height: 32px; border: none; border-radius: 50%; font-weight: bold; font-size: 18px; line-height: 1; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 10000; display: none; align-items: center; justify-content: center; padding: 0; }
+        .latex-help-btn:hover { background: #3A7BC8; }
+        .latex-help-dropdown { position: fixed; top: 65px; right: 180px; width: 400px; max-height: 500px; overflow-y: auto; background: white; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); z-index: 10001; display: none; padding: 20px; border: 2px solid #4A90E2; }
+        .latex-help-dropdown.show { display: block; }
+        .latex-help-dropdown h3 { color: #4A90E2; margin-bottom: 15px; font-size: 18px; border-bottom: 2px solid #E3E3E3; padding-bottom: 10px; }
+        .latex-help-section { margin-bottom: 20px; }
+        .latex-help-section h4 { color: #000; font-size: 14px; margin-bottom: 8px; }
+        .latex-help-section code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-family: 'Courier New', monospace; font-size: 13px; color: #e83e8c; }
+        .latex-help-section p { font-size: 13px; color: #666; margin: 5px 0; line-height: 1.6; }
+        .warning-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(234, 90, 47, 0.95); z-index: 99999; color: white; justify-content: center; align-items: center; flex-direction: column; font-size: 24px; font-weight: 600; text-align: center; padding: 20px; }
+        .warning-overlay.show { display: flex; }
+        .warning-count { font-size: 48px; color: #000; margin: 20px 0; }
+        .loading-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 99999; justify-content: center; align-items: center; }
+        .loading-modal.show { display: flex; }
+        .loading-content { background: white; padding: 40px 60px; border-radius: 15px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+        .spinner { width: 60px; height: 60px; border: 5px solid #f3f3f3; border-top: 5px solid #EA5A2F; border-radius: 50%; margin: 0 auto 20px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .confirmation-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); z-index: 100000; justify-content: center; align-items: center; }
+        .confirmation-modal.show { display: flex; }
+        .confirmation-content { background: white; padding: 40px; border-radius: 15px; max-width: 600px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        .confirmation-content h2 { color: #EA5A2F; margin-bottom: 20px; }
+        .confirmation-content ul { text-align: left; margin: 20px 0; padding-left: 30px; line-height: 1.8; }
+        .confirmation-content ul li { margin: 10px 0; }
+        .confirmation-buttons { display: flex; gap: 15px; margin-top: 30px; }
+        .confirm-btn { flex: 1; padding: 15px; border: none; border-radius: 6px; font-weight: 600; font-size: 16px; cursor: pointer; }
+        .confirm-btn.start { background: #28a745; color: white; }
+        .confirm-btn.cancel { background: #dc3545; color: white; }
+        body.locked::after { content: 'TEST IN PROGRESS - DO NOT LEAVE THIS PAGE'; position: fixed; bottom: 60px; left: 0; right: 0; background: #000; color: white; padding: 12px; text-align: center; font-weight: 600; z-index: 9999; font-size: 14px; }
+        .sponsor-footer { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 2px solid #E3E3E3; padding: 15px 20px; z-index: 9998; display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
+        .sponsor-label { font-size: 11px; color: #666; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-right: 10px; }
+        .sponsor-logos { display: flex; align-items: center; gap: 30px; flex-wrap: wrap; }
+        .sponsor-logo { height: 48px; width: auto; object-fit: contain; opacity: 0.8; transition: opacity 0.3s; }
+        .sponsor-logo:hover { opacity: 1; }
+        @media (max-width: 1200px) { .latex-editor-container { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) { .sponsor-footer { padding: 12px 15px; gap: 15px; } .sponsor-label { font-size: 10px; width: 100%; text-align: center; margin: 0 0 5px 0; } .sponsor-logos { gap: 20px; justify-content: center; } .sponsor-logo { height: 40px; } }
     </style>
 </head>
 <body>
@@ -797,11 +122,12 @@
                 <li><strong>Questions:</strong> 2 integer answers worth 5 points each and 1 proof question worth 10 points</li>
                 <li>A latex syntax helper will be available for Q3</li>
                 <li>Fullscreen mode is required. Any tab switching will be recorded.</li>
-                <li>Once the test starts, the timer cannot be paused. The test will auto-submit when time expires</li>
-                <li>If you encounter any issues, please notify us at <span style="color: #EA5A2F;">dtechmathclub@gmail.com</span> and we will work to resolve your issue.</li>
+                <li><strong style="color: #EA5A2F;">Once the test starts, the timer cannot be paused. Closing the tab will record a violation and the timer continues running.</strong></li>
+                <li>The test will auto-submit when time expires</li>
+                <li>If you encounter any issues, please notify us at <span style="color: #EA5A2F;">dtechmathclub@gmail.com</span></li>
             </ul>
             <p style="color: #dc3545; font-weight: 600; margin-top: 20px;">
-                WARNING: Violations (tab switching, exiting fullscreen) will be recorded and may affect your score!
+                WARNING: Violations (tab switching, exiting fullscreen, closing tab) will be recorded and may affect your score!
             </p>
             <div class="confirmation-buttons">
                 <button class="confirm-btn cancel" onclick="cancelTest()">Cancel</button>
@@ -819,50 +145,38 @@
         </button>
     </div>
 
-    <button class="ai-toggle-btn" id="aiToggleBtn" onclick="toggleAIHelper()">
-        LaTeX Helper
-    </button>
-
-    <button class="latex-help-btn" id="latexHelpBtn" onmouseenter="showLatexHelp()" onmouseleave="hideLatexHelp()">
-        ?
-    </button>
+    <button class="ai-toggle-btn" id="aiToggleBtn" onclick="toggleAIHelper()">LaTeX Helper</button>
+    <button class="latex-help-btn" id="latexHelpBtn" onmouseenter="showLatexHelp()" onmouseleave="hideLatexHelp()">?</button>
 
     <div class="latex-help-dropdown" id="latexHelpDropdown" onmouseenter="showLatexHelp()" onmouseleave="hideLatexHelp()">
         <h3>Basic LaTeX Syntax</h3>
-        
         <div class="latex-help-section">
             <h4>Inline Math</h4>
             <p>Wrap math in single dollar signs: <code>$x^2 + y^2 = z^2$</code></p>
         </div>
-        
         <div class="latex-help-section">
             <h4>Display Math (Centered)</h4>
             <p>Use double dollar signs:</p>
             <p><code>$$\frac{a}{b} = \frac{c}{d}$$</code></p>
         </div>
-        
         <div class="latex-help-section">
             <h4>Fractions</h4>
             <p><code>\frac{numerator}{denominator}</code></p>
             <p>Example: <code>$\frac{1}{2}$</code></p>
         </div>
-        
         <div class="latex-help-section">
             <h4>Exponents & Subscripts</h4>
             <p>Exponent: <code>x^2</code> or <code>x^{10}</code></p>
             <p>Subscript: <code>x_1</code> or <code>x_{10}</code></p>
         </div>
-        
         <div class="latex-help-section">
             <h4>Square Roots</h4>
             <p><code>\sqrt{x}</code> or <code>\sqrt[3]{x}</code></p>
         </div>
-        
         <div class="latex-help-section">
             <h4>Greek Letters</h4>
             <p><code>\alpha</code>, <code>\beta</code>, <code>\gamma</code>, <code>\theta</code>, <code>\pi</code></p>
         </div>
-        
         <div class="latex-help-section">
             <h4>Common Symbols</h4>
             <p>Summation: <code>\sum_{i=1}^{n}</code></p>
@@ -870,40 +184,9 @@
             <p>Less/Greater: <code>\leq</code>, <code>\geq</code></p>
             <p>Infinity: <code>\infty</code></p>
         </div>
-        
         <div class="latex-help-section">
             <h4>Parentheses (Auto-sizing)</h4>
             <p><code>\left( \frac{a}{b} \right)</code></p>
-        </div>
-    </div>
-
-    <div class="ai-helper" id="aiHelper">
-        <div class="ai-header">
-            <span>LaTeX Helper</span>
-            <button class="ai-close" onclick="toggleAIHelper()">×</button>
-        </div>
-        <div class="ai-chat-container" id="aiChatContainer">
-            <div class="ai-message assistant">
-                <strong>LaTeX Helper:</strong> I can ONLY help with LaTeX syntax and formatting.
-                <br><br>
-                <strong style="color: #dc3545;">I CANNOT:</strong>
-                <ul style="margin: 10px 0; padding-left: 20px;">
-                    <li>Solve math problems</li>
-                    <li>Provide answers or hints</li>
-                    <li>Explain math concepts</li>
-                    <li>Calculate anything</li>
-                </ul>
-                <strong style="color: #28a745;">I CAN help with:</strong>
-                <ul style="margin: 10px 0; padding-left: 20px;">
-                    <li>"How do I write a fraction?"</li>
-                    <li>"What's the syntax for square roots?"</li>
-                    <li>"How do I make subscripts?"</li>
-                    <li>"How do I write Greek letters?"</li>
-                </ul>
-            </div>
-        </div>
-        <div class="ai-input-container">
-            <input type="text" id="aiInput" placeholder="Ask about LaTeX syntax..." onkeypress="handleAIEnter(event)">
         </div>
     </div>
 
@@ -912,7 +195,6 @@
         <div id="authScreen">
             <h1>D.PotD Problems of the Day</h1>
             <p class="subtitle">Student Portal</p>
-
             <div id="loginForm">
                 <div class="form-group">
                     <label>Email:</label>
@@ -1047,18 +329,15 @@
         </div>
     </div>
 
-    <!-- Sponsor Footer -->
     <div class="sponsor-footer">
         <span class="sponsor-label">Proudly Sponsored By</span>
         <div class="sponsor-logos">
             <img src="https://aimforsevausa.org/wp-content/uploads/2018/09/Copy-of-AoPS-Logo.jpg" alt="Art of Problem Solving" class="sponsor-logo">
         </div>
     </div>
-
     
     <script>
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzYLsErhEpiTnSbPgNc_1TgmM85-feNNp87oHiX9x6iYPscjfPOLYtAYOdVlACffWJupw/exec';
-        const GEMINI_API_KEY = 'AIzaSyAG0HmsIkxuESxsq0sYNPRANTfqHdIk6Tk';
         
         let currentUser = null;
         let startTime, timerInterval, questionsData;
@@ -1068,6 +347,7 @@
         let testActive = false, currentDay = null, currentQuestion = 0;
         const TEST_DURATION = 120 * 60 * 1000;
         let latexUpdateTimer = null;
+        let autoSaveInterval = null;
 
         window.addEventListener('load', () => {
             const storedUser = localStorage.getItem('dpotdUser');
@@ -1098,9 +378,7 @@
         }
 
         function handleLoginEnter(event) {
-            if (event.key === 'Enter') {
-                login();
-            }
+            if (event.key === 'Enter') login();
         }
 
         function updateLatexPreview() {
@@ -1139,7 +417,7 @@
         }
 
         function toggleAIHelper() {
-            document.getElementById('aiHelper').classList.toggle('show');
+            alert('LaTeX Helper feature has been removed to prevent cheating. Please use the ? button for syntax help.');
         }
 
         let latexHelpTimeout;
@@ -1153,102 +431,6 @@
             latexHelpTimeout = setTimeout(() => {
                 document.getElementById('latexHelpDropdown').classList.remove('show');
             }, 300);
-        }
-
-        function handleAIEnter(event) {
-            if (event.key === 'Enter') sendAIMessage();
-        }
-
-        async function sendAIMessage() {
-            const input = document.getElementById('aiInput');
-            const message = input.value.trim();
-            if (!message) return;
-            
-            addAIMessage(message, 'user');
-            input.value = '';
-            
-            const lowerMessage = message.toLowerCase();
-            
-            const problemSolvingPhrases = [
-                'solve', 'calculate', 'compute', 'what is', 'how much is', 
-                'find the answer', 'find the solution', 'the answer to',
-                'result of', 'evaluate', 'simplify'
-            ];
-            
-            const syntaxPhrases = [
-                'how do i write', 'how to write', 'syntax for', 'latex code',
-                'in latex', 'using latex', 'format', 'display'
-            ];
-            
-            const isSyntaxQuestion = syntaxPhrases.some(phrase => lowerMessage.includes(phrase));
-            const isProblemSolving = problemSolvingPhrases.some(phrase => lowerMessage.includes(phrase));
-            
-            if (isProblemSolving && !isSyntaxQuestion) {
-                addAIMessage('I cannot help solve math problems or provide answers. I can ONLY help with LaTeX syntax questions like:\n\n"How do I write a fraction?"\n"How do I make superscripts?"\n"How do I write Greek letters?"\n"What\'s the syntax for square roots?"', 'assistant');
-                return;
-            }
-            
-            const systemPrompt = `You are a STRICT LaTeX syntax helper. You can ONLY answer questions about how to write LaTeX code.
-
-ALLOWED:
-- Explain LaTeX syntax and commands (e.g., "use \\frac{a}{b} for fractions")
-- Show how to format/convert mathematical expressions into LaTeX code
-- When user says "format this" or "convert this", they mean convert it to LaTeX syntax
-- Explain LaTeX symbols and structures
-- Help convert mathematical notation into proper LaTeX code
-
-FORBIDDEN:
-- Solve ANY math problems
-- Provide numerical answers to calculations
-- Give hints about problem solutions
-- Explain mathematical concepts or theory
-- Calculate or evaluate expressions
-
-If asked to solve something, respond: "I can only help with LaTeX syntax, not solving problems."
-
-When helping with formatting/conversion, ONLY show the LaTeX code syntax, do not solve or simplify the math.
-
-Keep responses brief and focused on LaTeX code syntax only.`;
-
-            try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_API_KEY}`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        contents: [{parts: [{text: `${systemPrompt}\n\nUser: ${message}`}]}],
-                        generationConfig: {temperature: 0.4, maxOutputTokens: 200}
-                    })
-                });
-                
-                if (!response.ok) throw new Error(`API Error: ${response.status}`);
-                
-                const data = await response.json();
-                const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sorry, no response';
-                
-                addAIMessage(aiResponse, 'assistant');
-            } catch (error) {
-                addAIMessage(`Error: ${error.message}`, 'assistant');
-            }
-        }
-
-        function addAIMessage(message, type) {
-            const container = document.getElementById('aiChatContainer');
-            const div = document.createElement('div');
-            div.className = `ai-message ${type}`;
-            
-            if (type === 'assistant') {
-                let processed = message
-                    .replace(/```([^`]+)```/g, '<pre style="background:#2d2d2d;color:#f8f8f2;padding:10px;border-radius:4px;overflow-x:auto;margin:10px 0">$1</pre>')
-                    .replace(/`([^`]+)`/g, '<code style="background:#f4f4f4;padding:2px 6px;border-radius:3px;color:#e83e8c">$1</code>');
-                div.innerHTML = `<strong>LaTeX Helper:</strong> ${processed}`;
-                container.appendChild(div);
-                if (window.MathJax) MathJax.typesetPromise([div]).catch(e => console.log(e));
-            } else {
-                div.textContent = message;
-                container.appendChild(div);
-            }
-            
-            container.scrollTop = container.scrollHeight;
         }
 
         function switchMainTab(tab) {
@@ -1540,6 +722,15 @@ Keep responses brief and focused on LaTeX code syntax only.`;
             showLoading(`Loading Day ${currentDay} questions...`);
             
             try {
+                // Check if there's an active test already
+                const checkActiveResponse = await fetch(`${SCRIPT_URL}?action=getActiveTest&email=${encodeURIComponent(currentUser.email)}&day=${currentDay}`);
+                const activeTest = await checkActiveResponse.json();
+                
+                if (activeTest.exists) {
+                    // Resume existing test
+                    return await resumeTest(activeTest);
+                }
+                
                 const response = await fetch(`${SCRIPT_URL}?action=getQuestions&day=${currentDay}`);
                 const responseText = await response.text();
                 questionsData = JSON.parse(responseText);
@@ -1593,6 +784,21 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                 
                 document.getElementById('testTitle').textContent = `D.PotD Day ${currentDay}`;
                 
+                // Create active test record
+                const startTimestamp = new Date().toISOString();
+                const endTimestamp = new Date(Date.now() + TEST_DURATION).toISOString();
+                
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'createActiveTest',
+                        email: currentUser.email,
+                        day: currentDay,
+                        startTime: startTimestamp,
+                        endTime: endTimestamp
+                    })
+                });
+                
                 hideLoading();
                 
                 try {
@@ -1609,6 +815,7 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                     startTime = Date.now();
                     q1StartTime = Date.now();
                     timerInterval = setInterval(updateTimer, 1000);
+                    autoSaveInterval = setInterval(saveTestState, 5000); // Auto-save every 5 seconds
                     updateTimer();
                     showQuestion(1);
                 } catch (err) {
@@ -1618,6 +825,118 @@ Keep responses brief and focused on LaTeX code syntax only.`;
             } catch (error) {
                 hideLoading();
                 alert('Error loading questions: ' + error.message);
+            }
+        }
+
+        async function resumeTest(activeTest) {
+            showLoading('Resuming your test...');
+            
+            try {
+                const response = await fetch(`${SCRIPT_URL}?action=getQuestions&day=${currentDay}`);
+                const responseText = await response.text();
+                questionsData = JSON.parse(responseText);
+                
+                document.getElementById('q1Text').textContent = questionsData.q1_text;
+                document.getElementById('q2Text').textContent = questionsData.q2_text;
+                document.getElementById('q3Text').textContent = questionsData.q3_text;
+                
+                if (window.MathJax) {
+                    setTimeout(() => {
+                        MathJax.typesetPromise([
+                            document.getElementById('q1Text'),
+                            document.getElementById('q2Text'),
+                            document.getElementById('q3Text')
+                        ]).catch(e => console.log('MathJax error:', e));
+                    }, 100);
+                }
+                
+                if (questionsData.q1_image && questionsData.q1_image.trim() !== '') {
+                    document.getElementById('q1Image').src = questionsData.q1_image;
+                    document.getElementById('q1Image').style.display = 'block';
+                }
+                
+                if (questionsData.q2_image && questionsData.q2_image.trim() !== '') {
+                    document.getElementById('q2Image').src = questionsData.q2_image;
+                    document.getElementById('q2Image').style.display = 'block';
+                }
+                
+                if (questionsData.q3_image && questionsData.q3_image.trim() !== '') {
+                    document.getElementById('q3Image').src = questionsData.q3_image;
+                    document.getElementById('q3Image').style.display = 'block';
+                }
+                
+                // Restore answers
+                document.getElementById('q1Answer').value = activeTest.q1Answer || '';
+                document.getElementById('q2Answer').value = activeTest.q2Answer || '';
+                document.getElementById('latexInput').value = activeTest.q3Answer || '';
+                updateLatexPreview();
+                
+                // Restore state
+                exitCount = activeTest.exitCount || 0;
+                exitLogs = activeTest.exitLogs || [];
+                
+                const testStartTime = new Date(activeTest.startTime).getTime();
+                const testEndTime = new Date(activeTest.endTime).getTime();
+                const now = Date.now();
+                
+                if (now >= testEndTime) {
+                    hideLoading();
+                    await submitTest(true);
+                    return;
+                }
+                
+                startTime = testStartTime;
+                
+                document.getElementById('testTitle').textContent = `D.PotD Day ${currentDay}`;
+                
+                hideLoading();
+                alert('Your test has been resumed. The timer continues from where you left off. Closing the tab was recorded as a violation.');
+                
+                try {
+                    await document.documentElement.requestFullscreen();
+                    
+                    document.getElementById('mainPortal').style.display = 'none';
+                    document.getElementById('questionSection').style.display = 'block';
+                    document.getElementById('navigationBar').style.display = 'block';
+                    
+                    document.body.classList.add('locked');
+                    testActive = true;
+                    monitorFullscreen();
+                    
+                    timerInterval = setInterval(updateTimer, 1000);
+                    autoSaveInterval = setInterval(saveTestState, 5000);
+                    updateTimer();
+                    showQuestion(activeTest.currentQuestion || 1);
+                } catch (err) {
+                    alert('Fullscreen mode is required. Please allow fullscreen and try again.');
+                }
+                
+            } catch (error) {
+                hideLoading();
+                alert('Error resuming test: ' + error.message);
+            }
+        }
+
+        async function saveTestState() {
+            if (!testActive) return;
+            
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'updateActiveTest',
+                        email: currentUser.email,
+                        day: currentDay,
+                        currentQuestion: currentQuestion,
+                        q1Answer: document.getElementById('q1Answer').value.trim(),
+                        q2Answer: document.getElementById('q2Answer').value.trim(),
+                        q3Answer: document.getElementById('latexInput').value.trim(),
+                        exitCount: exitCount,
+                        exitLogs: JSON.stringify(exitLogs)
+                    })
+                });
+            } catch (error) {
+                console.error('Error saving test state:', error);
             }
         }
 
@@ -1652,14 +971,11 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                 submitBtn.style.display = 'none';
             }
             
-            const aiBtn = document.getElementById('aiToggleBtn');
             const helpBtn = document.getElementById('latexHelpBtn');
             
             if (num === 3) {
-                aiBtn.style.display = 'block';
                 helpBtn.style.display = 'flex';
             } else {
-                aiBtn.style.display = 'none';
                 helpBtn.style.display = 'none';
             }
             
@@ -1675,7 +991,8 @@ Keep responses brief and focused on LaTeX code syntax only.`;
         function updateTimer() {
             if (!startTime) return;
             
-            const elapsed = Date.now() - startTime;
+            const now = Date.now();
+            const elapsed = now - startTime;
             const remaining = Math.max(0, TEST_DURATION - elapsed);
             
             const hours = Math.floor(remaining / 3600000);
@@ -1689,6 +1006,7 @@ Keep responses brief and focused on LaTeX code syntax only.`;
             
             if (remaining <= 0) {
                 clearInterval(timerInterval);
+                clearInterval(autoSaveInterval);
                 submitTest(true);
             }
         }
@@ -1707,6 +1025,7 @@ Keep responses brief and focused on LaTeX code syntax only.`;
             
             testActive = false;
             clearInterval(timerInterval);
+            clearInterval(autoSaveInterval);
             
             const endTime = Date.now();
             q3EndTime = endTime;
@@ -1746,6 +1065,17 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                 });
                 
                 const result = JSON.parse(await response.text());
+                
+                // Delete active test record
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'deleteActiveTest',
+                        email: currentUser.email,
+                        day: currentDay
+                    })
+                });
+                
                 hideLoading();
                 
                 if (result.success) {
@@ -1800,6 +1130,9 @@ Keep responses brief and focused on LaTeX code syntax only.`;
             exitLogs.push({time: new Date().toISOString(), type});
             document.getElementById('violationCount').textContent = exitCount;
             document.getElementById('warningOverlay').classList.add('show');
+            
+            // Save violation immediately
+            saveTestState();
         }
 
         function hideWarning() {
