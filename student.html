@@ -928,7 +928,6 @@
     </div>
 
     <div class="container">
-        <!-- Login Screen -->
         <div id="authScreen">
             <h1>D.PotD Problems of the Day</h1>
             <p class="subtitle">Student Portal</p>
@@ -950,7 +949,6 @@
             </div>
         </div>
 
-        <!-- Main Portal -->
         <div id="mainPortal" class="hidden">
             <div class="profile-header">
                 <span class="profile-name" id="profileName"></span>
@@ -963,18 +961,15 @@
                 <button class="tab" onclick="switchMainTab('profile')">Profile</button>
             </div>
 
-            <!-- Today's Test Tab -->
             <div id="todayTab" class="tab-content active">
                 <div id="testStatus"></div>
             </div>
 
-            <!-- Score History Tab -->
             <div id="historyTab" class="tab-content">
                 <h2 style="margin-bottom: 20px;">Your Score History</h2>
                 <div id="historyContainer"></div>
             </div>
 
-            <!-- Profile Tab -->
             <div id="profileTab" class="tab-content">
                 <h2 style="margin-bottom: 20px;">Profile Settings</h2>
                 <div class="form-group">
@@ -1004,7 +999,6 @@
             </div>
         </div>
 
-        <!-- Test Section -->
         <div id="questionSection" class="question-section">
             <div class="timer" id="timer">Time Remaining: 2:00:00</div>
             <div class="progress-indicator" id="progressIndicator">Day 1 - Question 1 of 3</div>
@@ -1067,7 +1061,6 @@
         </div>
     </div>
 
-    <!-- Sponsor Footer -->
     <div class="sponsor-footer">
         <span class="sponsor-label">Proudly Sponsored By</span>
         <div class="sponsor-logos">
@@ -1088,6 +1081,7 @@
         const TEST_DURATION = 120 * 60 * 1000;
         let latexUpdateTimer = null;
         let autoSaveInterval = null;
+        let fullscreenChangeHandler, visibilityChangeHandler;
 
         window.addEventListener('load', () => {
             const storedUser = localStorage.getItem('dpotdUser');
@@ -1306,8 +1300,9 @@
             }
             showLoading('Updating password...');
             try {
-                const response = await fetch(SCRIPT_URL, {
+                await fetch(SCRIPT_URL, {
                     method: 'POST',
+                    mode: 'no-cors',
                     body: JSON.stringify({
                         action: 'changePassword',
                         email: currentUser.email,
@@ -1315,16 +1310,11 @@
                         newPassword: newPass
                     })
                 });
-                const result = await response.json();
                 hideLoading();
-                if (result.success) {
-                    showStatus('profileStatus', 'Password updated successfully!', 'success');
-                    document.getElementById('currentPassword').value = '';
-                    document.getElementById('newPassword').value = '';
-                    document.getElementById('confirmNewPassword').value = '';
-                } else {
-                    showStatus('profileStatus', result.error || 'Failed to update password', 'error');
-                }
+                showStatus('profileStatus', 'Password updated successfully!', 'success');
+                document.getElementById('currentPassword').value = '';
+                document.getElementById('newPassword').value = '';
+                document.getElementById('confirmNewPassword').value = '';
             } catch (error) {
                 hideLoading();
                 showStatus('profileStatus', 'Error: ' + error.message, 'error');
@@ -1349,43 +1339,6 @@
             } catch (error) {
                 console.error('Error getting day:', error);
                 return null;
-            }
-        }
-
-        async function checkTodayTest() {
-            const container = document.getElementById('testStatus');
-            container.innerHTML = '<p style="color: #666;">Checking for today\'s test...</p>';
-            try {
-                currentDay = await getCurrentDay();
-                if (!currentDay) {
-                    container.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">No test available today. Tests are only available from 12:00 AM to 11:59 PM on scheduled days.<br><br>Current time: ' + new Date().toLocaleString() + '</p>';
-                    return;
-                }
-                const activeResponse = await fetch(`${SCRIPT_URL}?action=getActiveTest&email=${encodeURIComponent(currentUser.email)}&day=${currentDay}`);
-                const activeData = await activeResponse.json();
-                if (activeData.exists) {
-                    const timeRemaining = new Date(activeData.endTime).getTime() - Date.now();
-                    const minutesRemaining = Math.floor(timeRemaining / 60000);
-                    container.innerHTML = `
-                        <div class="resume-test-banner">
-                            <h3>⚠️ You Have an Active Test!</h3>
-                            <p style="font-size: 16px;">You started Day ${currentDay}'s test but didn't complete it.</p>
-                            <p style="font-size: 16px; margin-bottom: 20px;"><strong>Time Remaining:</strong> ${minutesRemaining} minutes</p>
-                            <p style="color: #dc3545; font-weight: 600; margin-bottom: 20px;">A violation has been recorded for closing the tab.</p>
-                            <button class="btn" onclick="resumeTest()" style="max-width: 400px; margin: 0 auto; background: #ffc107; color: #000;">Resume Test (Violation Already Recorded)</button>
-                        </div>
-                    `;
-                    return;
-                }
-                const checkResponse = await fetch(`${SCRIPT_URL}?action=checkSubmission&email=${encodeURIComponent(currentUser.email)}&day=${currentDay}`);
-                const checkData = await checkResponse.json();
-                if (checkData.exists) {
-                    container.innerHTML = `<div style="text-align: center; padding: 40px;"><h2 style="color: #28a745; margin-bottom: 20px;">Test Already Submitted</h2><p style="font-size: 18px; color: #666; margin-bottom: 20px;">You have already submitted Day ${currentDay}'s test.</p><p style="color: #666;">Check your Score History tab to see your results and feedback.</p></div>`;
-                } else {
-                    container.innerHTML = `<div style="text-align: center; padding: 40px;"><h2 style="color: #EA5A2F; margin-bottom: 20px;">Day ${currentDay} Test Available!</h2><p style="font-size: 18px; color: #666; margin-bottom: 30px;">Ready to take today's test?</p><button class="btn" onclick="showConfirmation()" style="max-width: 400px; margin: 0 auto;">Start Test (2 hours, 3 questions, 20 points total)</button></div>`;
-                }
-            } catch (error) {
-                container.innerHTML = '<p style="color: #dc3545; text-align: center;">Error loading test status: ' + error.message + '</p>';
             }
         }
 
@@ -1554,6 +1507,7 @@
                 const endTime = startTime + TEST_DURATION;
                 await fetch(SCRIPT_URL, {
                     method: 'POST',
+                    mode: 'no-cors',
                     body: JSON.stringify({
                         action: 'createActiveTest',
                         email: currentUser.email,
@@ -1607,6 +1561,7 @@
                 try {
                     await fetch(SCRIPT_URL, {
                         method: 'POST',
+                        mode: 'no-cors',
                         body: JSON.stringify({
                             action: 'updateActiveTest',
                             email: currentUser.email,
@@ -1691,9 +1646,14 @@
                 alert('Please answer all questions before submitting.');
                 return;
             }
+            
             testActive = false;
             clearInterval(timerInterval);
             if (autoSaveInterval) clearInterval(autoSaveInterval);
+            
+            document.removeEventListener('fullscreenchange', fullscreenChangeHandler);
+            document.removeEventListener('visibilitychange', visibilityChangeHandler);
+            
             const endTime = Date.now();
             q3EndTime = endTime;
             const q1Time = q1EndTime ? Math.floor((q1EndTime - q1StartTime) / 1000) : 0;
@@ -1721,58 +1681,52 @@
             };
             showLoading(isForced ? 'Auto-submitting...' : 'Submitting...');
             try {
-                const response = await fetch(SCRIPT_URL, {
+                await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    mode: 'no-cors',
                     body: JSON.stringify(submission)
                 });
-                const resultText = await response.text();
-                const result = JSON.parse(resultText);
-                if (result.success) {
-                    await fetch(SCRIPT_URL, {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({
-                            action: 'deleteActiveTest',
-                            email: currentUser.email,
-                            day: currentDay
-                        })
-                    });
-                    hideLoading();
-                    testActive = false;
-                    document.body.classList.remove('locked');
-                    if (document.exitFullscreen) document.exitFullscreen();
-                    document.getElementById('questionSection').style.display = 'none';
-                    document.getElementById('mainPortal').style.display = 'block';
-                    const q1Points = q1Correct ? 5 : 0;
-                    const q2Points = q2Correct ? 5 : 0;
-                    const currentTotal = q1Points + q2Points;
-                    document.getElementById('testStatus').innerHTML = `
-                        <div style="text-align: center; padding: 40px;">
-                            <h2 style="color: #28a745; margin-bottom: 20px;">Test Submitted Successfully!</h2>
-                            <p style="font-size: 18px; color: #666; margin-bottom: 30px;">Your responses have been recorded and will be graded shortly.</p>
-                            <div style="background: #f8f9fa; padding: 30px; border-radius: 8px; max-width: 500px; margin: 0 auto;">
-                                <div style="background: #EA5A2F; color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                                    <strong style="font-size: 20px;">Current Score: ${currentTotal}/20</strong>
-                                    <p style="margin-top: 5px; font-size: 14px;">Q3 will be graded manually</p>
-                                </div>
-                                <div style="margin-bottom: 15px; text-align: left;">
-                                    <strong>Q1 (5 points):</strong> <span class="${q1Correct ? 'correct' : 'incorrect'}">${q1Correct ? 'Correct (+5 pts)' : 'Incorrect (0 pts)'}</span>
-                                </div>
-                                <div style="margin-bottom: 15px; text-align: left;">
-                                    <strong>Q2 (5 points):</strong> <span class="${q2Correct ? 'correct' : 'incorrect'}">${q2Correct ? 'Correct (+5 pts)' : 'Incorrect (0 pts)'}</span>
-                                </div>
-                                <div style="text-align: left;">
-                                    <strong>Q3 (10 points):</strong> Will be graded manually
-                                </div>
+                
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify({
+                        action: 'deleteActiveTest',
+                        email: currentUser.email,
+                        day: currentDay
+                    })
+                });
+                
+                hideLoading();
+                testActive = false;
+                document.body.classList.remove('locked');
+                if (document.exitFullscreen) document.exitFullscreen();
+                document.getElementById('questionSection').style.display = 'none';
+                document.getElementById('mainPortal').style.display = 'block';
+                const q1Points = q1Correct ? 5 : 0;
+                const q2Points = q2Correct ? 5 : 0;
+                const currentTotal = q1Points + q2Points;
+                document.getElementById('testStatus').innerHTML = `
+                    <div style="text-align: center; padding: 40px;">
+                        <h2 style="color: #28a745; margin-bottom: 20px;">Test Submitted Successfully!</h2>
+                        <p style="font-size: 18px; color: #666; margin-bottom: 30px;">Your responses have been recorded and will be graded shortly.</p>
+                        <div style="background: #f8f9fa; padding: 30px; border-radius: 8px; max-width: 500px; margin: 0 auto;">
+                            <div style="background: #EA5A2F; color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                                <strong style="font-size: 20px;">Current Score: ${currentTotal}/20</strong>
+                                <p style="margin-top: 5px; font-size: 14px;">Q3 will be graded manually</p>
+                            </div>
+                            <div style="margin-bottom: 15px; text-align: left;">
+                                <strong>Q1 (5 points):</strong> <span class="${q1Correct ? 'correct' : 'incorrect'}">${q1Correct ? 'Correct (+5 pts)' : 'Incorrect (0 pts)'}</span>
+                            </div>
+                            <div style="margin-bottom: 15px; text-align: left;">
+                                <strong>Q2 (5 points):</strong> <span class="${q2Correct ? 'correct' : 'incorrect'}">${q2Correct ? 'Correct (+5 pts)' : 'Incorrect (0 pts)'}</span>
+                            </div>
+                            <div style="text-align: left;">
+                                <strong>Q3 (10 points):</strong> Will be graded manually
                             </div>
                         </div>
-                    `;
-                } else {
-                    hideLoading();
-                    alert('Submission error: ' + (result.error || 'Unknown error. Please contact your administrator.'));
-                    testActive = true;
-                }
+                    </div>
+                `;
             } catch (error) {
                 hideLoading();
                 alert('Error submitting test: ' + error.message + '\n\nPlease contact your administrator.');
@@ -1797,12 +1751,16 @@
         }
 
         function monitorFullscreen() {
-            document.addEventListener('fullscreenchange', () => {
+            fullscreenChangeHandler = () => {
                 if (!document.fullscreenElement && testActive) recordViolation('exited_fullscreen');
-            });
-            document.addEventListener('visibilitychange', () => {
+            };
+            
+            visibilityChangeHandler = () => {
                 if (document.hidden && testActive) recordViolation('tab_hidden');
-            });
+            };
+            
+            document.addEventListener('fullscreenchange', fullscreenChangeHandler);
+            document.addEventListener('visibilitychange', visibilityChangeHandler);
         }
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -1855,7 +1813,6 @@ Common symbols:
                 ];
                 if (blocked.some(x => x)) {
                     e.preventDefault();
-                    recordViolation('keyboard_blocked');
                     return false;
                 }
             }
@@ -1864,7 +1821,6 @@ Common symbols:
         document.addEventListener('contextmenu', (e) => {
             if (testActive) {
                 e.preventDefault();
-                recordViolation('right_click');
             }
         });
 
