@@ -739,7 +739,7 @@
         }
 
         .sponsor-logo {
-            height: 32px;
+            height: 48px;
             width: auto;
             object-fit: contain;
             opacity: 0.8;
@@ -775,7 +775,7 @@
             }
 
             .sponsor-logo {
-                height: 28px;
+                height: 40px;
             }
         }
     </style>
@@ -790,7 +790,7 @@
 
     <div class="confirmation-modal" id="confirmationModal">
         <div class="confirmation-content">
-            <h2>⚠️ Test Rules & Confirmation</h2>
+            <h2>Test Rules & Confirmation</h2>
             <p style="font-size: 16px; margin-bottom: 15px;"><strong>Please read carefully before starting:</strong></p>
             <ul>
                 <li><strong>Time Limit:</strong> 2 hours (120 minutes) for all 3 questions</li>
@@ -802,7 +802,7 @@
                 <li><strong>No Pausing:</strong> Once started, the timer cannot be paused</li>
             </ul>
             <p style="color: #dc3545; font-weight: 600; margin-top: 20px;">
-                ⚠️ Violations (tab switching, exiting fullscreen) will be recorded and may affect your score!
+                WARNING: Violations (tab switching, exiting fullscreen) will be recorded and may affect your score!
             </p>
             <div class="confirmation-buttons">
                 <button class="confirm-btn cancel" onclick="cancelTest()">Cancel</button>
@@ -993,9 +993,9 @@
             <div style="text-align: center; margin-bottom: 30px;">
                 <div style="font-size: 2.5em; font-weight: bold; color: #EA5A2F; margin-bottom: 10px;" id="testTitle">D.PotD Day 1</div>
                 <div style="font-size: 16px; color: #666; display: flex; justify-content: center; gap: 25px; flex-wrap: wrap;">
-                    <span>⏱️ 2 hours</span>
-                    <span>📝 3 questions</span>
-                    <span>⚠️ Don't leave this page</span>
+                    <span>2 hours</span>
+                    <span>3 questions</span>
+                    <span>Don't leave this page</span>
                 </div>
             </div>
 
@@ -1006,7 +1006,7 @@
                     <img id="q1Image" class="question-image" style="display: none;">
                     <input type="text" id="q1Answer" placeholder="Your answer (numbers only)">
                 </div>
-                <button class="btn" onclick="nextQuestion(1)">Next Question →</button>
+                <button class="btn" onclick="nextQuestion(1)">Next Question</button>
                 <div id="q1Status" class="status"></div>
             </div>
 
@@ -1017,7 +1017,7 @@
                     <img id="q2Image" class="question-image" style="display: none;">
                     <input type="text" id="q2Answer" placeholder="Your answer (numbers only)">
                 </div>
-                <button class="btn" onclick="nextQuestion(2)">Next Question →</button>
+                <button class="btn" onclick="nextQuestion(2)">Next Question</button>
                 <div id="q2Status" class="status"></div>
             </div>
 
@@ -1130,7 +1130,7 @@
                     MathJax.typesetClear([preview]);
                     MathJax.typesetPromise([preview]).catch((err) => {
                         console.error('MathJax error:', err);
-                        preview.innerHTML += '<p style="color: #dc3545; font-size: 12px; margin-top: 10px;"><strong>⚠️ LaTeX Error:</strong> Check your syntax</p>';
+                        preview.innerHTML += '<p style="color: #dc3545; font-size: 12px; margin-top: 10px;"><strong>LaTeX Error:</strong> Check your syntax</p>';
                     });
                 }
             }, 500);
@@ -1403,7 +1403,7 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                 if (checkData.exists) {
                     container.innerHTML = `
                         <div style="text-align: center; padding: 40px;">
-                            <h2 style="color: #28a745; margin-bottom: 20px;">✅ Test Already Submitted</h2>
+                            <h2 style="color: #28a745; margin-bottom: 20px;">Test Already Submitted</h2>
                             <p style="font-size: 18px; color: #666; margin-bottom: 20px;">
                                 You have already submitted Day ${currentDay}'s test.
                             </p>
@@ -1483,7 +1483,7 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                         
                         feedbackHTML = `
                         <div class="feedback-box">
-                            <h4>📝 Q3 Feedback</h4>
+                            <h4>Q3 Feedback</h4>
                             <div id="feedback_${sub.rowIndex || Math.random()}" style="line-height: 1.6;">${feedbackContent}</div>
                         </div>
                         `;
@@ -1500,12 +1500,12 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                         <div class="score-details">
                             <div class="score-item">
                                 <strong>Q1:</strong> <span class="${sub.q1_correct ? 'correct' : 'incorrect'}">
-                                    ${sub.q1_correct ? '✓ Correct (+5 pts)' : '✗ Incorrect (0 pts)'}
+                                    ${sub.q1_correct ? 'Correct (+5 pts)' : 'Incorrect (0 pts)'}
                                 </span>
                             </div>
                             <div class="score-item">
                                 <strong>Q2:</strong> <span class="${sub.q2_correct ? 'correct' : 'incorrect'}">
-                                    ${sub.q2_correct ? '✓ Correct (+5 pts)' : '✗ Incorrect (0 pts)'}
+                                    ${sub.q2_correct ? 'Correct (+5 pts)' : 'Incorrect (0 pts)'}
                                 </span>
                             </div>
                             <div class="score-item">
@@ -1747,7 +1747,7 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                     
                     document.getElementById('testStatus').innerHTML = `
                         <div style="text-align: center; padding: 40px;">
-                            <h2 style="color: #28a745; margin-bottom: 20px;">✅ Test Submitted Successfully!</h2>
+                            <h2 style="color: #28a745; margin-bottom: 20px;">Test Submitted Successfully!</h2>
                             <p style="font-size: 18px; color: #666; margin-bottom: 30px;">
                                 Your responses have been recorded and will be graded shortly.
                             </p>
@@ -1757,10 +1757,10 @@ Keep responses brief and focused on LaTeX code syntax only.`;
                                     <p style="margin-top: 5px; font-size: 14px;">Q3 will be graded manually</p>
                                 </div>
                                 <div style="margin-bottom: 15px; text-align: left;">
-                                    <strong>Q1 (5 points):</strong> <span class="${q1Correct ? 'correct' : 'incorrect'}">${q1Correct ? '✓ Correct (+5 pts)' : '✗ Incorrect (0 pts)'}</span>
+                                    <strong>Q1 (5 points):</strong> <span class="${q1Correct ? 'correct' : 'incorrect'}">${q1Correct ? 'Correct (+5 pts)' : 'Incorrect (0 pts)'}</span>
                                 </div>
                                 <div style="margin-bottom: 15px; text-align: left;">
-                                    <strong>Q2 (5 points):</strong> <span class="${q2Correct ? 'correct' : 'incorrect'}">${q2Correct ? '✓ Correct (+5 pts)' : '✗ Incorrect (0 pts)'}</span>
+                                    <strong>Q2 (5 points):</strong> <span class="${q2Correct ? 'correct' : 'incorrect'}">${q2Correct ? 'Correct (+5 pts)' : 'Incorrect (0 pts)'}</span>
                                 </div>
                                 <div style="text-align: left;">
                                     <strong>Q3 (10 points):</strong> Will be graded manually
