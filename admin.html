@@ -91,7 +91,7 @@
         .student-selector select { width: 100%; }
         .logo-footer { text-align: center; margin-top: 40px; padding: 20px; color: #666; }
         .logo-footer img { max-width: 150px; margin-bottom: 10px; }
-        .override-controls { margin-top: 15px; padding: 15px; background: #fff3cd; border-radius: 6px; border-left: 4px solid #ffc107; }
+        .override-controls { margin-bottom: 20px; padding: 15px; background: #fff3cd; border-radius: 6px; border-left: 4px solid #ffc107; }
         .override-controls h4 { color: #856404; margin-bottom: 10px; font-size: 14px; }
         .override-buttons { display: flex; gap: 10px; }
         .override-btn { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 14px; }
@@ -103,7 +103,7 @@
 <body>
     <div id="loginScreen">
         <div class="login-box">
-            <h1>🔒 Admin Login</h1>
+            <h1>Admin Login</h1>
             <p>Enter credentials to access the admin portal</p>
             <div id="loginError" class="login-error"></div>
             <div class="login-form-group">
@@ -273,12 +273,10 @@
                         <label>Email:</label>
                         <input type="email" id="newUserEmail" placeholder="student@example.com">
                     </div>
-                    <div class="form-group">
-                        <label>Initial Password:</label>
-                        <input type="text" id="newUserPassword" placeholder="Minimum 6 characters">
-                        <small style="color: #666; display: block; margin-top: 5px;">Student can change this password after logging in</small>
-                    </div>
-                    <button class="btn" onclick="addUser()">Add User</button>
+                    <p style="color: #666; font-size: 14px; margin-top: 10px; padding: 10px; background: #e7f3ff; border-radius: 4px;">
+                        A password will be automatically generated and emailed to the user.
+                    </p>
+                    <button class="btn" onclick="addUser()" style="margin-top: 15px;">Add User</button>
                 </div>
                 
                 <h3 style="margin-bottom: 20px;">Registered Users</h3>
@@ -317,13 +315,13 @@
                 
                 <div class="navigation-controls" id="navControls" style="display: none;">
                     <div class="nav-buttons">
-                        <button class="nav-btn" id="prevBtn" onclick="navigateSubmission(-1)">← Previous</button>
+                        <button class="nav-btn" id="prevBtn" onclick="navigateSubmission(-1)">Previous</button>
                     </div>
                     <div class="student-selector">
                         <select id="submissionSelector" onchange="selectSubmission()"></select>
                     </div>
                     <div class="nav-buttons">
-                        <button class="nav-btn" id="nextBtn" onclick="navigateSubmission(1)">Next →</button>
+                        <button class="nav-btn" id="nextBtn" onclick="navigateSubmission(1)">Next</button>
                     </div>
                 </div>
                 
@@ -333,11 +331,12 @@
             
             <div class="logo-footer">
                 <p>D.tech Math Club</p>
-                <p style="font-size: 12px; margin-top: 5px;">© 2025 D.tech Problems of the Day</p>
+                <p style="font-size: 12px; margin-top: 5px;">2025 D.tech Problems of the Day</p>
             </div>
         </div>
     </div>
     
+    <script src="https://script.google.com/macros/s/AKfycbxq3HkS8-PG1feQxby_D3G587ULSla9V0heQT8rw6PlS2MlC2ZGjLnbRq7AUmam3Y0aoQ/exec"></script>
     <script>
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxq3HkS8-PG1feQxby_D3G587ULSla9V0heQT8rw6PlS2MlC2ZGjLnbRq7AUmam3Y0aoQ/exec';
 const ADMIN_USERNAME = 'meipetersgoat';
@@ -475,7 +474,7 @@ async function saveQuestions() {
         const response = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(data) });
         const result = await response.json();
         if (result.success) {
-            showStatus('questionStatus', '✅ Questions saved successfully!', 'success');
+            showStatus('questionStatus', 'Questions saved successfully!', 'success');
         } else {
             showStatus('questionStatus', 'Error: ' + (result.error || 'Unknown error'), 'error');
         }
@@ -528,7 +527,7 @@ async function saveSchedule() {
         const response = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(data) });
         const result = await response.json();
         if (result.success) {
-            showStatus('scheduleStatus', '✅ Schedule saved successfully!', 'success');
+            showStatus('scheduleStatus', 'Schedule saved successfully!', 'success');
         } else {
             showStatus('scheduleStatus', 'Error: ' + (result.error || 'Unknown error'), 'error');
         }
@@ -567,7 +566,7 @@ async function saveSettings() {
         const response = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(data) });
         const result = await response.json();
         if (result.success) {
-            showStatus('settingsStatus', '✅ Settings saved successfully! Please refresh to use new credentials.', 'success');
+            showStatus('settingsStatus', 'Settings saved successfully! Please refresh to use new credentials.', 'success');
         } else {
             showStatus('settingsStatus', 'Error: ' + (result.error || 'Unknown error'), 'error');
         }
@@ -605,7 +604,7 @@ function updateLatexPreview(rowIndex) {
             MathJax.typesetClear([preview]);
             MathJax.typesetPromise([preview]).catch((err) => {
                 console.error('MathJax error:', err);
-                preview.innerHTML += '<p style="color: #dc3545; font-size: 12px; margin-top: 10px;"><strong>⚠️ LaTeX Error:</strong> Check your syntax</p>';
+                preview.innerHTML += '<p style="color: #dc3545; font-size: 12px; margin-top: 10px;"><strong>LaTeX Error:</strong> Check your syntax</p>';
             });
         }
     }, 500);
@@ -721,29 +720,33 @@ function displayCurrentSubmission() {
     const isGraded = sub.q3_score !== '' && sub.q3_score !== null && sub.q3_score !== undefined;
     const gradedBadge = isGraded ? '<span class="graded-badge graded">Graded</span>' : '<span class="graded-badge pending">Pending</span>';
     const q3AnswerRendered = stripLatexPreamble(sub.q3_answer || '');
+    
+    const overrideSection = `
+        <div class="override-controls">
+            <h4>Override Auto-Graded Questions:</h4>
+            <div style="margin-top: 10px;">
+                <strong>Q1 (Currently: ${sub.q1_correct ? 'Correct' : 'Incorrect'}):</strong>
+                <div class="override-buttons" style="margin-top: 5px;">
+                    <button class="override-btn correct" onclick="overrideScore(${sub.rowIndex}, 1, true)">Mark Correct</button>
+                    <button class="override-btn incorrect" onclick="overrideScore(${sub.rowIndex}, 1, false)">Mark Incorrect</button>
+                </div>
+            </div>
+            <div style="margin-top: 15px;">
+                <strong>Q2 (Currently: ${sub.q2_correct ? 'Correct' : 'Incorrect'}):</strong>
+                <div class="override-buttons" style="margin-top: 5px;">
+                    <button class="override-btn correct" onclick="overrideScore(${sub.rowIndex}, 2, true)">Mark Correct</button>
+                    <button class="override-btn incorrect" onclick="overrideScore(${sub.rowIndex}, 2, false)">Mark Incorrect</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
     const feedbackSection = `
         <div style="margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #EA5A2F;">
             <h4 style="margin-bottom: 15px; color: #EA5A2F;">Question 3 Grading</h4>
             <div style="margin-bottom: 15px;">
                 <label style="display: block; font-weight: 600; margin-bottom: 5px;">Score (out of 10):</label>
                 <input type="number" id="score_${sub.rowIndex}" min="0" max="10" step="1" value="${sub.q3_score || ''}" style="width: 100px; padding: 8px; border: 2px solid #E3E3E3; border-radius: 4px;">
-            </div>
-            <div class="override-controls">
-                <h4>Override Auto-Graded Questions:</h4>
-                <div style="margin-top: 10px;">
-                    <strong>Q1 (Currently: ${sub.q1_correct ? '✓ Correct' : '✗ Incorrect'}):</strong>
-                    <div class="override-buttons" style="margin-top: 5px;">
-                        <button class="override-btn correct" onclick="overrideScore(${sub.rowIndex}, 1, true)">Mark Correct</button>
-                        <button class="override-btn incorrect" onclick="overrideScore(${sub.rowIndex}, 1, false)">Mark Incorrect</button>
-                    </div>
-                </div>
-                <div style="margin-top: 15px;">
-                    <strong>Q2 (Currently: ${sub.q2_correct ? '✓ Correct' : '✗ Incorrect'}):</strong>
-                    <div class="override-buttons" style="margin-top: 5px;">
-                        <button class="override-btn correct" onclick="overrideScore(${sub.rowIndex}, 2, true)">Mark Correct</button>
-                        <button class="override-btn incorrect" onclick="overrideScore(${sub.rowIndex}, 2, false)">Mark Incorrect</button>
-                    </div>
-                </div>
             </div>
             <div style="margin-bottom: 15px; margin-top: 20px;">
                 <label style="display: block; font-weight: 600; margin-bottom: 10px;">Feedback (LaTeX Supported):</label>
@@ -761,6 +764,7 @@ function displayCurrentSubmission() {
             <button onclick="saveFeedback(${sub.rowIndex})" class="btn" style="width: auto; padding: 10px 20px;">Save Feedback & Notify Student</button>
         </div>
     `;
+    
     container.innerHTML = `
         <div class="submission-card">
             <div class="submission-header">
@@ -771,8 +775,8 @@ function displayCurrentSubmission() {
                 <div class="detail-item"><span class="detail-label">Email:</span> ${sub.studentEmail}</div>
                 <div class="detail-item"><span class="detail-label">Submitted:</span> ${timestamp}</div>
                 <div class="detail-item" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 10px;"><strong style="font-size: 18px; color: #EA5A2F;">Total Score: ${totalPoints}/20</strong></div>
-                <div class="detail-item"><span class="detail-label">Q1 (5 points):</span> <span class="${sub.q1_correct ? 'correct' : 'incorrect'}">${sub.q1_correct ? '✓ Correct (+5 pts)' : '✗ Incorrect (0 pts)'}</span> (Answer: ${sub.q1_answer}) - Time: ${formatTime(sub.q1_time)}</div>
-                <div class="detail-item"><span class="detail-label">Q2 (5 points):</span> <span class="${sub.q2_correct ? 'correct' : 'incorrect'}">${sub.q2_correct ? '✓ Correct (+5 pts)' : '✗ Incorrect (0 pts)'}</span> (Answer: ${sub.q2_answer}) - Time: ${formatTime(sub.q2_time)}</div>
+                <div class="detail-item"><span class="detail-label">Q1 (5 points):</span> <span class="${sub.q1_correct ? 'correct' : 'incorrect'}">${sub.q1_correct ? 'Correct (+5 pts)' : 'Incorrect (0 pts)'}</span> (Answer: ${sub.q1_answer}) - Time: ${formatTime(sub.q1_time)}</div>
+                <div class="detail-item"><span class="detail-label">Q2 (5 points):</span> <span class="${sub.q2_correct ? 'correct' : 'incorrect'}">${sub.q2_correct ? 'Correct (+5 pts)' : 'Incorrect (0 pts)'}</span> (Answer: ${sub.q2_answer}) - Time: ${formatTime(sub.q2_time)}</div>
                 <div class="detail-item"><span class="detail-label">Q3 Score (10 points):</span> ${sub.q3_score !== '' && sub.q3_score !== null && sub.q3_score !== undefined ? `${sub.q3_score}/10 (+${sub.q3_score} pts)` : 'Not graded yet'}</div>
                 <div class="detail-item"><span class="detail-label">Q3 Time:</span> ${formatTime(sub.q3_time)}</div>
                 <div class="detail-item"><span class="detail-label">Q3 Answer (Student's LaTeX):</span> <div id="student_answer_${sub.rowIndex}" style="margin-top: 10px; padding: 15px; background: white; border-radius: 4px; white-space: pre-wrap; max-height: 400px; overflow-y: auto; border: 2px solid #E3E3E3;">${q3AnswerRendered}</div></div>
@@ -780,9 +784,11 @@ function displayCurrentSubmission() {
                 <div class="detail-item"><span class="detail-label">Exit Count:</span> <span style="color: ${sub.exitCount > 0 ? '#dc3545' : '#28a745'}; font-weight: bold;">${sub.exitCount}</span></div>
                 ${violationDetails}
             </div>
+            ${overrideSection}
             ${feedbackSection}
         </div>
     `;
+    
     if (window.MathJax) {
         setTimeout(() => {
             const answerDiv = document.getElementById(`student_answer_${sub.rowIndex}`);
@@ -806,7 +812,7 @@ async function overrideScore(rowIndex, questionNum, isCorrect) {
         const response = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(data) });
         const result = await response.json();
         if (result.success) {
-            alert(`✅ Q${questionNum} marked as ${isCorrect ? 'correct' : 'incorrect'}!`);
+            alert(`Q${questionNum} marked as ${isCorrect ? 'correct' : 'incorrect'}!`);
             loadSubmissions();
         } else {
             alert('Error: ' + (result.error || 'Failed to override score'));
@@ -835,7 +841,7 @@ async function saveFeedback(rowIndex) {
         const response = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(data) });
         const result = await response.json();
         if (result.success) {
-            alert('✅ Feedback saved and student notified!');
+            alert('Feedback saved and student notified!');
             loadSubmissions();
         } else {
             alert('Error: ' + (result.error || 'Failed to save feedback'));
@@ -921,28 +927,32 @@ async function loadUsers() {
 async function addUser() {
     const name = document.getElementById('newUserName').value.trim();
     const email = document.getElementById('newUserEmail').value.trim();
-    const password = document.getElementById('newUserPassword').value;
-    if (!name || !email || !password) {
-        showStatus('usersStatus', 'Please fill in all fields', 'error');
+    
+    if (!name || !email) {
+        showStatus('usersStatus', 'Please fill in both name and email', 'error');
         return;
     }
-    if (password.length < 6) {
-        showStatus('usersStatus', 'Password must be at least 6 characters', 'error');
-        return;
-    }
+    
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         showStatus('usersStatus', 'Invalid email format', 'error');
         return;
     }
-    showStatus('usersStatus', 'Adding user...', 'info');
+    
+    showStatus('usersStatus', 'Adding user and generating password...', 'info');
+    
     try {
-        const response = await fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'adminAddUser', name: name, email: email, password: password }) });
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({ action: 'adminAddUser', name: name, email: email })
+        });
+        
         const result = await response.json();
+        
         if (result.success) {
-            showStatus('usersStatus', '✅ User added successfully!', 'success');
+            showStatus('usersStatus', `User added successfully! Generated password: ${result.generatedPassword} (also emailed to user)`, 'success');
             document.getElementById('newUserName').value = '';
             document.getElementById('newUserEmail').value = '';
-            document.getElementById('newUserPassword').value = '';
             loadUsers();
         } else {
             showStatus('usersStatus', 'Error: ' + (result.error || 'Failed to add user'), 'error');
@@ -960,7 +970,7 @@ async function deleteUser(email) {
         const response = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteUser', email: email }) });
         const result = await response.json();
         if (result.success) {
-            showStatus('usersStatus', '✅ User deleted successfully!', 'success');
+            showStatus('usersStatus', 'User deleted successfully!', 'success');
             loadUsers();
         } else {
             showStatus('usersStatus', 'Error: ' + (result.error || 'Failed to delete user'), 'error');
@@ -972,7 +982,7 @@ async function deleteUser(email) {
 
 window.addEventListener('load', () => {
     if (!SCRIPT_URL || SCRIPT_URL.includes('YOUR_DEPLOYMENT_ID')) {
-        alert('⚠️ Please update the SCRIPT_URL in admin.js with your Google Apps Script deployment URL');
+        alert('Please update the SCRIPT_URL with your Google Apps Script deployment URL');
     }
     document.getElementById('usernameInput').focus();
 });
