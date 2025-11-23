@@ -1590,33 +1590,22 @@
         }
 
         async function enterFullscreenAndStart(questionNum) {
+            document.getElementById('mainPortal').style.display = 'none';
+            document.getElementById('questionSection').style.display = 'block';
+            document.getElementById('navigationBar').style.display = 'block';
+            document.body.classList.add('locked');
+            testActive = true;
+            monitorFullscreen();
+            q1StartTime = Date.now();
+            timerInterval = setInterval(updateTimer, 1000);
+            updateTimer();
+            startAutoSave();
+            showQuestion(questionNum);
+            
             try {
                 await document.documentElement.requestFullscreen();
-                document.getElementById('mainPortal').style.display = 'none';
-                document.getElementById('questionSection').style.display = 'block';
-                document.getElementById('navigationBar').style.display = 'block';
-                document.body.classList.add('locked');
-                testActive = true;
-                monitorFullscreen();
-                q1StartTime = Date.now();
-                timerInterval = setInterval(updateTimer, 1000);
-                updateTimer();
-                startAutoSave();
-                showQuestion(questionNum);
             } catch (err) {
                 console.error('Fullscreen error:', err);
-                alert('Fullscreen mode is required but was denied. The test will now start - please do not leave fullscreen.');
-                document.getElementById('mainPortal').style.display = 'none';
-                document.getElementById('questionSection').style.display = 'block';
-                document.getElementById('navigationBar').style.display = 'block';
-                document.body.classList.add('locked');
-                testActive = true;
-                monitorFullscreen();
-                q1StartTime = Date.now();
-                timerInterval = setInterval(updateTimer, 1000);
-                updateTimer();
-                startAutoSave();
-                showQuestion(questionNum);
             }
         }
 
