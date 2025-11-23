@@ -1199,7 +1199,7 @@
     </div>
 
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxq3HkS8-PG1feQxby_D3G587ULSla9V0heQT8rw6PlS2MlC2ZGjLnbRq7AUmam3Y0aoQ/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzO-JcWPnedPV30OxMLRwnBL_qj8t0DNDy167f0TBMu52LQXixecWESMVVa8hZJLZPrBA/exec';
         const GEMINI_API_KEY = 'AIzaSyAG0HmsIkxuESxsq0sYNPRANTfqHdIk6Tk';
         
         let currentUser = null;
@@ -1506,7 +1506,6 @@
                                 <th>Name</th>
                                 <th>Total Score</th>
                                 <th>Tests Completed</th>
-                                <th>Total Time</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -1519,10 +1518,6 @@
                     else if (rank === 2) rankClass = 'rank-2';
                     else if (rank === 3) rankClass = 'rank-3';
                     
-                    const totalMinutes = Math.floor(student.totalTime / 60);
-                    const totalSeconds = student.totalTime % 60;
-                    const timeDisplay = `${totalMinutes}m ${totalSeconds}s`;
-                    
                     const isCurrentUser = currentUser && student.email === currentUser.email;
                     const rowStyle = isCurrentUser ? 'background: #fff3cd; font-weight: 600;' : '';
                     
@@ -1532,7 +1527,6 @@
                             <td>${student.name}${isCurrentUser ? ' (You)' : ''}</td>
                             <td>${student.totalScore} pts</td>
                             <td>${student.completedDays}</td>
-                            <td>${timeDisplay}</td>
                         </tr>
                     `;
                 });
