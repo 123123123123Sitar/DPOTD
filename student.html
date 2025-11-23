@@ -1359,29 +1359,29 @@
                     return;
                 }
                 
-                const submissionCheck = await fetch(\`\${SCRIPT_URL}?action=checkSubmission&email=\${encodeURIComponent(currentUser.email)}&day=\${currentDay}\`);
+                const submissionCheck = await fetch(`${SCRIPT_URL}?action=checkSubmission&email=${encodeURIComponent(currentUser.email)}&day=${currentDay}`);
                 const submissionResult = await submissionCheck.json();
                 
                 if (submissionResult.exists) {
                     statusDiv.innerHTML = `
                         <div style="text-align: center; padding: 40px;">
                             <h3 style="color: #28a745; margin-bottom: 15px;">Test Already Submitted</h3>
-                            <p style="color: #666;">You have already completed Day \${currentDay}'s test.</p>
+                            <p style="color: #666;">You have already completed Day ${currentDay}'s test.</p>
                             <p style="color: #666; margin-top: 10px;">Check the "Score History" tab to view your results.</p>
                         </div>
                     `;
                     return;
                 }
                 
-                const activeTestCheck = await fetch(\`\${SCRIPT_URL}?action=getActiveTest&email=\${encodeURIComponent(currentUser.email)}&day=\${currentDay}\`);
+                const activeTestCheck = await fetch(`${SCRIPT_URL}?action=getActiveTest&email=${encodeURIComponent(currentUser.email)}&day=${currentDay}`);
                 const activeTest = await activeTestCheck.json();
                 
                 if (activeTest.exists) {
                     statusDiv.innerHTML = `
                         <div class="resume-test-banner">
                             <h3>You Have an Active Test in Progress</h3>
-                            <p>You started Day \${currentDay}'s test but didn't complete it.</p>
-                            <p><strong>Violations recorded: \${activeTest.exitCount}</strong></p>
+                            <p>You started Day ${currentDay}'s test but didn't complete it.</p>
+                            <p><strong>Violations recorded: ${activeTest.exitCount}</strong></p>
                             <button class="btn" onclick="resumeTest()" style="margin-top: 15px;">Resume Test</button>
                         </div>
                     `;
@@ -1390,7 +1390,7 @@
                 
                 statusDiv.innerHTML = `
                     <div style="text-align: center; padding: 40px;">
-                        <h2 style="color: #EA5A2F; margin-bottom: 20px;">Day \${currentDay} Test Available</h2>
+                        <h2 style="color: #EA5A2F; margin-bottom: 20px;">Day ${currentDay} Test Available</h2>
                         <p style="font-size: 18px; color: #666; margin-bottom: 30px;">Ready to take today's test?</p>
                         <button class="btn" onclick="showConfirmation()" style="padding: 15px 40px; font-size: 18px;">Start Test</button>
                     </div>
