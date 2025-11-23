@@ -1493,7 +1493,12 @@
                 const response = await fetch(`${SCRIPT_URL}?action=getLeaderboard`);
                 const leaderboard = await response.json();
                 
-                if (!leaderboard || leaderboard.length === 0) {
+                if (leaderboard.error) {
+                    container.innerHTML = '<p style="color: #dc3545; text-align: center;">Error loading leaderboard: ' + leaderboard.error + '</p>';
+                    return;
+                }
+                
+                if (!leaderboard || !Array.isArray(leaderboard) || leaderboard.length === 0) {
                     container.innerHTML = '<p style="text-align: center; color: #666;">No submissions yet. Be the first to complete a test!</p>';
                     return;
                 }
