@@ -29,7 +29,7 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             background: #E3E3E3;
             min-height: 100vh;
-            padding: 20px 20px 80px 20px;
+            padding: 20px 20px 140px 20px;
         }
 
         body.locked {
@@ -635,7 +635,7 @@
         
         @keyframes spin {
             0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            100% { transform: rotate(0deg); }
         }
 
         .confirmation-modal {
@@ -811,6 +811,42 @@
             font-size: 14px;
         }
 
+        .rank-footer {
+            position: fixed;
+            bottom: 60px;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 2px solid #E3E3E3;
+            padding: 12px 20px;
+            z-index: 9998;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+        }
+
+        .rank-footer.hidden {
+            display: none;
+        }
+
+        .rank-content {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #000;
+        }
+
+        .rank-badge-large {
+            background: #EA5A2F;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
         .sponsor-footer {
             position: fixed;
             bottom: 0;
@@ -819,7 +855,7 @@
             background: white;
             border-top: 2px solid #E3E3E3;
             padding: 15px 20px;
-            z-index: 9998;
+            z-index: 9997;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -863,6 +899,21 @@
         }
 
         @media (max-width: 768px) {
+            body {
+                padding-bottom: 180px;
+            }
+
+            .rank-footer {
+                bottom: 60px;
+                padding: 10px 15px;
+            }
+
+            .rank-content {
+                flex-direction: column;
+                gap: 8px;
+                font-size: 14px;
+            }
+
             .sponsor-footer {
                 padding: 12px 15px;
                 gap: 15px;
@@ -1011,6 +1062,14 @@
         </div>
         <div class="ai-input-container">
             <input type="text" id="aiInput" placeholder="Ask about LaTeX syntax..." onkeypress="handleAIEnter(event)">
+        </div>
+    </div>
+
+    <div class="rank-footer hidden" id="rankFooter">
+        <div class="rank-content">
+            <span>Your Current Rank:</span>
+            <span class="rank-badge-large" id="rankDisplay">Loading...</span>
+            <span id="rankDetails"></span>
         </div>
     </div>
 
@@ -1359,6 +1418,29 @@
             }
         }
 
+        async function loadUserRank() {
+            if (!currentUser) return;
+            
+            try {
+                const response = await fetch(`${SCRIPT_URL}?action=getUserRank&email=${encodeURIComponent(currentUser.email)}`);
+                const result = await response.json();
+                
+                const rankFooter = document.getElementById('rankFooter');
+                const rankDisplay = document.getElementById('rankDisplay');
+                const rankDetails = document.getElementById('rankDetails');
+                
+                if (result.rank) {
+                    rankDisplay.textContent = `#${result.rank}`;
+                    rankDetails.textContent = `out of ${result.totalStudents} students (${result.score} points)`;
+                    rankFooter.classList.remove('hidden');
+                } else {
+                    rankFooter.classList.add('hidden');
+                }
+            } catch (error) {
+                console.error('Error loading rank:', error);
+            }
+        }
+
         function updateLatexPreview() {
             if (latexUpdateTimer) clearTimeout(latexUpdateTimer);
             
@@ -1579,6 +1661,7 @@
             currentUser = null;
             document.getElementById('mainPortal').classList.add('hidden');
             document.getElementById('authScreen').classList.remove('hidden');
+            document.getElementById('rankFooter').classList.add('hidden');
             location.reload();
         }
 
@@ -1589,6 +1672,7 @@
             document.getElementById('profileNameInput').value = currentUser.name;
             document.getElementById('profileEmailInput').value = currentUser.email;
             checkTodayTest();
+            loadUserRank();
         }
 
         async function changePassword() {
@@ -1902,6 +1986,7 @@
             document.getElementById('mainPortal').style.display = 'none';
             document.getElementById('questionSection').style.display = 'block';
             document.getElementById('navigationBar').style.display = 'block';
+            document.getElementById('rankFooter').classList.add('hidden');
             document.body.classList.add('locked');
             testActive = true;
             monitorFullscreen();
@@ -2073,6 +2158,10 @@
                 
                 document.getElementById('questionSection').style.display = 'none';
                 document.getElementById('mainPortal').style.display = 'block';
+                document.getElementById('rankFooter').classList.remove('hidden');
+                
+                loadUserRank();
+                
                 const q1Points = q1Correct ? 5 : 0;
                 const q2Points = q2Correct ? 5 : 0;
                 const currentTotal = q1Points + q2Points;
@@ -2202,6 +2291,3 @@ Common symbols:
                 return '';
             }
         });
-    </script>
-</body>
-</html>
