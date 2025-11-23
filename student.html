@@ -1766,6 +1766,13 @@
                 testActive = false;
                 document.body.classList.remove('locked');
                 if (document.exitFullscreen) document.exitFullscreen();
+                
+                document.getElementById('aiHelper').classList.remove('show');
+                document.getElementById('aiToggleBtn').style.display = 'none';
+                document.getElementById('latexHelpBtn').style.display = 'none';
+                document.getElementById('timer').style.display = 'none';
+                document.getElementById('progressIndicator').style.display = 'none';
+                
                 document.getElementById('questionSection').style.display = 'none';
                 document.getElementById('mainPortal').style.display = 'block';
                 const q1Points = q1Correct ? 5 : 0;
