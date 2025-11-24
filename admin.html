@@ -262,6 +262,7 @@
             
             <div id="users" class="tab-content">
                 <h2 style="margin-bottom: 20px;">User Management</h2>
+                <div id="usersStatus" class="status"></div>
                 
                 <div style="background: #f8f9fa; padding: 30px; border-radius: 8px; margin-bottom: 30px; border-left: 4px solid #EA5A2F;">
                     <h3 style="margin-bottom: 20px;">Add New User</h3>
@@ -284,7 +285,6 @@
                     <button class="btn" onclick="loadUsers()">Refresh Users</button>
                 </div>
                 <div id="usersContainer"></div>
-                <div id="usersStatus" class="status"></div>
             </div>
             
             <div id="submissions" class="tab-content">
@@ -911,7 +911,6 @@ async function loadUsers() {
                 </div>
                 <div class="submission-details">
                     <div class="detail-item"><span class="detail-label">Email:</span> ${user.email}</div>
-                    <div class="detail-item"><span class="detail-label">Password:</span> ${user.password}</div>
                     <div class="detail-item"><span class="detail-label">Registered:</span> ${createdDate}</div>
                 </div>
             `;
@@ -950,7 +949,7 @@ async function addUser() {
         const result = await response.json();
         
         if (result.success) {
-            showStatus('usersStatus', `User added successfully! Generated password: ${result.generatedPassword} (also emailed to user)`, 'success');
+            showStatus('usersStatus', 'User added successfully! Temporary password emailed to user.', 'success');
             document.getElementById('newUserName').value = '';
             document.getElementById('newUserEmail').value = '';
             loadUsers();

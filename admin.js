@@ -809,9 +809,6 @@ async function loadUsers() {
                         <span class="detail-label">Email:</span> ${user.email}
                     </div>
                     <div class="detail-item">
-                        <span class="detail-label">Password:</span> ${user.password}
-                    </div>
-                    <div class="detail-item">
                         <span class="detail-label">Registered:</span> ${createdDate}
                     </div>
                 </div>
@@ -830,15 +827,9 @@ async function loadUsers() {
 async function addUser() {
     const name = document.getElementById('newUserName').value.trim();
     const email = document.getElementById('newUserEmail').value.trim();
-    const password = document.getElementById('newUserPassword').value;
     
-    if (!name || !email || !password) {
-        showStatus('usersStatus', 'Please fill in all fields', 'error');
-        return;
-    }
-    
-    if (password.length < 6) {
-        showStatus('usersStatus', 'Password must be at least 6 characters', 'error');
+    if (!name || !email) {
+        showStatus('usersStatus', 'Please fill in both name and email', 'error');
         return;
     }
     
@@ -858,8 +849,7 @@ async function addUser() {
             body: JSON.stringify({
                 action: 'adminAddUser',
                 name: name,
-                email: email,
-                password: password
+                email: email
             })
         });
         
@@ -869,7 +859,6 @@ async function addUser() {
             showStatus('usersStatus', '✅ User added successfully!', 'success');
             document.getElementById('newUserName').value = '';
             document.getElementById('newUserEmail').value = '';
-            document.getElementById('newUserPassword').value = '';
             loadUsers();
         } else {
             showStatus('usersStatus', 'Error: ' + (result.error || 'Failed to add user'), 'error');
