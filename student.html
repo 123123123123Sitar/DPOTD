@@ -29,7 +29,7 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             background: #E3E3E3;
             min-height: 100vh;
-            padding: 80px 20px 140px 20px;
+            padding: 20px 20px 140px 20px;
         }
 
         body.locked {
@@ -264,9 +264,50 @@
             margin: -40px -40px 20px -40px;
         }
 
+        .profile-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .profile-name-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
         .profile-name {
             font-size: 18px;
             font-weight: 600;
+        }
+
+        .profile-rank {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.15);
+            padding: 6px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .profile-rank.hidden {
+            display: none;
+        }
+
+        .profile-rank .rank-badge-large {
+            background: white;
+            color: #EA5A2F;
+            padding: 6px 10px;
+            border-radius: 14px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .profile-rank .rank-text {
+            opacity: 0.9;
         }
 
         .logout-btn {
@@ -811,42 +852,6 @@
             font-size: 14px;
         }
 
-        .rank-footer {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background: white;
-            border-bottom: 2px solid #E3E3E3;
-            padding: 12px 20px;
-            z-index: 9998;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-
-        .rank-footer.hidden {
-            display: none;
-        }
-
-        .rank-content {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            font-size: 16px;
-            font-weight: 600;
-            color: #000;
-        }
-
-        .rank-badge-large {
-            background: #EA5A2F;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 14px;
-        }
-
         .sponsor-footer {
             position: fixed;
             bottom: 0;
@@ -1065,14 +1070,6 @@
         </div>
     </div>
 
-    <div class="rank-footer hidden" id="rankFooter">
-        <div class="rank-content">
-            <span>Your Current Rank:</span>
-            <span class="rank-badge-large" id="rankDisplay">Loading...</span>
-            <span id="rankDetails"></span>
-        </div>
-    </div>
-
     <div class="container">
         <div id="authScreen">
             <h1>D.PotD Problems of the Day</h1>
@@ -1131,7 +1128,15 @@
 
         <div id="mainPortal" class="hidden">
             <div class="profile-header">
-                <span class="profile-name" id="profileName"></span>
+                <div class="profile-meta">
+                    <div class="profile-name-row">
+                        <span class="profile-name" id="profileName"></span>
+                        <div class="profile-rank hidden" id="profileRank">
+                            <span class="rank-badge-large" id="rankDisplay">#--</span>
+                            <span class="rank-text" id="rankDetails"></span>
+                        </div>
+                    </div>
+                </div>
                 <button class="logout-btn" onclick="logout()">Logout</button>
             </div>
 
@@ -1258,7 +1263,7 @@
     </div>
 
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxtQTYwTvh5Qh-uJz2mURoDTXs8kRuiHu-1uPvAtMRrdcKX23C9FWOrjcqMW0okZWN3/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbznb5q0mxpd3SfQN-39wiwNJuatIIAeL-ajh63pvFS6moIKBlIJj9ZG2F2P2mXrY5zdZg/exec';
         const GEMINI_API_KEY = 'AIzaSyAG0HmsIkxuESxsq0sYNPRANTfqHdIk6Tk';
         
         let currentUser = null;
@@ -1425,16 +1430,16 @@
                 const response = await fetch(`${SCRIPT_URL}?action=getUserRank&email=${encodeURIComponent(currentUser.email)}`);
                 const result = await response.json();
                 
-                const rankFooter = document.getElementById('rankFooter');
+                const profileRank = document.getElementById('profileRank');
                 const rankDisplay = document.getElementById('rankDisplay');
                 const rankDetails = document.getElementById('rankDetails');
                 
                 if (result.rank) {
                     rankDisplay.textContent = `#${result.rank}`;
                     rankDetails.textContent = `out of ${result.totalStudents} students (${result.score} points)`;
-                    rankFooter.classList.remove('hidden');
+                    profileRank.classList.remove('hidden');
                 } else {
-                    rankFooter.classList.add('hidden');
+                    profileRank.classList.add('hidden');
                 }
             } catch (error) {
                 console.error('Error loading rank:', error);
@@ -1661,7 +1666,8 @@
             currentUser = null;
             document.getElementById('mainPortal').classList.add('hidden');
             document.getElementById('authScreen').classList.remove('hidden');
-            document.getElementById('rankFooter').classList.add('hidden');
+            const profileRank = document.getElementById('profileRank');
+            if (profileRank) profileRank.classList.add('hidden');
             location.reload();
         }
 
@@ -1986,7 +1992,8 @@
             document.getElementById('mainPortal').style.display = 'none';
             document.getElementById('questionSection').style.display = 'block';
             document.getElementById('navigationBar').style.display = 'block';
-            document.getElementById('rankFooter').classList.add('hidden');
+            const profileRank = document.getElementById('profileRank');
+            if (profileRank) profileRank.classList.add('hidden');
             document.body.classList.add('locked');
             testActive = true;
             monitorFullscreen();
@@ -2158,7 +2165,8 @@
                 
                 document.getElementById('questionSection').style.display = 'none';
                 document.getElementById('mainPortal').style.display = 'block';
-                document.getElementById('rankFooter').classList.remove('hidden');
+                const profileRank = document.getElementById('profileRank');
+                if (profileRank) profileRank.classList.remove('hidden');
                 
                 loadUserRank();
                 
